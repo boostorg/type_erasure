@@ -27,6 +27,10 @@
 
 namespace boost {
 namespace type_erasure {
+
+template<class F>
+struct deduced;
+
 namespace detail {
 
 template<class T, class Bindings>
@@ -58,6 +62,13 @@ struct rebind_placeholders_in_argument<const T, Bindings>
         Bindings
     >::type type;
 };
+
+template<class F, class Bindings>
+struct rebind_placeholders_in_argument<
+    ::boost::type_erasure::deduced<F>,
+    Bindings
+> : ::boost::type_erasure::detail::rebind_placeholders<F, Bindings>::type
+{};
 
 #if !defined(BOOST_NO_VARIADIC_TEMPLATES)
 
