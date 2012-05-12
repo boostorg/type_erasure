@@ -1,0 +1,297 @@
+[library Boost.TypeErasure
+    [quickbook 1.5]
+    [authors [Watanabe, Steven]]
+    [copyright 2011 Steven Watanabe]
+    [license
+        Distributed under the Boost Software License, Version 1.0.
+        (See accompanying file LICENSE_1_0.txt or copy at
+        [@http://www.boost.org/LICENSE_1_0.txt])
+    ]
+    [purpose Runtime polymorphism based on concepts]
+]
+
+[def __any [classref boost::type_erasure::any any]]
+[def __any_cast [funcref boost::type_erasure::any_cast any_cast]]
+[def __tuple [classref boost::type_erasure::tuple tuple]]
+[def __rebind_any [classref boost::type_erasure::rebind_any rebind_any]]
+[def __derived [classref boost::type_erasure::derived derived]]
+[def __concept_interface [classref boost::type_erasure::concept_interface concept_interface]]
+[def __constructible [classref boost::type_erasure::constructible constructible]]
+[def __destructible [classref boost::type_erasure::destructible destructible]]
+[def __copy_constructible [classref boost::type_erasure::copy_constructible copy_constructible]]
+[def __typeid_ [classref boost::type_erasure::typeid_ typeid_]]
+[def __relaxed_match [classref boost::type_erasure::relaxed_match relaxed_match]]
+[def __binding [classref boost::type_erasure::binding binding]]
+[def __placeholder [classref boost::type_erasure::placeholder placeholder]]
+[def __call [funcref boost::type_erasure::call call]]
+
+[def __addable [classref boost::type_erasure::addable addable]]
+[def __subtractable [classref boost::type_erasure::subtractable subtractable]]
+[def __multipliable [classref boost::type_erasure::multipliable multipliable]]
+[def __dividable [classref boost::type_erasure::dividable dividable]]
+[def __modable [classref boost::type_erasure::modable modable]]
+[def __bitandable [classref boost::type_erasure::bitandable bitandable]]
+[def __bitorable [classref boost::type_erasure::bitorable bitorable]]
+[def __bitxorable [classref boost::type_erasure::bitxorable bitxorable]]
+[def __left_shiftable [classref boost::type_erasure::left_shiftable left_shiftable]]
+[def __right_shiftable [classref boost::type_erasure::right_shiftable right_shiftable]]
+[def __add_assignable [classref boost::type_erasure::add_assignable add_assignable]]
+[def __subtract_assignable [classref boost::type_erasure::subtract_assignable subtract_assignable]]
+[def __multiply_assignable [classref boost::type_erasure::multiply_assignable multiply_assignable]]
+[def __divide_assignable [classref boost::type_erasure::divide_assignable divide_assignable]]
+[def __mod_assignable [classref boost::type_erasure::mod_assignable mod_assignable]]
+[def __bitand_assignable [classref boost::type_erasure::bitand_assignable bitand_assignable]]
+[def __bitor_assignable [classref boost::type_erasure::bitor_assignable bitor_assignable]]
+[def __bitxor_assignable [classref boost::type_erasure::bitxor_assignable bitxor_assignable]]
+[def __left_shift_assignable [classref boost::type_erasure::left_shift_assignable left_shift_assignable]]
+[def __right_shift_assignable [classref boost::type_erasure::right_shift_assignable right_shift_assignable]]
+[def __incrementable [classref boost::type_erasure::incrementable incrementable]]
+[def __decrementable [classref boost::type_erasure::decrementable decrementable]]
+[def __negatable [classref boost::type_erasure::negatable negatable]]
+[def __complementable [classref boost::type_erasure::complementable complementable]]
+[def __dereferenceable [classref boost::type_erasure::dereferenceable dereferenceable]]
+[def __callable [classref boost::type_erasure::callable callable]]
+[def __subscriptable [classref boost::type_erasure::subscriptable subscriptable]]
+[def __equality_comparable [classref boost::type_erasure::equality_comparable equality_comparable]]
+[def __less_than_comparable [classref boost::type_erasure::less_than_comparable less_than_comparable]]
+[def __ostreamable [classref boost::type_erasure::ostreamable ostreamable]]
+[def __istreamable [classref boost::type_erasure::istreamable istreamable]]
+
+
+[section:introduction Introduction]
+
+C++ provides runtime polymorphism through virtual
+functions.  They are a very useful feature, but
+they do have some limitations.
+
+* They are intrusive.  In generic programming, we can
+  design an interface which allows third-party types
+  to be adapted to it.
+* They require dynamic memory management.  Of course,
+  most of the problems can be avoided by using an
+  appropriate smart pointer type. Even so, it still
+  acts like a pointer rather than a value.
+* Virtual functions' ability to apply multiple
+  independent concepts to a single object is limited.
+
+The Boost.TypeErasure library solves these problems
+allowing us to mirror static generic programming
+at runtime.
+
+[note TypeErasure is not an official Boost library.]
+
+[endsect]
+
+[section:reading How to read this documentation]
+
+To avoid excessive verbosity, all the examples
+assume that a few using directives are in place.
+
+    namespace mpl = boost::mpl;
+    using namespace boost::type_erasure;
+
+[endsect]
+
+[section:basic Basic Usage]
+[import ../example/basic.cpp]
+[basic]
+[endsect]
+
+[section:multi Functions with Multiple Arguments]
+[import ../example/multi.cpp]
+[multi]
+[endsect]
+
+[section:references Using References]
+[import ../example/references.cpp]
+[references]
+[endsect]
+
+[section:construction Construction]
+[import ../example/construction.cpp]
+[construction]
+[endsect]
+
+[section:concept Concepts in Depth]
+
+[section:custom Defining Custom Concepts]
+[import ../example/custom.cpp]
+[custom]
+[endsect]
+
+[section:compose Composing Concepts]
+[import ../example/compose.cpp]
+[compose]
+[endsect]
+
+[section:concept_map Concept Maps]
+[import ../example/concept_map.cpp]
+[concept_map]
+[endsect]
+
+[section:overload Overloading]
+[import ../example/overload.cpp]
+[overload]
+[endsect]
+
+[endsect]
+
+[section:examples Examples]
+
+[section:print_sequence A polymorphic range formatter]
+[import ../example/print_sequence.cpp]
+[print_sequence]
+[endsect]
+
+[endsect]
+
+[section:predef Predefined Concepts]
+
+In the following tables, `T` and `U` are the types that the operation
+applies to, `R` is the result type.  `T` always defaults
+to `_self` to match the default behavior of any.  These
+concepts assume normal semantics.  Thus, comparison
+operators always return bool, and references will be
+added to the arguments and results as appropriate.
+
+[table:special Special Members
+    [[concept][notes]]
+    [[__constructible`<Sig>`][-]]
+    [[__copy_constructible`<T>`][-]]
+    [[__destructible`<T>`][-]]
+    [[__typeid_`<T>`][-]]
+]
+[table:unary Unary Operators
+    [[operator][concept][notes]]
+    [[`operator++`][__incrementable`<T>`][There is no separate post-increment]]
+    [[`operator--`][__decrementable`<T>`][There is no separate post-decrement]]
+    [[`operator*`][__dereferenceable`<R, T>`][`R` should usually be a reference]]
+    [[`operator~`][__complementable`<T, R = T>`][-]]
+    [[`operator-`][__negatable`<T, R = T>`][-]]
+]
+
+[table:binary Binary Operators
+    [[operator][concept][notes]]
+    [[`operator+`][__addable`<T, U = T, R = T>`][-]]
+    [[`operator-`][__subtractable`<T, U = T, R = T>`][-]]
+    [[`operator*`][__multipliable`<T, U = T, R = T>`][-]]
+    [[`operator/`][__dividable`<T, U = T, R = T>`][-]]
+    [[`operator%`][__modable`<T, U = T, R = T>`][-]]
+    [[`operator&`][__bitandable`<T, U = T, R = T>`][-]]
+    [[`operator|`][__bitorable`<T, U = T, R = T>`][-]]
+    [[`operator^`][__bitxorable`<T, U = T, R = T>`][-]]
+    [[`operator<<`][__left_shiftable`<T, U = T, R = T>`][-]]
+    [[`operator>>`][__right_shiftable`<T, U = T, R = T>`][-]]
+    [[`operator==` and `!=`][__equality_comparable`<T, U = T>`][`!=` is implemented in terms of `==`]]
+    [[`operator<`, `>`, `<=`, and `>=`][__less_than_comparable`<T, U = T>`][All are implemented in terms of `<`]]
+    [[`operator+=`][__add_assignable`<T, U = T>`][-]]
+    [[`operator-=`][__subtract_assignable`<T, U = T>`][-]]
+    [[`operator*=`][__multiply_assignable`<T, U = T>`][-]]
+    [[`operator/=`][__divide_assignable`<T, U = T>`][-]]
+    [[`operator%=`][__mod_assignable`<T, U = T>`][-]]
+    [[`operator&=`][__bitand_assignable`<T, U = T>`][-]]
+    [[`operator|=`][__bitor_assignable`<T, U = T>`][-]]
+    [[`operator^=`][__bitxor_assignable`<T, U = T>`][-]]
+    [[`operator<<=`][__left_shift_assignable`<T, U = T>`][-]]
+    [[`operator>>=`][__right_shift_assignable`<T, U = T>`][-]]
+    [[`operator<<`][__ostreamable`<Os = std::ostream, T = _self>`][-]]
+    [[`operator>>`][__istreamable`<Is = std::istream, T = _self>`][-]]
+]
+
+[table:misc Miscellaneous Operators
+    [[operator][concept][notes]]
+    [[`operator()`][__callable`<Sig, T>`][`Sig` should be a function type. T may be const qualified.]]
+    [[`operator[]`][__subscriptable`<R, T, N = std::ptrdiff_t>`][`R` should usually be a reference. `T` can be optionally const qualified.]]
+]
+
+[endsect]
+
+[xinclude reference.xml]
+
+[section:rationale Rationale]
+
+[section Why do I have to specify the presence of a destructor explicitly?]
+When using references the destructor isn't needed.
+By not assuming it implicitly, we allow capturing
+types with private or protected destructors by reference.
+For the sake of consistency, it must be specified
+when capturing by value as well.
+[endsect]
+
+[section Why non-member functions?]
+The members of __any can be customized.  By using
+free functions, we guarantee that we don't interfere
+with anything that a user might want.
+[endsect]
+
+[endsect]
+
+[section:feedback Feedback Wanted]
+
+There are a number of things that I'm not entirely
+happy about.  Any thoughts about them would be
+greatly appreciated.
+
+* The name `_self`.  Basically, I need some placeholder
+  to act as a default.  Since placeholders act as a
+  substitute for template parameters, I'd really like
+  to use `_T`.  Alack-a-day, `_T` is a reserved identifier.
+  `_self` was the best I could think of.
+* Implicit conversions.  Implicit conversion from the
+  contained type to a reference any is not allowed.
+  The reason for this is that I found that such
+  conversions were interefering with overload resolution.
+  Getting overload resolution to work correctly in
+  the following would be a lot more difficult if
+  implicit conversion were allowed:
+  ``
+    typedef mpl::vector<
+        copy_constructible<>,
+        constructible<_self(const std::string&)>
+    > concept;
+    any<concept> x = ...;
+    any<concept> y(binding_of(x), "hello");
+  ``
+  Without great care we end up with an ambiguity
+  between the `std::string` constructor and the
+  copy constructor.  User-defined overloaded
+  functions would also need to handle this somehow.
+  I decided that it was better to avoid the whole
+  problem by disabling implicit conversions.
+* __relaxed_match.  I considered a lot of names
+  for this, `strict_match<false>`, `enable_mixed`,
+  `nonstrict_match`, `loose_match`, `best_effort`,
+  and probably more that I've forgotten.  I'm not
+  really happy with any of them.  I'm not really
+  happy about having it in `Concept` either, but
+  I'm not sure where else it could go.  It's presence
+  can affect the contents of the vtable, so if it
+  we're a separate template argument, it would have
+  to be passed to __binding as well.  It would generally
+  add complication.
+
+[endsect]
+
+[section:future Future Work]
+
+These are just some ideas.  There is absolutely no
+guarantee that any of them will ever be implemented.
+
+* Use SBO.
+* Allow more control over vtable layout.
+* Attempt to reuse sub-tables in conversions.
+* Allow "dynamic_cast".
+* Allow deduction of placeholder bindings.
+* Use C++0x features.  (Rvalue references and
+  variadic templates in particular.)
+* Optimize the compile-time cost.
+
+[endsect]
+
+
+[section:acknowledgements Acknowledgements]
+
+* The name `any` was taken from Alexander Nasonov's
+  DynamicAny library.
+
+[endsect]
