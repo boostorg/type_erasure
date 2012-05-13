@@ -31,7 +31,11 @@ using namespace boost::type_erasure;
 
     For example, we can define a concept for
     holding any iterator, raw pointer, or
-    smart pointer as follows:
+    smart pointer as follows.
+
+    Note the extra trickery to make sure that it is safe
+    to instantiate pointee with a placeholder, because
+    argument dependant lookup can cause spurious instantiations.
 */
 
 template<class T>
@@ -68,7 +72,7 @@ void basic1() {
             typeid_<pointer<>::element_type>
         >
     > x(&i);
-    int j = boost::type_erasure::any_cast<int>(*x); // j == i
+    int j = any_cast<int>(*x); // j == i
     //]
 }
 
