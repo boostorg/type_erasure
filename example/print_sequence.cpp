@@ -85,7 +85,7 @@ protected:
         base_and_derived<std::ios_base, _os>,
         ostreamable<_os, _t>,
         ostreamable<_os, const char*>,
-        forward_iterator<_iter, _t, std::ptrdiff_t, const _t*, const _t&>
+        forward_iterator<_iter, const _t>
     > requirements;
     typedef boost::type_erasure::any<requirements, _os&> ostream_type;
     typedef boost::type_erasure::any<requirements, _iter> iterator_type;
