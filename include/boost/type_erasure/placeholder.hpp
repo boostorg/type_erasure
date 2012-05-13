@@ -14,9 +14,6 @@
 namespace boost {
 namespace type_erasure {
 
-/** INTERNAL ONLY */
-struct placeholder_base {};
-
 /**
  * Placeholders are used heavily throughout the library.
  * Every placeholder must derive from @ref placeholder
@@ -48,16 +45,15 @@ struct placeholder_base {};
  * explicitly, but the substitution still works the
  * same way.
  */
-template<class Derived>
-struct placeholder : placeholder_base {};
+struct placeholder {};
 
-struct _a : placeholder<_a> {};
-struct _b : placeholder<_b> {};
-struct _c : placeholder<_c> {};
-struct _d : placeholder<_d> {};
-struct _e : placeholder<_e> {};
-struct _f : placeholder<_f> {};
-struct _g : placeholder<_g> {};
+struct _a : placeholder {};
+struct _b : placeholder {};
+struct _c : placeholder {};
+struct _d : placeholder {};
+struct _e : placeholder {};
+struct _f : placeholder {};
+struct _g : placeholder {};
 
 /**
  * \brief The default placeholder
@@ -68,7 +64,7 @@ struct _g : placeholder<_g> {};
  * explicit arguments will "just work" as much as
  * possible.
  */
-struct _self : placeholder<_self> {};
+struct _self : placeholder {};
 
 }
 }

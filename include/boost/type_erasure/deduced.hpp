@@ -31,8 +31,7 @@ namespace type_erasure {
  * to automatically evaluate it early as needed.
  */
 template<class Metafunction>
-struct deduced :
-    ::boost::type_erasure::placeholder<deduced<Metafunction> >
+struct deduced : ::boost::type_erasure::placeholder
 {
     typedef typename ::boost::mpl::eval_if<
         ::boost::mpl::empty<

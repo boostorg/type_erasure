@@ -34,14 +34,23 @@ using namespace boost::type_erasure;
     smart pointer as follows:
 */
 
+template<class T>
+struct pointee
+{
+    typedef typename mpl::eval_if<is_placeholder<T>,
+        mpl::identity<void>,
+        boost::pointee<T>
+    >::type type;
+};
+
 template<class T = _self>
 struct pointer :
     mpl::vector<
         copy_constructible<T>,
-        dereferenceable<deduced<boost::pointee<T> >&, T>
+        dereferenceable<deduced<pointee<T> >&, T>
     >
 {
-    typedef deduced<boost::pointee<T> > element_type;
+    typedef deduced<pointee<T> > element_type;
 };
 
 //]

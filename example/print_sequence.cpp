@@ -31,9 +31,9 @@
 
 using namespace boost::type_erasure;
 
-struct _t : placeholder<_t> {};
-struct _iter : placeholder<_iter> {};
-struct _os : placeholder<_os> {};
+struct _t : placeholder {};
+struct _iter : placeholder {};
+struct _os : placeholder {};
 
 template<class T, class U = _self>
 struct base_and_derived

@@ -19,7 +19,7 @@ namespace type_erasure {
 
 /** A metafunction that indicates whether a type is a @ref placeholder. */
 template<class T>
-struct is_placeholder : ::boost::is_base_and_derived<placeholder_base, T> {};
+struct is_placeholder : ::boost::is_base_and_derived<placeholder, T> {};
 
 }
 }
