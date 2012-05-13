@@ -17,13 +17,15 @@
 #include <boost/mpl/identity.hpp>
 #include <boost/mpl/at.hpp>
 #include <boost/mpl/has_key.hpp>
-#include <boost/type_traits/is_base_and_derived.hpp>
+#include <boost/mpl/not.hpp>
+#include <boost/mpl/assert.hpp>
 #include <boost/preprocessor/cat.hpp>
 #include <boost/preprocessor/iteration/iterate.hpp>
 #include <boost/preprocessor/repetition/enum.hpp>
 #include <boost/preprocessor/repetition/enum_params.hpp>
 #include <boost/preprocessor/repetition/enum_trailing_params.hpp>
 #include <boost/type_erasure/config.hpp>
+#include <boost/type_erasure/is_placeholder.hpp>
 
 namespace boost {
 namespace type_erasure {
@@ -42,8 +44,12 @@ struct rebind_placeholders
 template<class T, class Bindings>
 struct rebind_placeholders_in_argument
 {
+    BOOST_MPL_ASSERT((boost::mpl::or_<
+        ::boost::mpl::not_< ::boost::type_erasure::is_placeholder<T> >,
+        ::boost::mpl::has_key<Bindings, T>
+    >));
     typedef typename ::boost::mpl::eval_if<
-        ::boost::mpl::has_key<Bindings, T>,
+        ::boost::type_erasure::is_placeholder<T>,
         ::boost::mpl::at<Bindings, T>,
         ::boost::mpl::identity<T>
     >::type type;

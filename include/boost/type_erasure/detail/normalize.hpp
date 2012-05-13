@@ -25,6 +25,7 @@
 #include <boost/mpl/fold.hpp>
 #include <boost/mpl/transform.hpp>
 #include <boost/mpl/copy.hpp>
+#include <boost/mpl/at.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/type_erasure/detail/get_placeholders.hpp>
 #include <boost/type_erasure/detail/rebind_placeholders.hpp>
@@ -41,6 +42,47 @@ struct deduced;
 template<class T, class U>
 struct same_type;
 
+namespace detail {
+
+struct substitution_map_tag {};
+
+template<class M>
+struct substitution_map
+{
+    typedef substitution_map_tag tag;
+    typedef M map_type;
+};
+
+}
+}
+
+namespace mpl {
+
+template<>
+struct at_impl< ::boost::type_erasure::detail::substitution_map_tag>
+{
+    template<class Seq, class Key>
+    struct apply
+    {
+        typedef typename ::boost::mpl::eval_if<
+            ::boost::mpl::has_key<typename Seq::map_type, Key>,
+            ::boost::mpl::at<typename Seq::map_type, Key>,
+            ::boost::mpl::identity<Key>
+        >::type type;
+    };
+};
+
+template<>
+struct has_key_impl< ::boost::type_erasure::detail::substitution_map_tag>
+{
+    template<class Seq, class Key>
+    struct apply : boost::mpl::true_
+    {};
+};
+
+}
+
+namespace type_erasure {
 namespace detail {
 
 template<class Out, class T>
@@ -281,7 +323,7 @@ struct normalize_concept
             ::boost::mpl::_1,
             ::boost::type_erasure::detail::rebind_placeholders<
                 ::boost::mpl::_2,
-                substitutions
+                ::boost::type_erasure::detail::substitution_map<substitutions>
             >
         >
     >::type basic;
@@ -308,7 +350,7 @@ struct collect_concepts
 {
     typedef typename ::boost::type_erasure::detail::rebind_placeholders<
         Concept,
-        Map
+        ::boost::type_erasure::detail::substitution_map<Map>
     >::type transformed;
     typedef typename ::boost::mpl::eval_if<
         ::boost::is_same<transformed, void>,
