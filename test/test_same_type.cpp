@@ -46,3 +46,19 @@ BOOST_MPL_ASSERT((
 
 BOOST_MPL_ASSERT((
     boost::is_same<deduced<boost::remove_pointer<int*> >::type, int >));
+
+BOOST_AUTO_TEST_CASE(test_duplicate)
+{
+    typedef ::boost::mpl::vector<
+        copy_constructible<>,
+        typeid_<_a>,
+        dereferenceable<deduced<boost::remove_pointer<_self> >&>,
+        same_type<deduced<boost::remove_pointer<_self> >, _a>,
+        same_type<deduced<boost::remove_pointer<_self> >, _a>
+    > test_concept;
+    int i;
+
+    any<test_concept> x(&i);
+    any<test_concept, _a&> y(*x);
+    BOOST_CHECK_EQUAL(&any_cast<int&>(y), &i);
+}

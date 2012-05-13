@@ -11,6 +11,7 @@
 #ifndef BOOST_TYPE_ERASURE_DETAIL_NORMALIZE_HPP_INCLUDED
 #define BOOST_TYPE_ERASURE_DETAIL_NORMALIZE_HPP_INCLUDED
 
+#include <boost/mpl/assert.hpp>
 #include <boost/mpl/eval_if.hpp>
 #include <boost/mpl/identity.hpp>
 #include <boost/mpl/is_sequence.hpp>
@@ -24,6 +25,7 @@
 #include <boost/mpl/fold.hpp>
 #include <boost/mpl/transform.hpp>
 #include <boost/mpl/copy.hpp>
+#include <boost/type_traits/is_same.hpp>
 #include <boost/type_erasure/detail/get_placeholders.hpp>
 #include <boost/type_erasure/detail/rebind_placeholders.hpp>
 #include <boost/type_erasure/detail/normalize_deduced.hpp>
@@ -65,7 +67,8 @@ struct resolve_same_type
 template<class T, class U>
 struct select_pair
 {
-    // error: cannot resolve conflict
+    BOOST_MPL_ASSERT((::boost::is_same<T, U>));
+    typedef void type;
 };
 
 template<class T, class U>
@@ -165,20 +168,26 @@ struct add_deductions
 template<class Out, class T, class U>
 struct insert_concept<Out, ::boost::type_erasure::same_type<T, U> >
 {
+    typedef typename ::boost::type_erasure::detail::resolve_same_type<
+        typename Out::second,
+        T
+    >::type t1;
+    typedef typename ::boost::type_erasure::detail::resolve_same_type<
+        typename Out::second,
+        U
+    >::type t2;
     typedef ::boost::mpl::pair<
         typename Out::first,
-        typename ::boost::mpl::insert<
-            typename Out::second,
-            typename ::boost::type_erasure::detail::select_pair<
-                typename ::boost::type_erasure::detail::resolve_same_type<
-                    typename Out::second,
-                    T
-                >::type,
-                typename ::boost::type_erasure::detail::resolve_same_type<
-                    typename Out::second,
-                    U
+        typename ::boost::mpl::eval_if<
+            ::boost::is_same<t1, t2>,
+            ::boost::mpl::identity<typename Out::second>,
+            ::boost::mpl::insert<
+                typename Out::second,
+                typename ::boost::type_erasure::detail::select_pair<
+                    t1,
+                    t2
                 >::type
-            >::type
+            >
         >::type
     > type;
 };
