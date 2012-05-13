@@ -71,7 +71,7 @@ struct select_pair
 template<class T, class U>
 struct select_pair<T, ::boost::type_erasure::deduced<U> >
 {
-    typedef ::boost::mpl::pair<T, ::boost::type_erasure::deduced<U> > type;
+    typedef ::boost::mpl::pair< ::boost::type_erasure::deduced<U>, T> type;
 };
 
 template<class T, class U>
