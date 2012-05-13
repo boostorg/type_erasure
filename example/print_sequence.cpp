@@ -21,10 +21,11 @@
 #include <boost/type_erasure/any.hpp>
 #include <boost/type_erasure/iterator.hpp>
 #include <boost/type_erasure/operators.hpp>
+#include <boost/type_erasure/tuple.hpp>
+#include <boost/type_erasure/same_type.hpp>
 #include <boost/range/begin.hpp>
 #include <boost/range/end.hpp>
 #include <boost/range/iterator.hpp>
-#include <boost/range/value_type.hpp>
 #include <iostream>
 #include <iomanip>
 #include <vector>
@@ -65,19 +66,13 @@ public:
     // Range must be a Forward Range whose elements can be printed to os.
     template<class CharT, class Traits, class Range>
     void print(std::basic_ostream<CharT, Traits>& os, const Range& r) const {
-        // Capture the argument types
-        typedef typename boost::range_iterator<const Range>::type iter;
-        typedef typename boost::range_value<const Range>::type val;
-        typedef boost::mpl::map<
-            boost::mpl::pair<_os, std::basic_ostream<CharT, Traits> >,
-            boost::mpl::pair<_iter, iter>,
-            boost::mpl::pair<_t, val>
-        > types;
-        ostream_type any_os(os, make_binding<types>());
-        iterator_type first(boost::begin(r), make_binding<types>());
-        iterator_type last(boost::end(r), make_binding<types>());
+        // Capture the arguments
+        typename boost::range_iterator<const Range>::type
+            first(boost::begin(r)),
+            last(boost::end(r));
+        tuple<requirements, _os&, _iter, _iter> args(os, first, last);
         // and forward to the real implementation
-        do_print(any_os, first, last);
+        do_print(get<0>(args), get<1>(args), get<2>(args));
     }
     virtual ~abstract_printer() {}
 protected:
@@ -85,7 +80,8 @@ protected:
         base_and_derived<std::ios_base, _os>,
         ostreamable<_os, _t>,
         ostreamable<_os, const char*>,
-        forward_iterator<_iter, const _t>
+        forward_iterator<_iter, const _t&>,
+        same_type<_t, forward_iterator<_iter, const _t&>::value_type>
     > requirements;
     typedef boost::type_erasure::any<requirements, _os&> ostream_type;
     typedef boost::type_erasure::any<requirements, _iter> iterator_type;

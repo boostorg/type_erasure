@@ -11,15 +11,24 @@
 #ifndef BOOST_TYPE_ERASURE_DETAIL_IS_PLACEHOLDER_HPP_INCLUDED
 #define BOOST_TYPE_ERASURE_DETAIL_IS_PLACEHOLDER_HPP_INCLUDED
 
+#include <boost/mpl/bool.hpp>
 #include <boost/type_traits/is_base_and_derived.hpp>
 #include <boost/type_erasure/placeholder.hpp>
 
 namespace boost {
+
+/** INTERNAL ONLY */
+struct use_default;
+
 namespace type_erasure {
 
 /** A metafunction that indicates whether a type is a @ref placeholder. */
 template<class T>
 struct is_placeholder : ::boost::is_base_and_derived<placeholder, T> {};
+
+/** INTERNAL ONLY */
+template<>
+struct is_placeholder< ::boost::use_default> : ::boost::mpl::false_ {};
 
 }
 }

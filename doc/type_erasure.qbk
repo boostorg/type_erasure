@@ -57,7 +57,10 @@
 [def __less_than_comparable [classref boost::type_erasure::less_than_comparable less_than_comparable]]
 [def __ostreamable [classref boost::type_erasure::ostreamable ostreamable]]
 [def __istreamable [classref boost::type_erasure::istreamable istreamable]]
+[def __iterator [classref boost::type_erasure::iterator iterator]]
 [def __forward_iterator [classref boost::type_erasure::forward_iterator forward_iterator]]
+[def __bidirectional_iterator [classref boost::type_erasure::bidirectional_iterator bidirectional_iterator]]
+[def __random_access_iterator [classref boost::type_erasure::random_access_iterator random_access_iterator]]
 [def __same_type [classref boost::type_erasure::same_type same_type]]
 
 
@@ -214,10 +217,13 @@ added to the arguments and results as appropriate.
 
 [table:iterator Iterator Concepts
     [[concept][notes]]
-    [[__forward_iterator`<T>`][Use __same_type to control the iterator's value type.]]
+    [[__iterator`<Traversal, T, Reference, Difference>`][Use __same_type to control the iterator's value type.]]
+    [[__forward_iterator`<T, Reference, Difference>`][-]]
+    [[__bidirectional_iterator`<T, Reference, Difference>`][-]]
+    [[__random_access_iterator`<T, Reference, Difference>`][-]]
 ]
 
-[table:iterator Special Concepts
+[table:special Special Concepts
     [[concept][notes]]
     [[__same_type`<T>`][Indicates that two types are the same.]]
 ]
