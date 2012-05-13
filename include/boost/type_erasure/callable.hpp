@@ -34,7 +34,8 @@ namespace type_erasure {
 
 /**
  * The @ref callable concept allows an @ref any to hold function objects.
- * @c Sig is interpreted in the same way as for Boost.Function.
+ * @c Sig is interpreted in the same way as for Boost.Function, except
+ * that the arguments and return type are allowed to be placeholders.
  * @c F must be a @ref placeholder.
  *
  * Multiple instances of @ref callable can be used

@@ -18,6 +18,15 @@ namespace type_erasure {
  * A built in concept that indicates that two
  * types are the same.  Either T or U or both
  * can be placeholders.
+ *
+ * \warning Any number of instances of @ref deduced
+ * can be connected with @ref same_type, but there
+ * should be at most one regular placeholder in
+ * the group. same_type<_a, _b> is not allowed.
+ * The reason for this is that the library needs
+ * to normalize all the placeholders, and in this
+ * context there is no way to decide whether to
+ * use @ref _a or @ref _b.
  */
 template<class T, class U>
 struct same_type {};

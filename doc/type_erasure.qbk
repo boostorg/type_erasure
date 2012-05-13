@@ -24,6 +24,7 @@
 [def __binding [classref boost::type_erasure::binding binding]]
 [def __placeholder [classref boost::type_erasure::placeholder placeholder]]
 [def __call [funcref boost::type_erasure::call call]]
+[def __deduced [classref boost::type_erasure::deduced deduced]]
 
 [def __addable [classref boost::type_erasure::addable addable]]
 [def __subtractable [classref boost::type_erasure::subtractable subtractable]]
@@ -56,6 +57,8 @@
 [def __less_than_comparable [classref boost::type_erasure::less_than_comparable less_than_comparable]]
 [def __ostreamable [classref boost::type_erasure::ostreamable ostreamable]]
 [def __istreamable [classref boost::type_erasure::istreamable istreamable]]
+[def __forward_iterator [classref boost::type_erasure::forward_iterator forward_iterator]]
+[def __same_type [classref boost::type_erasure::same_type same_type]]
 
 
 [section:introduction Introduction]
@@ -134,6 +137,11 @@ assume that a few using directives are in place.
 [overload]
 [endsect]
 
+[section:overload Associated Types]
+[import ../example/associated.cpp]
+[associated]
+[endsect]
+
 [endsect]
 
 [section:examples Examples]
@@ -202,6 +210,16 @@ added to the arguments and results as appropriate.
     [[operator][concept][notes]]
     [[`operator()`][__callable`<Sig, T>`][`Sig` should be a function type. T may be const qualified.]]
     [[`operator[]`][__subscriptable`<R, T, N = std::ptrdiff_t>`][`R` should usually be a reference. `T` can be optionally const qualified.]]
+]
+
+[table:iterator Iterator Concepts
+    [[concept][notes]]
+    [[__forward_iterator`<T>`][Use __same_type to control the iterator's value type.]]
+]
+
+[table:iterator Special Concepts
+    [[concept][notes]]
+    [[__same_type`<T>`][Indicates that two types are the same.]]
 ]
 
 [endsect]
@@ -281,7 +299,6 @@ guarantee that any of them will ever be implemented.
 * Allow more control over vtable layout.
 * Attempt to reuse sub-tables in conversions.
 * Allow "dynamic_cast".
-* Allow deduction of placeholder bindings.
 * Use C++0x features.  (Rvalue references and
   variadic templates in particular.)
 * Optimize the compile-time cost.

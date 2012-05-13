@@ -27,7 +27,7 @@ namespace type_erasure {
  * in the arguments of the metafunction and then evaluating it.
  * 
  * When using @ref deduced in a template context, if it is possible for
- * Metafunction to contain no placeholders, use the nested type,
+ * Metafunction to contain no placeholders at all, use the nested type,
  * to automatically evaluate it early as needed.
  */
 template<class Metafunction>
