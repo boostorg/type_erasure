@@ -15,6 +15,13 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/mpl/transform.hpp>
+#include <boost/mpl/find_if.hpp>
+#include <boost/mpl/and.hpp>
+#include <boost/mpl/not.hpp>
+#include <boost/mpl/end.hpp>
+#include <boost/mpl/bool.hpp>
+#include <boost/mpl/pair.hpp>
+#include <boost/type_traits/is_same.hpp>
 #include <boost/type_erasure/static_binding.hpp>
 #include <boost/type_erasure/detail/adapt_to_vtable.hpp>
 #include <boost/type_erasure/detail/rebind_placeholders.hpp>
@@ -23,6 +30,28 @@
 
 namespace boost {
 namespace type_erasure {
+
+namespace detail {
+
+template<class Source, class Dest, class Map>
+struct can_optimize_conversion : ::boost::mpl::and_<
+    ::boost::is_same<Source, Dest>,
+        ::boost::is_same<
+            typename ::boost::mpl::find_if<
+                Map,
+                ::boost::mpl::not_<
+                    ::boost::is_same<
+                        ::boost::mpl::first< ::boost::mpl::_1>,
+                        ::boost::mpl::second< ::boost::mpl::_1>
+                    >
+                >
+            >::type,
+            typename ::boost::mpl::end<Map>::type
+        >
+    >::type
+{};
+
+}
 
 /**
  * Stores the binding of a @c Concept to a set of actual types.
@@ -51,9 +80,8 @@ public:
      */
     template<class Map>
     explicit binding(const Map&)
-    {
-        set<Map>();
-    }
+      : impl(static_binding<Map>())
+    {}
     
     /**
      * \pre @c Map must be an MPL map with an entry for each placeholder
@@ -63,9 +91,8 @@ public:
      */
     template<class Map>
     binding(const static_binding<Map>&)
-    {
-        set<Map>();
-    }
+      : impl(static_binding<Map>())
+    {}
 
     /**
      * Converts from another set of bindings.
@@ -78,17 +105,12 @@ public:
      */
     template<class Concept2, class Map>
     binding(const binding<Concept2>& other, const Map&)
-      : manager(new table_type)
-    {
-        manager->template convert_from<
-            typename ::boost::type_erasure::detail::convert_deductions<
-                Map,
-                placeholder_subs,
-                typename binding<Concept2>::placeholder_subs
-            >::type
-        >(*other.table);
-        table = manager.get();
-    }
+      : impl(
+            other,
+            static_binding<Map>(),
+            ::boost::type_erasure::detail::can_optimize_conversion<Concept2, Concept, Map>()
+        )
+    {}
 
     /**
      * Converts from another set of bindings.
@@ -101,51 +123,12 @@ public:
      */
     template<class Concept2, class Map>
     binding(const binding<Concept2>& other, const static_binding<Map>&)
-      : manager(new table_type)
-    {
-        manager->template convert_from<
-            typename ::boost::type_erasure::detail::convert_deductions<
-                Map,
-                placeholder_subs,
-                typename binding<Concept2>::placeholder_subs
-            >::type
-        >(*other.table);
-        table = manager.get();
-    }
-
-#ifndef BOOST_TYPE_ERASURE_DOXYGEN
-
-    /** Special case optimization. */
-    template<class Map>
-    binding(const binding& other, const Map&)
-      : table(other.table)
-    {
-        table_type t;
-        t.template convert_from<
-            typename ::boost::type_erasure::detail::convert_deductions<
-                Map,
-                placeholder_subs,
-                placeholder_subs
-            >::type
-        >(*other.table);
-    }
-
-    /** Special case optimization. */
-    template<class Map>
-    binding(const binding& other, const static_binding<Map>&)
-      : table(other.table)
-    {
-        table_type t;
-        t.template convert_from<
-            typename ::boost::type_erasure::detail::convert_deductions<
-                Map,
-                placeholder_subs,
-                placeholder_subs
-            >::type
-        >(*other.table);
-    }
-
-#endif
+      : impl(
+            other,
+            static_binding<Map>(),
+            ::boost::type_erasure::detail::can_optimize_conversion<Concept2, Concept, Map>()
+        )
+    {}
 
     /**
      * \return true iff the sets of types that the placeholders
@@ -154,7 +137,7 @@ public:
      * \throws Nothing.
      */
     friend bool operator==(const binding& lhs, const binding& rhs)
-    { return *lhs.table == *rhs.table; }
+    { return *lhs.impl.table == *rhs.impl.table; }
     
     /**
      * \return true iff the arguments do not map to identical
@@ -167,30 +150,51 @@ public:
 
     /** INTERNAL ONLY */
     template<class T>
-    typename T::type find() const { return table->lookup((T*)0); }
+    typename T::type find() const { return impl.table->lookup((T*)0); }
 private:
     template<class C2>
     friend class binding;
     /** INTERNAL ONLY */
-    template<class Bindings>
-    void set()
+    struct impl_type
     {
-        table = &::boost::type_erasure::detail::make_vtable_init<
-            typename ::boost::mpl::transform<
-                actual_concept,
-                ::boost::type_erasure::detail::rebind_placeholders<
-                    ::boost::mpl::_1,
-                    typename ::boost::type_erasure::detail::add_deductions<
-                        Bindings,
-                        placeholder_subs
-                    >::type
-                >
-            >::type,
-            table_type
-        >::type::value;
-    }
-    const table_type* table;
-    ::boost::shared_ptr<table_type> manager;
+        template<class Map>
+        impl_type(const static_binding<Map>&)
+        {
+            table = &::boost::type_erasure::detail::make_vtable_init<
+                typename ::boost::mpl::transform<
+                    actual_concept,
+                    ::boost::type_erasure::detail::rebind_placeholders<
+                        ::boost::mpl::_1,
+                        typename ::boost::type_erasure::detail::add_deductions<
+                            Map,
+                            placeholder_subs
+                        >::type
+                    >
+                >::type,
+                table_type
+            >::type::value;
+        }
+        template<class Concept2, class Map>
+        impl_type(const binding<Concept2>& other, const static_binding<Map>&, boost::mpl::false_)
+          : manager(new table_type)
+        {
+            manager->template convert_from<
+                typename ::boost::type_erasure::detail::convert_deductions<
+                    Map,
+                    placeholder_subs,
+                    typename binding<Concept2>::placeholder_subs
+                >::type
+            >(*other.impl.table);
+            table = manager.get();
+        }
+        template<class Concept2, class Map>
+        impl_type(const binding<Concept2>& other, const static_binding<Map>&, boost::mpl::true_)
+          : table(other.impl.table),
+            manager(other.impl.manager)
+        {}
+        const table_type* table;
+        ::boost::shared_ptr<table_type> manager;
+    } impl;
 };
 
 }

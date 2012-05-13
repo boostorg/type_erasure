@@ -187,7 +187,7 @@ struct make_vtable_init
 };
 
 #define BOOST_PP_FILENAME_1 <boost/type_erasure/detail/vtable.hpp>
-#define BOOST_PP_ITERATION_LIMITS (1, BOOST_TYPE_ERASURE_MAX_FUNCTIONS)
+#define BOOST_PP_ITERATION_LIMITS (0, BOOST_TYPE_ERASURE_MAX_FUNCTIONS)
 #include BOOST_PP_ITERATE()
 
 #endif
@@ -225,7 +225,11 @@ struct make_vtable_init
         >::type*)0                                                      \
     );
 
+#if N != 0
 template<BOOST_PP_ENUM_PARAMS(N, class T)>
+#else
+template<class D = void>
+#endif
 struct BOOST_PP_CAT(vtable_storage, N)
 {
     BOOST_PP_REPEAT(N, BOOST_TYPE_ERASURE_VTABLE_ENTRY, ~)

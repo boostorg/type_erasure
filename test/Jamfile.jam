@@ -8,6 +8,7 @@
 
 import testing ;
 
+run test_binding.cpp /boost//unit_test_framework ;
 run test_increment.cpp /boost//unit_test_framework ;
 run test_add.cpp /boost//unit_test_framework ;
 run test_add_assign.cpp /boost//unit_test_framework ;
