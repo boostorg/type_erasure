@@ -62,3 +62,26 @@ BOOST_AUTO_TEST_CASE(test_duplicate)
     any<test_concept, _a&> y(*x);
     BOOST_CHECK_EQUAL(&any_cast<int&>(y), &i);
 }
+
+BOOST_AUTO_TEST_CASE(test_convert)
+{
+    typedef ::boost::mpl::vector<
+        copy_constructible<>,
+        typeid_<_a>,
+        dereferenceable<deduced<boost::remove_pointer<_self> >&>,
+        same_type<deduced<boost::remove_pointer<_self> >, _a>
+    > test_concept_src;
+    typedef ::boost::mpl::vector<
+        copy_constructible<_b>,
+        typeid_<_c>,
+        dereferenceable<deduced<boost::remove_pointer<_b> >&, _b>,
+        same_type<deduced<boost::remove_pointer<_b> >, _c>
+    > test_concept_dest;
+    int i;
+
+    any<test_concept_src> x1(&i);
+    any<test_concept_src, _a&> y1(*x1);
+    any<test_concept_dest, _b> x2(x1);
+    any<test_concept_dest, _c&> y2(*x2);
+    BOOST_CHECK_EQUAL(&any_cast<int&>(y2), &i);
+}

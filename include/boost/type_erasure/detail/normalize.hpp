@@ -138,6 +138,34 @@ struct create_placeholder_map
     >::type type;
 };
 
+template<class Bindings, class P, class Out, class Sub>
+struct convert_deduced
+{
+    typedef typename ::boost::type_erasure::detail::rebind_placeholders_in_argument<
+        typename P::first,
+        Bindings
+    >::type result1;
+    typedef typename ::boost::mpl::at<Sub, result1>::type result;
+    typedef typename ::boost::mpl::eval_if<
+        ::boost::mpl::has_key<Out, typename P::second>,
+        ::boost::mpl::identity<Out>,
+        ::boost::mpl::insert<Out, ::boost::mpl::pair<typename P::second, result> >
+    >::type type;
+    BOOST_MPL_ASSERT((boost::is_same<typename ::boost::mpl::at<type, typename P::second>::type, result>));
+};
+
+template<class Bindings, class M, class Sub>
+struct convert_deductions
+{
+    typedef typename ::boost::mpl::fold<
+        M,
+        Bindings,
+        ::boost::type_erasure::detail::convert_deduced<
+            Bindings, ::boost::mpl::_2, ::boost::mpl::_1, Sub
+        >
+    >::type type;
+};
+
 template<class Bindings, class P, class Out>
 struct add_deduced
 {

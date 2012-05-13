@@ -80,7 +80,13 @@ public:
     binding(const binding<Concept2>& other, const Map&)
       : manager(new table_type)
     {
-        manager->template convert_from<Map>(*other.table);
+        manager->template convert_from<
+            typename ::boost::type_erasure::detail::convert_deductions<
+                Map,
+                placeholder_subs,
+                typename binding<Concept2>::placeholder_subs
+            >::type
+        >(*other.table);
         table = manager.get();
     }
 
@@ -97,7 +103,13 @@ public:
     binding(const binding<Concept2>& other, const static_binding<Map>&)
       : manager(new table_type)
     {
-        manager->template convert_from<Map>(*other.table);
+        manager->template convert_from<
+            typename ::boost::type_erasure::detail::convert_deductions<
+                Map,
+                placeholder_subs,
+                typename binding<Concept2>::placeholder_subs
+            >::type
+        >(*other.table);
         table = manager.get();
     }
 
@@ -109,7 +121,13 @@ public:
       : table(other.table)
     {
         table_type t;
-        t.template convert_from<Map>(*other.table);
+        t.template convert_from<
+            typename ::boost::type_erasure::detail::convert_deductions<
+                Map,
+                placeholder_subs,
+                placeholder_subs
+            >::type
+        >(*other.table);
     }
 
     /** Special case optimization. */
@@ -118,7 +136,13 @@ public:
       : table(other.table)
     {
         table_type t;
-        t.template convert_from<Map>(*other.table);
+        t.template convert_from<
+            typename ::boost::type_erasure::detail::convert_deductions<
+                Map,
+                placeholder_subs,
+                placeholder_subs
+            >::type
+        >(*other.table);
     }
 
 #endif
