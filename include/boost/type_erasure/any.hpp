@@ -1034,6 +1034,18 @@ public:
       : data(::boost::type_erasure::detail::access::data(other)),
         table(binding_arg)
     {}
+
+    any& operator=(const any& other)
+    {
+        ::boost::type_erasure::call(assignable<T, T>(), *this, other);
+        return *this;
+    }
+    template<class U>
+    any& operator=(const any<Concept, U>& other)
+    {
+        ::boost::type_erasure::call(assignable<T, U>(), *this, other);
+        return *this;
+    }
 private:
     friend struct ::boost::type_erasure::detail::access;
     ::boost::type_erasure::detail::storage data;

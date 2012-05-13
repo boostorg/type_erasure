@@ -16,6 +16,7 @@
 #include <boost/mpl/eval_if.hpp>
 #include <boost/mpl/identity.hpp>
 #include <boost/mpl/at.hpp>
+#include <boost/mpl/has_key.hpp>
 #include <boost/type_traits/is_base_and_derived.hpp>
 #include <boost/preprocessor/cat.hpp>
 #include <boost/preprocessor/iteration/iterate.hpp>
@@ -23,7 +24,6 @@
 #include <boost/preprocessor/repetition/enum_params.hpp>
 #include <boost/preprocessor/repetition/enum_trailing_params.hpp>
 #include <boost/type_erasure/config.hpp>
-#include <boost/type_erasure/is_placeholder.hpp>
 
 namespace boost {
 namespace type_erasure {
@@ -34,12 +34,16 @@ struct deduced;
 namespace detail {
 
 template<class T, class Bindings>
-struct rebind_placeholders;
+struct rebind_placeholders
+{
+    typedef void type;
+};
 
 template<class T, class Bindings>
 struct rebind_placeholders_in_argument
 {
-    typedef typename ::boost::mpl::eval_if<is_placeholder<T>,
+    typedef typename ::boost::mpl::eval_if<
+        ::boost::mpl::has_key<Bindings, T>,
         ::boost::mpl::at<Bindings, T>,
         ::boost::mpl::identity<T>
     >::type type;
@@ -64,11 +68,28 @@ struct rebind_placeholders_in_argument<const T, Bindings>
 };
 
 template<class F, class Bindings>
+struct rebind_placeholders_in_deduced
+{
+    typedef typename ::boost::type_erasure::deduced<
+        typename ::boost::type_erasure::detail::rebind_placeholders<F, Bindings>::type
+    >::type type;
+};
+
+template<class F, class Bindings>
 struct rebind_placeholders_in_argument<
     ::boost::type_erasure::deduced<F>,
     Bindings
-> : ::boost::type_erasure::detail::rebind_placeholders<F, Bindings>::type
-{};
+> 
+{
+    typedef typename ::boost::mpl::eval_if<
+        ::boost::mpl::has_key<Bindings, ::boost::type_erasure::deduced<F> >,
+        ::boost::mpl::at<Bindings, ::boost::type_erasure::deduced<F> >,
+        ::boost::type_erasure::detail::rebind_placeholders_in_deduced<
+            F,
+            Bindings
+        >
+    >::type type;
+};
 
 #if !defined(BOOST_NO_VARIADIC_TEMPLATES)
 

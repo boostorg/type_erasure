@@ -38,6 +38,9 @@ class binding
     >::type actual_concept;
     typedef typename ::boost::type_erasure::detail::make_vtable<
         actual_concept>::type table_type;
+    typedef typename ::boost::type_erasure::detail::get_placeholder_normalization_map<
+        Concept
+    >::type placeholder_subs;
 public:
     
     /**
@@ -149,9 +152,15 @@ private:
     void set()
     {
         table = &::boost::type_erasure::detail::make_vtable_init<
-            typename ::boost::mpl::transform<actual_concept,
+            typename ::boost::mpl::transform<
+                actual_concept,
                 ::boost::type_erasure::detail::rebind_placeholders<
-                    ::boost::mpl::_1, Bindings>
+                    ::boost::mpl::_1,
+                    typename ::boost::type_erasure::detail::add_deductions<
+                        Bindings,
+                        placeholder_subs
+                    >::type
+                >
             >::type,
             table_type
         >::type::value;
