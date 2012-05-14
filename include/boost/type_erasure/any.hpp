@@ -1034,19 +1034,133 @@ public:
       : data(::boost::type_erasure::detail::access::data(other)),
         table(binding_arg)
     {}
-
+    
+    /**
+     * Assigns to an @ref any.
+     *
+     * If an appropriate overload of @ref assignable is not available
+     * and @ref relaxed_match is in @c Concept, falls back on
+     * constructing from @c other.
+     *
+     * \throws Whatever the assignment operator of the contained
+     *         type throws.  When falling back on construction,
+     *         throws @c std::bad_alloc.  In this case assignment
+     *         provides the strong exception guarantee.  When
+     *         calling the assignment operator of the contained type,
+     *         the exception guarantee is whatever the contained type provides.
+     */
     any& operator=(const any& other)
     {
-        ::boost::type_erasure::call(assignable<T, T>(), *this, other);
+        _boost_type_erasure_resolve_assign(other);
         return *this;
     }
+    
+    /**
+     * Assigns to an @ref any.
+     *
+     * If an appropriate overload of @ref assignable is not available
+     * and @ref relaxed_match is in @c Concept, falls back on
+     * constructing from @c other.
+     *
+     * \throws Whatever the assignment operator of the contained
+     *         type throws.  When falling back on construction,
+     *         throws @c std::bad_alloc.  In this case assignment
+     *         provides the strong exception guarantee.  When
+     *         calling the assignment operator of the contained type,
+     *         the exception guarantee is whatever the contained type provides.
+     */
     template<class U>
-    any& operator=(const any<Concept, U>& other)
+    any& operator=(U& other)
+    {
+        _boost_type_erasure_resolve_assign(other);
+        return *this;
+    }
+    
+    /**
+     * Assigns to an @ref any.
+     *
+     * If an appropriate overload of @ref assignable is not available
+     * and @ref relaxed_match is in @c Concept, falls back on
+     * constructing from @c other.
+     *
+     * \throws Whatever the assignment operator of the contained
+     *         type throws.  When falling back on construction,
+     *         throws @c std::bad_alloc.  In this case assignment
+     *         provides the strong exception guarantee.  When
+     *         calling the assignment operator of the contained type,
+     *         the exception guarantee is whatever the contained type provides.
+     */
+    template<class U>
+    any& operator=(const U& other)
+    {
+        _boost_type_erasure_resolve_assign(other);
+        return *this;
+    }
+
+private:
+
+    /** INTERNAL ONLY */
+    void _boost_type_erasure_swap(any& other)
+    {
+        ::std::swap(data, other.data);
+        ::std::swap(table, other.table);
+    }
+    /** INTERNAL ONLY */
+    template<class Other>
+    void _boost_type_erasure_resolve_assign(Other& other)
+    {
+        _boost_type_erasure_assign_impl(
+            other,
+            false? this->_boost_type_erasure_deduce_assign(
+                ::boost::type_erasure::detail::make_fallback(
+                    other,
+                    ::boost::mpl::bool_<
+                        sizeof(
+                            ::boost::type_erasure::detail::check_overload(
+                                ::boost::declval<any&>().
+                                    _boost_type_erasure_deduce_assign(other)
+                            )
+                        ) == sizeof(::boost::type_erasure::detail::yes)
+                    >()
+                )
+            ) : 0,
+            ::boost::type_erasure::is_relaxed<Concept>()
+        );
+    }
+    /** INTERNAL ONLY */
+    template<class Other, class U>
+    void _boost_type_erasure_assign_impl(
+        Other& other,
+        const assignable<T, U>*,
+        ::boost::mpl::false_)
     {
         ::boost::type_erasure::call(assignable<T, U>(), *this, other);
-        return *this;
     }
-private:
+    /** INTERNAL ONLY */
+    template<class Other, class U>
+    void _boost_type_erasure_assign_impl(
+        Other& other,
+        const assignable<T, U>*,
+        ::boost::mpl::true_)
+    {
+        if(::boost::type_erasure::check_match(assignable<T, U>(), *this, other)) {
+            ::boost::type_erasure::unchecked_call(assignable<T, U>(), *this, other);
+        } else {
+            any temp(other);
+            _boost_type_erasure_swap(temp);
+        }
+    }
+    /** INTERNAL ONLY */
+    template<class Other>
+    void _boost_type_erasure_assign_impl(
+        Other& other,
+        const void*,
+        ::boost::mpl::true_)
+    {
+        any temp(other);
+        _boost_type_erasure_swap(temp);
+    }
+
     friend struct ::boost::type_erasure::detail::access;
     ::boost::type_erasure::detail::storage data;
     table_type table;
@@ -1214,7 +1328,45 @@ public:
       : data(::boost::type_erasure::detail::access::data(other)),
         table(binding_arg)
     {}
+    
+    
+    /**
+     * Assigns to an @ref any.
+     *
+     * \pre @ref relaxed_match is in @c Concept.
+     *
+     * \throws @c Nothing.
+     */
+    any& operator=(const any& other)
+    {
+        BOOST_MPL_ASSERT((::boost::type_erasure::is_relaxed<Concept>));
+        any temp(other);
+        _boost_type_erasure_swap(temp);
+        return *this;
+    }
+    /**
+     * Assigns to an @ref any.
+     *
+     * \pre @ref relaxed_match is in @c Concept.
+     *
+     * \throws @c std::bad_alloc.  Provides the strong exception guarantee.
+     */
+    template<class U>
+    any& operator=(const U& other)
+    {
+        BOOST_MPL_ASSERT((::boost::type_erasure::is_relaxed<Concept>));
+        any temp(other);
+        _boost_type_erasure_swap(temp);
+        return *this;
+    }
+
 private:
+    /** INTERNAL ONLY */
+    void _boost_type_erasure_swap(any& other)
+    {
+        ::std::swap(data, other.data);
+        ::std::swap(table, other.table);
+    }
     friend struct ::boost::type_erasure::detail::access;
     ::boost::type_erasure::detail::storage data;
     table_type table;

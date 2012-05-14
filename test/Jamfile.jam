@@ -37,6 +37,9 @@ run test_same_type.cpp /boost//unit_test_framework ;
 compile-fail fail_binding_convert_no_mapping.cpp ;
 compile-fail fail_increment_discard_const.cpp ;
 
+compile-fail fail_ref_assign.cpp ;
+compile-fail fail_cref_assign.cpp ;
+
 compile-fail fail_ref_discard_const.cpp ;
 compile-fail fail_ref_discard_const_convert.cpp ;
 compile-fail fail_ref_discard_const_convert_ref.cpp ;

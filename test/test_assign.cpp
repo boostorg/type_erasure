@@ -151,3 +151,47 @@ BOOST_AUTO_TEST_CASE(test_relaxed_no_assign_int)
     x = 2;
     BOOST_CHECK_EQUAL(any_cast<int>(x), 2);
 }
+
+BOOST_AUTO_TEST_CASE(test_basic_ref)
+{
+    typedef ::boost::mpl::vector<common<>, assignable<> > test_concept;
+    int i = 1;
+    any<test_concept, _self&> x(i);
+    any<test_concept> y(2);
+    x = y;
+    BOOST_CHECK_EQUAL(i, 2);
+}
+
+BOOST_AUTO_TEST_CASE(test_basic_relaxed_ref)
+{
+    typedef ::boost::mpl::vector<common<>, assignable<>, relaxed_match > test_concept;
+    int i = 1;
+    any<test_concept, _self&> x(i);
+    any<test_concept> y(2);
+    x = y;
+    BOOST_CHECK_EQUAL(i, 2);
+}
+
+BOOST_AUTO_TEST_CASE(test_relaxed_no_assign_ref)
+{
+    typedef ::boost::mpl::vector<
+        common<>,
+        relaxed_match
+    > test_concept;
+    int i = 1;
+    any<test_concept, _self&> x(i);
+    any<test_concept> y(2);
+    x = y;
+    BOOST_CHECK_EQUAL(i, 1);
+    BOOST_CHECK_EQUAL(any_cast<int*>(&x), any_cast<int*>(&y));
+}
+
+BOOST_AUTO_TEST_CASE(test_dynamic_fallback_ref)
+{
+    typedef ::boost::mpl::vector<common<>, assignable<>, relaxed_match> test_concept;
+    int i = 1;
+    any<test_concept, _self&> x(i);
+    any<test_concept> y(2.0);
+    x = y;
+    BOOST_CHECK_EQUAL(any_cast<double>(x), 2.0);
+}
