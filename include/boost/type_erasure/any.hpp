@@ -570,9 +570,7 @@ public:
 
 #else
 
-#define BOOST_PP_FILENAME_1 <boost/type_erasure/detail/construct.hpp>
-#define BOOST_PP_ITERATION_LIMITS (1, BOOST_TYPE_ERASURE_MAX_ARITY)
-#include BOOST_PP_ITERATE()
+#include <boost/type_erasure/detail/construct.hpp>
 
 #endif
 
