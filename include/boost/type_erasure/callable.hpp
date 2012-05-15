@@ -54,7 +54,8 @@ struct result_of_callable;
 
 }
 
-#if !defined(BOOST_NO_VARIADIC_TEMPLATES)
+#if defined(BOOST_TYPE_ERASURE_DOXYGEN)
+#elif !defined(BOOST_NO_VARIADIC_TEMPLATES)
 
 template<class R, class... T, class F>
 struct callable<R(T...), F>

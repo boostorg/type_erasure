@@ -1335,7 +1335,7 @@ public:
      *
      * \pre @ref relaxed_match is in @c Concept.
      *
-     * \throws @c Nothing.
+     * \throws Nothing.
      */
     any& operator=(const any& other)
     {
@@ -1349,7 +1349,7 @@ public:
      *
      * \pre @ref relaxed_match is in @c Concept.
      *
-     * \throws @c std::bad_alloc.  Provides the strong exception guarantee.
+     * \throws std::bad_alloc.  Provides the strong exception guarantee.
      */
     template<class U>
     any& operator=(const U& other)
