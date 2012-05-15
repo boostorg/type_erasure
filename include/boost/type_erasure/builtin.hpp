@@ -48,7 +48,7 @@ struct destructible
  *
  * \note This concept is defined to match C++ 2003,
  * [lib.copyconstructible].  It is not equivalent to
- * the concept of the same name in C++0x.
+ * the concept of the same name in C++11.
  */
 template<class T = _self>
 struct copy_constructible :
@@ -78,7 +78,7 @@ struct concept_interface<assignable<T, U>, Base, T> : Base
 
 /**
  * Enables runtime type information.  This is required
- * to use @ref any_cast or @ref typeid_of.
+ * if you want to use @ref any_cast or @ref typeid_of.
  */
 template<class T = _self>
 struct typeid_

@@ -18,6 +18,9 @@
 
 #ifdef BOOST_TYPE_ERASURE_DOXYGEN
 
+namespace boost {
+namespace type_erasure {
+
 /**
  * @ref tuple is a Boost.Fusion Random Access Sequence containing
  * @ref any "anys". Concept is interpreted in the same way as for
@@ -40,6 +43,9 @@ template<int N, class Concept, class... T>
 any<Concept, TN>& get(tuple<Concept, T...>& arg);
 template<int N, class Concept, class... T>
 const any<Concept, TN>& get(const tuple<Concept, T...>& arg);
+
+}
+}
 
 #elif !defined(BOOST_NO_VARIADIC_TEMPLATES) && !defined(BOOST_NO_RVALUE_REFERENCES)
 

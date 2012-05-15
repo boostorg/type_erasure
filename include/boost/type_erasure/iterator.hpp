@@ -63,15 +63,42 @@ struct iterator;
 template<
     class Traversal,
     class T = _self,
-    class Reference = ::boost::use_default,
-    class DifferenceType = ::std::ptrdiff_t,
-    class ValueType = typename deduced<iterator_value_type<T> >::type
+    class Reference = boost::use_default,
+    class DifferenceType = std::ptrdiff_t
 >
 struct iterator
 {
     typedef ValueType value_type;
     typedef Reference reference;
     typedef DifferenceType difference_type;
+};
+
+template<
+    class T = _self,
+    class Reference = boost::use_default,
+    class DifferenceType = std::ptrdiff_t
+>
+struct forward_iterator :
+    iterator<boost::forward_traversal_tag, T, Reference, DifferenceType>
+{};
+
+template<
+    class T = _self,
+    class Reference = boost::use_default,
+    class DifferenceType = std::ptrdiff_t
+>
+struct bidirectional_iterator :
+    iterator<boost::bidirectional_traversal_tag, T, Reference, DifferenceType>
+{};
+
+template<
+    class T = _self,
+    class Reference = boost::use_default,
+    class DifferenceType = std::ptrdiff_t
+>
+struct random_access_iterator :
+    iterator<boost::random_access_traversal_tag, T, Reference, DifferenceType>
+{
 };
 
 #else
@@ -155,8 +182,6 @@ struct iterator< ::boost::random_access_traversal_tag, T, Reference, DifferenceT
     typedef DifferenceType difference_type;
 };
 
-#endif
-
 template<
     class T = _self,
     class Reference = ::boost::use_default,
@@ -187,6 +212,8 @@ struct random_access_iterator :
     iterator< ::boost::random_access_traversal_tag, T, Reference, DifferenceType, ValueType>
 {
 };
+
+#endif
 
 /// \cond show_operators
 

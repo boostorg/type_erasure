@@ -16,8 +16,8 @@ namespace type_erasure {
 
 /**
  * Placeholders are used heavily throughout the library.
- * Every placeholder must derive from @ref placeholder
- * using CRTP.  The library provides a number of placeholders,
+ * Every placeholder must derive from @ref placeholder.
+ * The library provides a number of placeholders,
  * out of the box, but you are welcome to define your own,
  * if you want more descriptive names.  The placeholder
  * @ref _self is special in that it is used as the default

@@ -8,8 +8,6 @@
 //
 // $Id$
 
-// NO #include GUARD.
-
 #if !defined(BOOST_PP_IS_ITERATING)
 
 #ifndef BOOST_TYPE_ERASURE_DETAIL_CONSTRUCT_HPP_INCLUDED
