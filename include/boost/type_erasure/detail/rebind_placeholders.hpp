@@ -41,6 +41,12 @@ struct rebind_placeholders
     typedef void type;
 };
 
+template<class T>
+struct identity
+{
+    typedef T type;
+};
+
 template<class T, class Bindings>
 struct rebind_placeholders_in_argument
 {
@@ -51,7 +57,7 @@ struct rebind_placeholders_in_argument
     typedef typename ::boost::mpl::eval_if<
         ::boost::type_erasure::is_placeholder<T>,
         ::boost::mpl::at<Bindings, T>,
-        ::boost::mpl::identity<T>
+        ::boost::type_erasure::detail::identity<T>
     >::type type;
 };
 

@@ -1,6 +1,6 @@
 // Boost.TypeErasure library
 //
-// Copyright 2011 Steven Watanabe
+// Copyright 2011-2012 Steven Watanabe
 //
 // Distributed under the Boost Software License Version 1.0. (See
 // accompanying file LICENSE_1_0.txt or copy at
@@ -12,6 +12,289 @@
 
 #ifndef BOOST_TYPE_ERASURE_TUPLE_HPP_INCLUDED
 #define BOOST_TYPE_ERASURE_TUPLE_HPP_INCLUDED
+
+#include <boost/config.hpp>
+
+
+#ifdef BOOST_TYPE_ERASURE_DOXYGEN
+
+/**
+ * @ref tuple is a Boost.Fusion Random Access Sequence containing
+ * @ref any "anys". Concept is interpreted in the same way as for
+ * @ref any.  The remaining arguments must be (possibly const
+ * and/or reference qualified) placeholders.
+ */
+template<class Concept, class... T>
+class tuple
+{
+public:
+    /**
+     * Constructs a tuple.  Each element of @c args will
+     * be used to initialize the corresponding member.
+     */
+    template<class... U>
+    explicit tuple(U&&... args);
+};
+
+template<int N, class Concept, class... T>
+any<Concept, TN>& get(tuple<Concept, T...>& arg);
+template<int N, class Concept, class... T>
+const any<Concept, TN>& get(const tuple<Concept, T...>& arg);
+
+#elif !defined(BOOST_NO_VARIADIC_TEMPLATES) && !defined(BOOST_NO_RVALUE_REFERENCES)
+
+#include <boost/mpl/int.hpp>
+#include <boost/mpl/bool.hpp>
+#include <boost/mpl/map.hpp>
+#include <boost/mpl/insert.hpp>
+#include <boost/type_traits/remove_reference.hpp>
+#include <boost/type_traits/remove_const.hpp>
+#include <boost/fusion/include/category_of.hpp>
+#include <boost/fusion/include/iterator_facade.hpp>
+#include <boost/fusion/include/sequence_facade.hpp>
+#include <boost/type_erasure/any.hpp>
+#include <boost/type_erasure/static_binding.hpp>
+#include <boost/type_erasure/config.hpp>
+
+namespace boost {
+namespace type_erasure {
+
+template<class Concept, class... T>
+struct cons;
+
+template<class Concept>
+struct cons<Concept>
+{
+    template<class Binding>
+    cons(const Binding&) {}
+};
+
+template<class Concept, class T0, class... T>
+struct cons<Concept, T0, T...>
+{
+    typedef any<Concept, T0> value_type;
+    typedef cons<Concept, T...> rest_type;
+    template<class Binding, class U0, class... U>
+    cons(const Binding& b, U0&& u0, U&&... u)
+      : value(std::forward<U0>(u0), b),
+        rest(b, std::forward<U>(u)...)
+    {}
+    any<Concept, T0> value;
+    cons<Concept, T...> rest;
+};
+
+namespace detail {
+
+template<int N, class Cons>
+struct cons_advance
+{
+    typedef typename cons_advance<N-1, Cons>::type::rest_type type;
+    static const type& call(const Cons& c)
+    {
+        return cons_advance<N-1, Cons>::call(c).rest;
+    }
+};
+
+template<class Cons>
+struct cons_advance<0, Cons>
+{
+    typedef Cons type;
+    static const type& call(const Cons& c)
+    {
+        return c;
+    }
+};
+
+template<class... T>
+struct make_map;
+
+template<class T0, class... T>
+struct make_map<T0, T...>
+{
+    typedef typename ::boost::mpl::insert<
+        typename ::boost::type_erasure::detail::make_map<T...>::type,
+        T0
+    >::type type;
+};
+
+template<>
+struct make_map<>
+{
+    typedef ::boost::mpl::map0<> type;
+};
+
+}
+
+/** INTERNAL ONLY */
+template<class Tuple, int N>
+class tuple_iterator :
+    public ::boost::fusion::iterator_facade<
+        tuple_iterator<Tuple, N>,
+        ::boost::fusion::random_access_traversal_tag
+    >
+{
+public:
+    typedef ::boost::mpl::int_<N> index;
+    explicit tuple_iterator(Tuple& t_arg) : t(&t_arg) {}
+    template<class It>
+    struct value_of
+    {
+        typedef typename Tuple::template value_at<Tuple, mpl::int_<N> >::type type;
+    };
+    template<class It>
+    struct deref
+    {
+        typedef typename Tuple::template at<Tuple, mpl::int_<N> >::type type;
+        static type call(It it)
+        {
+            return Tuple::template at<Tuple, mpl::int_<N> >::call(*it.t);
+        }
+    };
+    template<class It, class M>
+    struct advance
+    {
+        typedef tuple_iterator<Tuple, (It::index::value+M::value)> type;
+        static type call(It it) { return type(*it.t); }
+    };
+    template<class It>
+    struct next : advance<It, ::boost::mpl::int_<1> > {};
+    template<class It>
+    struct prior : advance<It, ::boost::mpl::int_<-1> > {};
+    template<class It1, class It2>
+    struct distance
+    {
+        typedef typename ::boost::mpl::minus<
+            typename It2::index,
+            typename It1::index
+        >::type type;
+        static type call(It1, It2) { return type(); }
+    };
+private:
+    Tuple* t;
+};
+
+template<class Concept, class... T>
+class tuple :
+    public ::boost::fusion::sequence_facade<
+        ::boost::type_erasure::tuple<Concept, T...>,
+        ::boost::fusion::forward_traversal_tag
+    >
+{
+public:
+    template<class... U>
+    explicit tuple(U&&... args)
+      : impl(
+            ::boost::type_erasure::make_binding<
+                typename ::boost::type_erasure::detail::make_map<
+                    ::boost::mpl::pair<
+                        typename ::boost::remove_const<
+                            typename ::boost::remove_reference<T>::type
+                        >::type,
+                        typename ::boost::remove_const<
+                            typename ::boost::remove_reference<U>::type
+                        >::type
+                    >...
+                >::type
+            >(),
+            std::forward<U>(args)...)
+    {}
+
+    template<class Seq>
+    struct begin
+    {
+        typedef ::boost::type_erasure::tuple_iterator<
+            Seq,
+            0
+        > type;
+        static type call(Seq& seq) { return type(seq); }
+    };
+    template<class Seq>
+    struct end
+    {
+        typedef ::boost::type_erasure::tuple_iterator<
+            Seq,
+            sizeof...(T)
+        > type;
+        static type call(Seq& seq) { return type(seq); }
+    };
+    template<class Seq>
+    struct size
+    {
+        typedef ::boost::mpl::int_<sizeof...(T)> type;
+        static type call(Seq& seq) { return type(); }
+    };
+    template<class Seq>
+    struct empty
+    {
+        typedef ::boost::mpl::bool_<sizeof...(T) == 0> type;
+        static type call(Seq& seq) { return type(); }
+    };
+    template<class Seq, class N>
+    struct at
+    {
+        typedef typename ::boost::type_erasure::detail::cons_advance<
+            N::value,
+            ::boost::type_erasure::cons<Concept, T...>
+        >::type::value_type value_type;
+        typedef typename ::boost::mpl::if_< ::boost::is_const<Seq>,
+            const value_type&,
+            value_type&
+        >::type type;
+        static type call(Seq& seq)
+        {
+            return const_cast<type>(
+                ::boost::type_erasure::detail::cons_advance<
+                    N::value,
+                    ::boost::type_erasure::cons<Concept, T...>
+                >::call(seq.impl).value
+            );
+        }
+    };
+    template<class Seq, class N>
+    struct value_at
+    {
+        typedef typename ::boost::type_erasure::detail::cons_advance<
+            N::value,
+            ::boost::type_erasure::cons<Concept, T...>
+        >::type::value_type value_type;
+    };
+    ::boost::type_erasure::cons<Concept, T...> impl;
+};
+
+template<int N, class Concept, class... T>
+typename ::boost::type_erasure::detail::cons_advance<
+    N,
+    ::boost::type_erasure::cons<Concept, T...>
+>::type::value_type& get(::boost::type_erasure::tuple<Concept, T...>& t)
+{
+    return const_cast<
+        typename ::boost::type_erasure::detail::cons_advance<
+            N,
+            ::boost::type_erasure::cons<Concept, T...>
+        >::type::value_type&
+    >(
+        ::boost::type_erasure::detail::cons_advance<N,
+            ::boost::type_erasure::cons<Concept, T...>
+        >::call(t.impl).value
+    );
+}
+
+template<int N, class Concept, class... T>
+const typename ::boost::type_erasure::detail::cons_advance<
+    N,
+    ::boost::type_erasure::cons<Concept, T...>
+>::type::value_type& get(const ::boost::type_erasure::tuple<Concept, T...>& t)
+{
+    return ::boost::type_erasure::detail::cons_advance<
+        N,
+        ::boost::type_erasure::cons<Concept, T...>
+    >::call(t.impl).value;
+}
+
+}
+}
+
+#else
 
 #include <boost/mpl/int.hpp>
 #include <boost/mpl/minus.hpp>
@@ -159,33 +442,6 @@ struct tuple_base :
     };
 };
 
-#ifdef BOOST_TYPE_ERASURE_DOXYGEN
-
-/**
- * @ref tuple is a Boost.Fusion Random Access Sequence containing
- * @ref any "anys". Concept is interpreted in the same way as for
- * @ref any.  The remaining arguments must be (possibly const
- * and/or reference qualified) placeholders.
- */
-template<class Concept, class... T>
-class tuple
-{
-public:
-    /**
-     * Constructs a tuple.  Each element of @c args will
-     * be used to initialize the corresponding member.
-     */
-    template<class... U>
-    explicit tuple(U&&... args);
-};
-
-template<int N, class Concept, class... T>
-any<Concept, TN>& get(tuple<Concept, T...>& arg);
-template<int N, class Concept, class... T>
-const any<Concept, TN>& get(const tuple<Concept, T...>& arg);
-
-#else
-
 template<class Concept,
     BOOST_PP_ENUM_PARAMS_WITH_A_DEFAULT(
         BOOST_TYPE_ERASURE_MAX_TUPLE_SIZE, class T, ::boost::type_erasure::na)>
@@ -242,8 +498,6 @@ typename detail::get_impl<
         >
     >::call(arg);
 }
-
-#endif
     
 /** INTERNAL ONLY */
 #define BOOST_PP_FILENAME_1 <boost/type_erasure/tuple.hpp>
@@ -253,6 +507,8 @@ typename detail::get_impl<
 
 }
 }
+
+#endif
 
 #endif
 
