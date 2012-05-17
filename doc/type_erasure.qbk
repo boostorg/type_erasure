@@ -22,6 +22,7 @@
 [def __typeid_ [classref boost::type_erasure::typeid_ typeid_]]
 [def __relaxed_match [classref boost::type_erasure::relaxed_match relaxed_match]]
 [def __binding [classref boost::type_erasure::binding binding]]
+[def __static_binding [classref boost::type_erasure::static_binding static_binding]]
 [def __placeholder [classref boost::type_erasure::placeholder placeholder]]
 [def __call [funcref boost::type_erasure::call call]]
 [def __deduced [classref boost::type_erasure::deduced deduced]]
@@ -156,6 +157,80 @@ assume that a few using directives are in place.
 
 [endsect]
 
+[section:conceptdef Concept Definitions]
+
+A placeholder is any type that inherits
+publicly from __placeholder.
+
+There are three kinds of concepts.
+
+# The library defines a number of [link boost_typeerasure.predef predefined concepts].
+# Any MPL Forward Sequence whose elements are
+  concepts is also a concept.
+# Users can define their own primitive concepts.
+
+Each primitive concept defines a single operation.
+A primitive concept must be a specialization of a
+class template, with a static member function
+called apply.
+
+The template parameters of the concept
+may involve placeholders.  The following are
+considered.
+
+* Each template argument may be a cv and/or reference
+  qualified placeholder type.
+* If a template argument is a function type, its
+  arguments and return type may be cv/reference
+  qualified placeholders.
+
+Any other placeholders are ignored.
+
+When a concept is instantiated with a specific
+set of type bindings, each placeholder is bound
+to a cv-unqualified non-reference type.  After
+replacing each placeholder in the template argument
+list with the type that it binds to, the following
+must hold.
+
+* The number of arguments of apply in the
+  bound concept must be the same as the number
+  of arguments in the unbound concept.
+* The arguments and return type of apply in the
+  bound concept can be derived from the corresponding
+  arguments and the return type in the unbound concept
+  as follows: If the argument in the unbound concept is a
+  placeholder with optional cv and reference
+  qualifiers, then the argument in the bound
+  concept can be found by replacing the placeholder.
+  Otherwise, the argument in the unbound concept
+  must be the same as the argument in the bound concept.
+
+[endsect]
+
+[section:reserved Reserved Identifiers]
+
+The library reserves all names begining with
+`_boost_type_erasure` for use as members.  No
+class shall contain such a member except
+those defined by the library.
+
+The library reserves all identifiers begining
+with `BOOST_TYPE_ERASURE` for any use.
+
+FIXME: this is too broad.
+The library reserves all identifiers that
+are either a single upper case letter,
+a single upper case letter followed by
+a sequence of digits, in CamelCase, or
+underscore_separated for use in namespace
+`boost::type_erasure`. Such identifiers may
+not be defined as macros.  (Macros defined
+in system headers that I know about are
+excepted for the sake of pragmatism.).
+
+[endsect]
+
 [section:predef Predefined Concepts]
 
 In the following tables, `T` and `U` are the types that the operation
@@ -246,6 +321,183 @@ when capturing by value as well.
 The members of __any can be customized.  By using
 free functions, we guarantee that we don't interfere
 with anything that a user might want.
+[endsect]
+
+[endsect]
+
+[section:design Design Notes]
+
+[section:concepts Concept Interfaces]
+
+When designing the concept system, I had a couple
+of goals.  First of all, the basic definitions
+need to be simple.  Second, concepts need to be
+composable.  Making concepts composable is fairly
+easy by recursively expanding mpl sequences.
+The first goal is much harder.  In earlier
+versions of TypeErasure and in most similar libraries
+such as DynamicAny and Adobe::Poly, the base
+definitions generally resemble the following
+
+  struct incrementable_interface {
+    virtual void increment() = 0;
+  };
+  template<class T>
+  struct incrementable_implementation : incrementable_interface {
+    virtual void increment() { ++x; }
+    T x;
+  };
+
+  template<class Derived>
+  struct incrementable_mixin {
+    Derived& operater++();
+  };
+
+Note that we require three definitions, the
+virtual interface, the virtual implementation,
+and the user level interface.  In the immediate
+predecessor of this library, the first two
+were combined into a single template
+
+  template<class T>
+  struct incrementable :
+    primitive_concept<incrementable<T>, void(T&) > {
+    static void apply(T& t) { ++t; }
+  };
+
+Here, the `primitive_concept` base specifies the
+function signature, serving the purpose of the
+virtual interface.  We now have only one class
+here, but it's still excessively complicated.
+To get rid of this we can note that the signature
+must be `remove_pointer<decltype(&incrementable<T>::apply)>::type`
+and can therefore be deduced automatically.
+
+[endsect]
+
+[section:constructors Constructors]
+
+The constructors of __any have to serve three
+different purposes.  First, we have constructors
+that capture the type passed.  This is what
+happens when constructing an __any from an
+`int` for example.  The second kind of constructor
+dispatches to a constructor of the contained
+type using an existing set of bindings.  This
+is what happens for the copy constructor.  The
+last kind of constructor "upcasts" from one
+concept to another more general more general
+concept.  For example, `any< mpl::vector<copy_constructible<>, incrementable<> > >`
+should be convertible to `any<copy_constructible<> >`.
+We want to define these three kinds of constructors
+in an unambiguous way.  For short, we'll refer
+to these three kinds of constructors an binding
+constructors, dispatched constructors, and
+converting constructors.
+
+# binding constructors take an argument
+  which is the object to capture and
+  an optional argument specifying any
+  bindings that can't be deduced.
+# dispatched constructors take the
+  arguments of the underlying constructor
+  and an optional argument specifing
+  the bindings to use.  (This extra
+  argument is needed when the bindings
+  can't be deduced because none of
+  the arguments is an any.)
+# converting constructors take an
+  argument which must be an __any
+  and an optional argument indicating
+  how placeholders should be substituted.
+
+Now, where are the ambiguities?
+
+* A single argument which is not an __any
+  can only match a binding constructor.
+  It cannot match a dispatching constructor
+  because we don't have anything to dispatch on.
+  It can't match a converting constructor
+  because it isn't an __any.
+* A single argument which is an __any can
+  match all three. We'll rule out binding
+  constructors by arbitrarily deciding that
+  an __any can never contain another __any.
+  This makes our job a lot easier.  This
+  leaves us with dispatched constructors
+  vs. converting constructors.  If the
+  Concept of the argument is different
+  from the Concept of the type being
+  constructed, we have to have a converting
+  constructor.  If the concepts are the
+  same and the placeholders are the same,
+  then we have the copy constructor, and
+  there is no difference between the
+  dispatched constructor and the converting
+  constructor.  If the placeholders are
+  different, then we call the dispatched
+  constructor.  In theory it's possible
+  that this is intended to be converting constructor,
+  but this is rare.
+* For two arguments, the converting and binding
+  constructors take one argument that is either
+  a __binding or a __static_binding.  They
+  can be distinguised by whether the other
+  argument is an __any or not.
+
+We'll add one more requirement to avoid
+going crazy.  No argument of a constructor
+to __any shall be __binding or __static_binding,
+except for the ones that are explicitly
+allowed.
+
+Now, we can at least allow users to explicily
+avoid any ambiguity with the following rules.
+
+# If there are exactly two arguments and the
+  first argument is neither an __any nor a specialization
+  of __binding or __static_binding, and the second
+  argement is a specialization of __binding
+  or __static_binding, then this is a binding
+  constructor.
+# If the first argument is a specialization
+  of __binding, then this is a dispatching
+  constructor.
+# If there are exactly two arguments and the
+  first argument is an __any and the second
+  argument is a specialization of __binding
+  or __static_binding, the constructor is
+  a converting constructor.
+
+These are not ambiguous and any constructor
+call can be converted to one of these forms.
+Note in particular that the order of the
+arguments is important.  If the *first*
+argument is a __binding, then we have a
+dispatched constructor.  If the *second*
+argument is a __binding or a __static_binding,
+then we have either a binding constructor or
+a converting constructor.
+
+[endsect]
+
+[section:binding Binding]
+
+The easiest implementation of manual type erasure
+uses virtual functions.  However, virtual functions
+are somewhat limited.  We get a lot more flexibility
+by using explicit tables of function pointers.
+
+* A table can be constructed dynamically.  This
+  allows us to implement conversions by creating
+  a subset of the table.
+* A table is easy to share between multiple types.
+  This makes it easier to implement multi-type concepts
+  and __any references.
+* A table can be passed around without a corresponding
+  object.  This allows us to implement captured constructor
+  calls that don't take an __any argument.
+
 [endsect]
 
 [endsect]
