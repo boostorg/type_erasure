@@ -39,7 +39,7 @@ void multi1() {
     any_type z(x + y);
     std::cout << z << std::endl; // prints 17
     /*`
-        The types of the arguments must match or the
+        The underlying types of the arguments of `+` must match or the
         behavior is undefined.
     */
     //]

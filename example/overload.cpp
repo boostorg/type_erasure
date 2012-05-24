@@ -80,7 +80,10 @@ struct concept_interface< ::foo<T, U>, Base, T, typename Base::_fun_defined>
 
 /*`
     This uses SFINAE to detect whether a using declaration is
-    needed.  Another solution to the problem that I've used
+    needed.  Note that the fourth argument of __concept_interface
+    is a dummy parameter which is always void and is
+    intended to be used for SFINAE.
+    Another solution to the problem that I've used
     in the past is to inject a dummy declaration of `fun`
     and always put in a using declaration.  This is an
     inferior solution for several reasons.  It requires an

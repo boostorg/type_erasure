@@ -35,6 +35,15 @@ struct push_back
 /*`
     This works, but we'd really like to call `c.push_back(10)`.
     We can add members to __any by specializing __concept_interface.
+    The first argument is `push_back`, since we want to inject a member
+    into every __any that uses the `push_back` concept.  The second argument,
+    Base, is used by the library to chain multiple uses of __concept_interface
+    together.  We have to inherit from it publicly.  Other than
+    that we can ignore it.  The third argument is the placeholder
+    that represents this any.  If someone used `push_back<_c, _b>`,
+    we only want to insert a `push_back` member in the container,
+    not the value type.  Thus, the third argument is the container
+    placeholder.
 */
 namespace boost {
 namespace type_erasure {

@@ -327,6 +327,12 @@ with anything that a user might want.
 
 [section:design Design Notes]
 
+This section is purely for informational
+purposes.  You don't need to read it to
+understand how to use the library.  Here,
+I try to explain how the library evolved
+and why I chose the current interfaces.
+
 [section:concepts Concept Interfaces]
 
 When designing the concept system, I had a couple
@@ -386,7 +392,7 @@ dispatches to a constructor of the contained
 type using an existing set of bindings.  This
 is what happens for the copy constructor.  The
 last kind of constructor "upcasts" from one
-concept to another more general more general
+concept to another more general
 concept.  For example, `any< mpl::vector<copy_constructible<>, incrementable<> > >`
 should be convertible to `any<copy_constructible<> >`.
 We want to define these three kinds of constructors
@@ -500,6 +506,19 @@ by using explicit tables of function pointers.
 
 [endsect]
 
+[section:placeholder Placeholder Names]
+
+An earlier version of the library used the names `_1`, `_2`, etc.
+instead of `_a`, `_b`, etc.  This caused a certain amount
+of confusion because the numbered placeholders are
+already used by several other libraries including
+Boost/Std Bind, Boost.Phoenix, and Boost.MPL.  I
+eventually decided that since the placeholders represented
+named parameters instead of positional parameters,
+letters were more appropriate than numbers.
+
+[endsect]
+
 [endsect]
 
 [section:feedback Feedback Wanted]
@@ -542,7 +561,7 @@ greatly appreciated.
   happy about having it in `Concept` either, but
   I'm not sure where else it could go.  It's presence
   can affect the contents of the vtable, so if it
-  we're a separate template argument, it would have
+  were a separate template argument, it would have
   to be passed to __binding as well.  It would generally
   add complication.
 
