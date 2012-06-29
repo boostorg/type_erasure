@@ -23,11 +23,17 @@ void references1() {
     //[references1
     /*`
         To capture by reference, we simply add a reference
-        to the placeholder.
+        to the __placeholder.
     */
     int i;
     any<typeid_<>, _self&> x(i);
     any_cast<int&>(x) = 5; // now i is 5
+    /*`
+        [note `_self` is the default __placeholder, so it is
+        easiest to use `_self&`.  We could use another
+        __placeholder instead. __any`<`__typeid`<_a>, _a&>` has
+        exactly the same behavior.]
+    */
     //]
 }
 

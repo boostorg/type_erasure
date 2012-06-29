@@ -24,6 +24,10 @@ void basic1() {
         The main class in the library is __any.  We can just pass
         it an MPL sequence containing all the concepts that we
         wish to use.
+
+        [note The MPL sequence combines multiple concepts.
+        In the rare case when we only want one concept, it doesn't
+        need to be wrapped in an MPL sequence.]
     */
     any<mpl::vector<copy_constructible<>, typeid_<> > > x(10);
     int i = any_cast<int>(x); // i == 10

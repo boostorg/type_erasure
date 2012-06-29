@@ -48,8 +48,8 @@ void multi1() {
 void multi2() {
     //[multi2
     /*`
-        The operands do not all have to be the same type.
-        We can capture the relationships among several types.
+        __addable`<>` requires the types of the arguments to be
+        the same.  We can also capture relationships among several types.
         To do this we'll need to identify each type with a
         __placeholder.  Also, we can no longer capture the
         variables independently, since they are connected,
@@ -67,6 +67,12 @@ void multi2() {
     tuple<requirements, _a, _b> t(&array[0], 2);
     any<requirements, _a> x(get<0>(t) + get<1>(t));
     // x now holds array + 2
+    /*`
+        Here the arguments of `+` are no longer the same.
+        What we require is that the dynamic bindings of
+        the two arguments to `+` must map the placeholders
+        `_a` and `_b` to the same types.
+     */
     //]
 }
 
