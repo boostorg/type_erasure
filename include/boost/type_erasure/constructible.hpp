@@ -29,6 +29,19 @@ namespace type_erasure {
 template<class Sig>
 struct constructible;
 
+namespace detail {
+    
+template<class Sig>
+struct null_construct;
+
+template<class C>
+struct get_null_vtable_entry;
+
+template<class C, class Sig>
+struct vtable_adapter;
+
+};
+
 #ifdef BOOST_TYPE_ERASURE_DOXYGEN
 
 /**
@@ -73,20 +86,29 @@ struct concept_interface<
     }
 };
 
-#else
-
 namespace detail {
-    
-template<class Sig>
-struct null_construct;
 
-template<class C>
-struct get_null_vtable_entry;
-
-template<class C, class Sig>
-struct vtable_adapter;
-
+template<class... T>
+struct null_construct<void(T...)>
+{
+    static ::boost::type_erasure::detail::storage
+    value(T...)
+    {
+        ::boost::type_erasure::detail::storage result;
+        result.data = 0;
+        return result;
+    }
 };
+
+template<class T, class R, class... U>
+struct get_null_vtable_entry<vtable_adapter<constructible<T(const T&)>, R(U...)> >
+{
+    typedef null_construct<void(U...)> type;
+};
+
+}
+
+#else
 
 #define BOOST_PP_FILENAME_1 <boost/type_erasure/constructible.hpp>
 #define BOOST_PP_ITERATION_LIMITS (0, BOOST_TYPE_ERASURE_MAX_ARITY)
