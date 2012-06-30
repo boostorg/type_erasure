@@ -152,11 +152,11 @@ struct make_vtable_impl<stored_arg_pack<T...> >
 template<class Table, class... T>
 struct vtable_init
 {
-    static constexpr Table value;
+    static constexpr Table value = Table(T::value...);
 };
 
 template<class Table, class... T>
-constexpr Table vtable_init<Table, T...>::value(T::value...);
+constexpr Table vtable_init<Table, T...>::value;
 
 template<class Table, class... T>
 struct make_vtable_init_impl<Table, stored_arg_pack<T...> >
