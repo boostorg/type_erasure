@@ -24,6 +24,7 @@
 #include <boost/type_traits/is_same.hpp>
 #include <boost/type_erasure/static_binding.hpp>
 #include <boost/type_erasure/detail/adapt_to_vtable.hpp>
+#include <boost/type_erasure/detail/null.hpp>
 #include <boost/type_erasure/detail/rebind_placeholders.hpp>
 #include <boost/type_erasure/detail/vtable.hpp>
 #include <boost/type_erasure/detail/normalize.hpp>
@@ -71,6 +72,13 @@ class binding
         Concept
     >::type placeholder_subs;
 public:
+
+    /**
+     * \pre @ref relaxed_match must be in @c Concept.
+     *
+     * \throws Nothing.
+     */
+    binding() { BOOST_MPL_ASSERT((::boost::type_erasure::is_relaxed<Concept>)); }
     
     /**
      * \pre @c Map must be an MPL map with an entry for each placeholder
@@ -157,6 +165,17 @@ private:
     /** INTERNAL ONLY */
     struct impl_type
     {
+        impl_type() {
+            table = &::boost::type_erasure::detail::make_vtable_init<
+                typename ::boost::mpl::transform<
+                    actual_concept,
+                    ::boost::type_erasure::detail::get_null_vtable_entry<
+                        ::boost::mpl::_1
+                    >
+                >::type,
+                table_type
+            >::type::value;
+        }
         template<class Map>
         impl_type(const static_binding<Map>&)
         {

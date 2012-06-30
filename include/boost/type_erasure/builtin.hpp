@@ -92,6 +92,29 @@ struct typeid_
     }
 };
 
+namespace detail {
+
+template<class C>
+struct get_null_vtable_entry;
+
+template<class T>
+struct get_null_vtable_entry< ::boost::type_erasure::typeid_<T> >
+{
+    typedef typeid_<void> type;
+};
+
+struct null_destroy {
+    static void value(::boost::type_erasure::detail::storage&) {}
+};
+
+template<class T>
+struct get_null_vtable_entry< ::boost::type_erasure::destructible<T> >
+{
+    typedef ::boost::type_erasure::detail::null_destroy type;
+};
+
+}
+
 }
 }
 

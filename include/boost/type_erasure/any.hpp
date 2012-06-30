@@ -146,6 +146,18 @@ public:
         data(data_arg)
     {}
     /**
+     * Constructs a null @ref any.
+     *
+     * \pre @ref relaxed_match must be in @c Concept.
+     *
+     * \throws Nothing.
+     */
+    any()
+    {
+        BOOST_MPL_ASSERT((::boost::type_erasure::is_relaxed<Concept>));
+        data.data = 0;
+    }
+    /**
      * Constructs an @ref any to hold a copy of @c data.
      *
      * \param data The object to construct the @ref any from.

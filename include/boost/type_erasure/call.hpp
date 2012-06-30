@@ -100,14 +100,30 @@ T& convert_arg(T& arg, boost::mpl::false_) { return arg; }
  * Dispatches a type erased function.
  *
  * If @c binding is not specified, it will be deduced from
- * the arguments.
+ * the arguments.  Naturally this requires at least one
+ * argument to be an @ref any.
  *
- * \pre The type of every @ref any in @c args must match that
- *      specified by @c binding.
+ * @c Op must be a primitive concept which is present in
+ * @c Concept.  Its signature determines how the arguments of
+ * call are handled.  All the arguments that are placeholders
+ * in the signature are unwrapped.  The types that they hold
+ * must match the types specified by @c binding.  The other
+ * arguments will be passed through unchanged.
  *
  * \return The result of the operation.  If the
  *         result type is a placeholder, the result will be
  *         converted to the appropriate @ref any type.
+ *
+ * Example:
+ *
+ * @code
+ * typedef addable<_a, int, _b> concept;
+ * any<concept, _a> a = ...;
+ * any<concept, _b> b(call(concept(), a, 10));
+ * @endcode
+ *
+ * The signature of @ref addable is <code>_b(const _a&, const int&)</code>
+ * FIXME: This won't compile for lack of copy_constructible.
  */
 template<class Concept, class Op, class... U>
 typename ::boost::type_erasure::detail::call_impl<Sig, U..., Concept>::type

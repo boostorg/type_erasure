@@ -1,6 +1,6 @@
 // Boost.TypeErasure library
 //
-// Copyright 2011 Steven Watanabe
+// Copyright 2011-2012 Steven Watanabe
 //
 // Distributed under the Boost Software License Version 1.0. (See
 // accompanying file LICENSE_1_0.txt or copy at
@@ -13,7 +13,6 @@
 #ifndef BOOST_TYPE_ERASURE_REQUIRE_MATCH_HPP_INCLUDED
 #define BOOST_TYPE_ERASURE_REQUIRE_MATCH_HPP_INCLUDED
 
-#include <stdexcept>
 #include <boost/throw_exception.hpp>
 #include <boost/mpl/bool.hpp>
 #include <boost/mpl/and.hpp>
@@ -28,21 +27,13 @@
 #include <boost/type_erasure/detail/extract_concept.hpp>
 #include <boost/type_erasure/relaxed_match.hpp>
 #include <boost/type_erasure/check_match.hpp>
+#include <boost/type_erasure/exception.hpp>
 
 namespace boost {
 namespace type_erasure {
 
 template<class Concept>
 class binding;
-
-/**
- * Exception thrown when the arguments to a primitive concept
- * are incorrect.
- */
-struct bad_function_call : ::std::invalid_argument
-{
-    bad_function_call() : ::std::invalid_argument("bad_function_call") {}
-};
 
 #ifdef BOOST_TYPE_ERASURE_DOXYGEN
 

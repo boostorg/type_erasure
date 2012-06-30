@@ -75,6 +75,19 @@ struct concept_interface<
 
 #else
 
+namespace detail {
+    
+template<class Sig>
+struct null_construct;
+
+template<class C>
+struct get_null_vtable_entry;
+
+template<class C, class Sig>
+struct vtable_adapter;
+
+};
+
 #define BOOST_PP_FILENAME_1 <boost/type_erasure/constructible.hpp>
 #define BOOST_PP_ITERATION_LIMITS (0, BOOST_TYPE_ERASURE_MAX_ARITY)
 #include BOOST_PP_ITERATE()
@@ -123,6 +136,28 @@ struct concept_interface<
         return 0;
     }
 };
+
+namespace detail {
+
+template<BOOST_PP_ENUM_PARAMS(N, class T)>
+struct null_construct<void(BOOST_PP_ENUM_PARAMS(N, T))>
+{
+    static ::boost::type_erasure::detail::storage
+    value(BOOST_PP_ENUM_PARAMS(N, T))
+    {
+        ::boost::type_erasure::detail::storage result;
+        result.data = 0;
+        return result;
+    }
+};
+
+template<class T, class R BOOST_PP_ENUM_TRAILING_PARAMS(N, class T)>
+struct get_null_vtable_entry<vtable_adapter<constructible<T(const T&)>, R(BOOST_PP_ENUM_PARAMS(N, T))> >
+{
+    typedef null_construct<void(BOOST_PP_ENUM_PARAMS(N, T))> type;
+};
+
+}
 
 #undef BOOST_TYPE_ERASURE_ARG_DECL
 #undef N
