@@ -516,9 +516,12 @@ public:
             )
         ),
         data(
-            ::boost::type_erasure::detail::make(
-                false? this->_boost_type_erasure_deduce_constructor(u0, u1, u...) : 0
-            )(u0, u1, u...)
+            ::boost::type_erasure::call(
+                ::boost::type_erasure::detail::make(
+                    false? this->_boost_type_erasure_deduce_constructor(u0, u1, u...) : 0
+                ),
+                u0, u1, u...
+            )
         )
     {}
 
@@ -531,9 +534,12 @@ public:
             )
         ),
         data(
-            ::boost::type_erasure::detail::make(
-                false? this->_boost_type_erasure_deduce_constructor(u0, u1, u...) : 0
-            )(u0, u1, u...)
+            ::boost::type_erasure::call(
+                ::boost::type_erasure::detail::make(
+                    false? this->_boost_type_erasure_deduce_constructor(u0, u1, u...) : 0
+                ),
+                u0, u1, u...
+            )
         )
     {}
 
