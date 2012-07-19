@@ -40,7 +40,7 @@ void references1() {
 void references2() {
     //[references2
     /*`
-        References are not assignable.  Just like a built-in C++ reference,
+        References cannot be rebound.  Just like a built-in C++ reference,
         once you've initialized it you can't change it to point to
         something else.
         ``
@@ -48,6 +48,11 @@ void references2() {
             any<typeid_<>, _self&> x(i), y(j);
             x = y; // error
         ``
+
+        [note As with any other operation, `x = y` for references
+        acts on `i` and `j`.  Assignment like this is legal
+        if __assignable`<>` is in the Concept, but `x` would
+        still hold a reference to `i`.]
     */
     //]
 }
