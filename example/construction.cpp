@@ -21,7 +21,7 @@ void construction1() {
     //[construction1
     /*`
         The library provides the __constructible concept to
-        allow custom construction of __any.  The single
+        allow an __any to capture constructors.  The single
         template argument should be a function signature.
         The return type must be a placeholder specifying
         the type to be constructed.  The arguments are
@@ -39,6 +39,7 @@ void construction1() {
     double d = 2.5;
     tuple<construct, _a&, _b, _c> t(vec, i, d);
     any<construct, _a> v(get<1>(t), get<2>(t));
+    // v holds std::vector<double>(10, 2.5);
     //]
 }
 
