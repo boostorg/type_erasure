@@ -127,9 +127,6 @@ T any_cast(any<Concept, Tag>& arg)
 template<class T, class Concept, class Tag>
 T any_cast(const any<Concept, Tag>& arg)
 {
-    typedef typename ::boost::remove_cv<
-        typename ::boost::remove_reference<Tag>::type
-    >::type tag_type;
     if(::boost::type_erasure::detail::check_any_cast<T>(arg)) {
         return *static_cast<
             typename ::boost::remove_reference<
@@ -146,9 +143,6 @@ template<class T, class Concept, class Tag>
 T any_cast(any<Concept, Tag>* arg)
 {
     BOOST_MPL_ASSERT((::boost::is_pointer<T>));
-    typedef typename ::boost::remove_cv<
-        typename ::boost::remove_reference<Tag>::type
-    >::type tag_type;
     if(::boost::type_erasure::detail::check_any_cast<
         typename ::boost::remove_pointer<T>::type>(*arg)) {
         return static_cast<
@@ -164,9 +158,6 @@ template<class T, class Concept, class Tag>
 T any_cast(const any<Concept, Tag>* arg)
 {
     BOOST_MPL_ASSERT((::boost::is_pointer<T>));
-    typedef typename ::boost::remove_cv<
-        typename ::boost::remove_reference<Tag>::type
-    >::type tag_type;
     if(::boost::type_erasure::detail::check_any_cast<
         typename ::boost::remove_pointer<T>::type>(*arg)) {
         return static_cast<
