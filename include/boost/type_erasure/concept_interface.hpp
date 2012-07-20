@@ -18,10 +18,20 @@ namespace type_erasure {
  * The @ref concept_interface class can be specialized to
  * add behavior to an @ref any.
  *
+ * @ref concept_interface can be specialized for either
+ * primitive or composite concepts.  If a concept @c C1
+ * contains another concept @c C2, then the library guarantees
+ * that the specialization of @ref concept_interface for
+ * C2 is a base class of the specialization for C1.
+ * This means that C1 can safely override members of C2.
+ *
  * \tparam Concept The concept that we're specializing
- *         @ref concept_interface for.
+ *         @ref concept_interface for.  One of its
+ *         placeholders should be @c ID.
  * \tparam Base The base of this class.  Specializations of @ref
  *         concept_interface must inherit publicly from this type.
+ *         The metafunctions @ref derived and @ref rebind_any
+ *         can also be applied to @c Base.
  * \tparam ID The placeholder representing this type.
  * \tparam Enable A dummy parameter that can be used for SFINAE.
  */

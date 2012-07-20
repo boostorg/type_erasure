@@ -38,7 +38,9 @@ struct arithmetic :
 /*`
     Now, `arithmetic` can be used just like any
     of the base concepts.  We can even specialize
-    __concept_interface for it.
+    __concept_interface for it if we want to
+    add to or override the behavior of the base
+    concepts.
 */
 //]
 
