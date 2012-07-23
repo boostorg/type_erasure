@@ -34,13 +34,20 @@ public:
     /**
      * Constructs a tuple.  Each element of @c args will
      * be used to initialize the corresponding member.
+     * The @ref binding for the tuple elements is determined
+     * by mapping the placeholders in @c T to the corresponding
+     * types in @c U.
      */
     template<class... U>
     explicit tuple(U&&... args);
 };
 
+/**
+ * Returns the Nth @ref any in the tuple.
+ */
 template<int N, class Concept, class... T>
 any<Concept, TN>& get(tuple<Concept, T...>& arg);
+/** \overload */
 template<int N, class Concept, class... T>
 const any<Concept, TN>& get(const tuple<Concept, T...>& arg);
 
