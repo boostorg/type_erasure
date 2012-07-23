@@ -88,6 +88,9 @@ at runtime.
 
 [note TypeErasure is not an official Boost library.]
 
+[import ../example/intro.cpp]
+[intro]
+
 [endsect]
 
 [section:reading How to read this documentation]

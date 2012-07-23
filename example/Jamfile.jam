@@ -17,5 +17,6 @@ compile concept_map.cpp ;
 compile compose.cpp ;
 compile overload.cpp ;
 compile associated.cpp ;
+compile intro.cpp ;
 
 run print_sequence.cpp ;
