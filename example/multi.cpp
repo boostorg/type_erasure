@@ -51,9 +51,7 @@ void multi2() {
         __addable`<>` requires the types of the arguments to be
         the same.  We can also capture relationships among several types.
         To do this we'll need to identify each type with a
-        __placeholder.  Also, we can no longer capture the
-        variables independently, since they are connected,
-        so we use __tuple to capture them all at once.
+        __placeholder.
     */
     int array[5];
 
@@ -64,15 +62,36 @@ void multi2() {
         addable<_a, _b, _a>
     > requirements;
 
-    tuple<requirements, _a, _b> t(&array[0], 2);
-    any<requirements, _a> x(get<0>(t) + get<1>(t));
+    /*`
+        Also, we can no longer capture the variables
+        independently.
+        ``
+            any<requirements, _a> ptr(&array[0]); // illegal
+        ``
+        This doesn't work because the library needs
+        to know the type that _b binds to when it
+        captures the concept bindings.  We need to
+        specify the bindings of both placeholders
+        when we construct the __any.
+     */
+
+    typedef mpl::map<mpl::pair<_a, int*>, mpl::pair<_b, int> > types; 
+    any<requirements, _a> ptr(&array[0], static_binding<types>());
+    any<requirements, _b> idx(2, static_binding<types>());
+    any<requirements, _a> x(ptr + idx);
     // x now holds array + 2
+
     /*`
         Here the arguments of `+` are no longer the same.
         What we require is that the dynamic bindings of
         the two arguments to `+` must map the placeholders
         `_a` and `_b` to the same types.
+
+        We can also use __tuple to avoid having to
+        write out the map out explicitly.
      */
+    tuple<requirements, _a, _b> t(&array[0], 2);
+    any<requirements, _a> y(get<0>(t) + get<1>(t));
     //]
 }
 
