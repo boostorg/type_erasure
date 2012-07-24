@@ -113,6 +113,11 @@ assume that a few using directives are in place.
 [multi]
 [endsect]
 
+[section:convert Conversions]
+[import ../example/convert.cpp]
+[convert]
+[endsect]
+
 [section:references Using References]
 [import ../example/references.cpp]
 [references]

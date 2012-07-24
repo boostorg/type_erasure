@@ -10,6 +10,7 @@ import testing ;
 
 compile basic.cpp ;
 compile multi.cpp ;
+compile convert.cpp ;
 compile references.cpp ;
 compile custom.cpp ;
 compile construction.cpp ;
