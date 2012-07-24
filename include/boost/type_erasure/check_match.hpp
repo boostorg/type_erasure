@@ -226,7 +226,7 @@ template<
 >
 bool check_match(
     const ::boost::type_erasure::binding<Concept>& table,
-    const Op& op
+    const Op&
     BOOST_PP_ENUM_TRAILING_BINARY_PARAMS(N, U, & arg))
 {
 
@@ -243,7 +243,7 @@ template<
     BOOST_PP_ENUM_TRAILING_PARAMS(N, class U)
 >
 bool check_match(
-    const Op& op
+    const Op&
     BOOST_PP_ENUM_TRAILING_BINARY_PARAMS(N, U, & arg))
 {
     const ::boost::type_erasure::binding<
