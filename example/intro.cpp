@@ -16,6 +16,7 @@
 #include <boost/type_erasure/relaxed_match.hpp>
 #include <boost/mpl/vector.hpp>
 #include <iostream>
+#include <vector>
 
 namespace mpl = boost::mpl;
 using namespace boost::type_erasure;
