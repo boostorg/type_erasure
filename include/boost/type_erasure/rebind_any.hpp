@@ -24,13 +24,13 @@ template<class Concept, class T>
 class any;
 
 /**
- * A metafunction that returns any type corresponding
- * to a placeholder.  If @c T is not a placeholder,
+ * A metafunction that changes the @ref placeholder of
+ * an @ref any.  If @c T is not a placeholder,
  * returns @c T unchanged.  This class is intended
  * to be used in @ref concept_interface to deduce
  * the argument types from the arguments of the concept.
  *
- * @pre Any must be a specialization of @ref any a base
+ * @pre Any must be a specialization of @ref any or a base
  *      class of such a specialization.
  */
 template<class Any, class T>
