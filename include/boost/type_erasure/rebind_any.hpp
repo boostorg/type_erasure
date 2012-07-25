@@ -32,6 +32,12 @@ class any;
  *
  * @pre Any must be a specialization of @ref any or a base
  *      class of such a specialization.
+ *
+ * \code
+ * rebind_any<any<Concept>, _a>::type -> any<Concept, _a>
+ * rebind_any<any<Concept>, _b&>::type -> any<Concept, _b&>
+ * rebind_any<any<Concept>, int>::type -> int
+ * \endcode
  */
 template<class Any, class T>
 struct rebind_any
