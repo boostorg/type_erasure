@@ -54,16 +54,20 @@ struct pointer :
         dereferenceable<deduced<pointee<T> >&, T>
     >
 {
+    // provide a typedef for convenience
     typedef deduced<pointee<T> > element_type;
 };
 
 //]
 
-void basic1() {
+void associated2() {
     //[associated2
     /*`
-        Now when we construct `x`, `pointer<>::element_type` is
-        deduced as `boost::pointee<int*>::type` which is `int`.
+        Now the Concept of `x` uses two placeholders, `_self`
+        and `pointer<>::element_type`.  When we construct `x`,
+        with an `int*`, `pointer<>::element_type` is deduced
+        as `pointee<int*>::type` which is `int`.  Thus, dereferencing
+        `x` returns an __any that contains an `int`.
     */
     int i = 10;
     any<
@@ -76,16 +80,13 @@ void basic1() {
     //]
 }
 
-void basic2() {
+void associated3() {
     //[associated3
     /*`
-        Referring to the full name of the associated type
-        can be cumbersome when it's used many times.  Also,
-        sometimes we want to require that the associated
-        type be a specific type.  Both of these can be
-        solved using the __same_type concept.  Here we
-        create an any that can hold any pointer whose
-        element type is `int`.
+        Sometimes we want to require that the associated
+        type be a specific type.  This can be solved using
+        the __same_type concept.  Here we create an any that
+        can hold any pointer whose element type is `int`.
     */
     int i = 10;
     any<
@@ -95,6 +96,34 @@ void basic2() {
         >
     > x(&i);
     std::cout << *x << std::endl; // prints 10
+    /*`
+        Using __same_type like this effectively causes the library to
+        replace all uses of `pointer<>::element_type` with `int`
+        and validate that it is always bound to `int`.
+        Thus, dereferencing `x` now returns an `int`.
+    */
+    //]
+}
+
+void associated4() {
+    //[associated4
+    /*`
+        __same_type can also be used for two placeholders.
+        This allows us to use a simple name instead of
+        writing out an associated type over and over.
+    */
+    int i = 10;
+    any<
+        mpl::vector<
+            pointer<>,
+            same_type<pointer<>::element_type, _a>,
+            typeid_<_a>,
+            copy_constructible<_a>,
+            addable<_a>,
+            ostreamable<std::ostream, _a>
+        >
+    > x(&i);
+    std::cout << (*x + *x) << std::endl; // prints 20
     //]
 }
 
@@ -104,4 +133,5 @@ void basic2() {
 //` [associated1]
 //` [associated2]
 //` [associated3]
+//` [associated4]
 //]
