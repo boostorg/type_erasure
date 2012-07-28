@@ -31,7 +31,7 @@ void references1() {
     /*`
         [note `_self` is the default __placeholder, so it is
         easiest to use `_self&`.  We could use another
-        __placeholder instead. __any`<`__typeid`<_a>, _a&>` has
+        __placeholder instead. __any`<`__typeid_`<_a>, _a&>` has
         exactly the same behavior.]
     */
     //]
