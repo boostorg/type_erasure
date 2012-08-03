@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE(test_any_result_const)
 {
     typedef ::boost::mpl::vector<common<>, common<_a>, subscriptable<const _a&, const _self> > test_concept;
     typedef ::boost::mpl::map<
-        ::boost::mpl::pair<_self, int*>,
+        ::boost::mpl::pair<_self, const int*>,
         ::boost::mpl::pair<_a, int>
     > types;
     const int i[5] = { 0, 0, 0, 0, 0 };

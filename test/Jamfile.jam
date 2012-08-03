@@ -37,6 +37,9 @@ run test_member.cpp /boost//unit_test_framework ;
 run test_null.cpp /boost//unit_test_framework ;
 
 compile-fail fail_default_construct.cpp ;
+compile-fail fail_construct_mismatch.cpp ;
+compile-fail fail_construct_mismatch_ref.cpp ;
+compile-fail fail_construct_mismatch_cref.cpp ;
 compile-fail fail_binding_convert_no_mapping.cpp ;
 compile-fail fail_increment_discard_const.cpp ;
 

@@ -197,7 +197,10 @@ public:
     any(const U& data_arg, const static_binding<Map>& binding_arg)
       : table(binding_arg),
         data(data_arg)
-    {}
+    {
+        BOOST_MPL_ASSERT((::boost::is_same<
+            typename ::boost::mpl::at<Map, T>::type, U>));
+    }
     /**
      * Copies an @ref any.
      *
@@ -856,6 +859,8 @@ public:
     any(U& arg, const static_binding<Map>& binding_arg)
       : table(binding_arg)
     {
+        BOOST_MPL_ASSERT((::boost::is_same<
+            typename ::boost::mpl::at<Map, T>::type, U>));
         data.data = ::boost::addressof(arg);
     }
     /**
@@ -1241,6 +1246,8 @@ public:
     any(const U& arg, const static_binding<Map>& binding_arg)
       : table(binding_arg)
     {
+        BOOST_MPL_ASSERT((::boost::is_same<
+            typename ::boost::mpl::at<Map, T>::type, U>));
         data.data = const_cast<void*>(static_cast<const void*>(::boost::addressof(arg)));
     }
     /**
