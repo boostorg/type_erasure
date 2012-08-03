@@ -99,31 +99,39 @@ T& convert_arg(T& arg, boost::mpl::false_) { return arg; }
 /**
  * Dispatches a type erased function.
  *
- * If @c binding is not specified, it will be deduced from
- * the arguments.  Naturally this requires at least one
- * argument to be an @ref any.
- *
  * @c Op must be a primitive concept which is present in
  * @c Concept.  Its signature determines how the arguments of
- * call are handled.  All the arguments that are placeholders
- * in the signature are unwrapped.  The types that they hold
- * must match the types specified by @c binding.  The other
- * arguments will be passed through unchanged.
+ * @ref call are handled.  If the argument is a @ref placeholder,
+ * @ref call expects an @ref any using that @ref placeholder.
+ * This @ref any is unwrapped by @ref call.  The type that
+ * it stores must be the same type specified by @c binding.
+ * Any arguments that are not placeholders in the signature
+ * of @c Op are passed through unchanged.
  *
- * \return The result of the operation.  If the
- *         result type is a placeholder, the result will be
- *         converted to the appropriate @ref any type.
+ * If @c binding is not specified, it will be deduced from
+ * the arguments.  Naturally this requires at least one
+ * argument to be an @ref any.  In this case, all @ref any
+ * arguments must have the same @ref binding.
+ *
+ * \return The result of the operation.  If the result type
+ *         of the signature of @c Op is a placeholder, the
+ *         result will be converted to the appropriate @ref
+ *         any type.
+ *
+ * \throws bad_function_call if @ref relaxed_match is
+ *         in @c Concept and there is a type mismatch.
  *
  * Example:
  *
  * @code
- * typedef addable<_a, int, _b> concept;
+ * typedef mpl::vector<
+ *   copy_constructible<_b>,
+ *   addable<_a, int, _b> > concept;
  * any<concept, _a> a = ...;
- * any<concept, _b> b(call(concept(), a, 10));
+ * any<concept, _b> b(call(addable<_a, int, _b>(), a, 10));
  * @endcode
  *
  * The signature of @ref addable is <code>_b(const _a&, const int&)</code>
- * FIXME: This won't compile for lack of copy_constructible.
  */
 template<class Concept, class Op, class... U>
 typename ::boost::type_erasure::detail::call_impl<Sig, U..., Concept>::type
