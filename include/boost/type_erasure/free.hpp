@@ -137,7 +137,7 @@ struct first_placeholder_index :
  * struct ::namespace1::namespace2::...::concept_name;
  * \endcode
  * where Sig is a function type giving the
- * signature of the member function.
+ * signature of the function.
  *
  * This macro can only be used in the global namespace.
  *
