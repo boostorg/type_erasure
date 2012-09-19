@@ -46,6 +46,8 @@ namespace detail {
 
 struct substitution_map_tag {};
 
+// a wrapper around an mpl::map that
+// defaults to the identity map.
 template<class M>
 struct substitution_map
 {
@@ -85,15 +87,8 @@ struct has_key_impl< ::boost::type_erasure::detail::substitution_map_tag>
 namespace type_erasure {
 namespace detail {
 
-template<class Out, class T>
-struct insert_concept
-{
-    typedef ::boost::mpl::pair<
-        typename ::boost::mpl::insert<typename Out::first, T>::type,
-        typename Out::second
-    > type;
-};
-
+// given a partial substitution map from same_type,
+// resolves a placeholder as far as possible.
 template<class M, class T>
 struct resolve_same_type
 {
@@ -106,6 +101,9 @@ struct resolve_same_type
     >::type type;
 };
 
+// Given the arguments to same_type, determines
+// which should be the key and which should be
+// the value in the substitution map.
 template<class T, class U>
 struct select_pair
 {
@@ -137,6 +135,7 @@ struct select_pair<
     > type;
 };
 
+// M is a map of placeholder substitutions
 template<class M, class T>
 struct normalize_placeholder
 {
@@ -164,6 +163,10 @@ struct normalize_placeholder<M, ::boost::type_erasure::deduced<T> >
     >::type type;
 };
 
+// Takes a mpl::map of placeholder substitutions and
+// fully resolves it.  i.e.  a -> b, b -> c, becomes
+// a -> c, b -> c.  Also resolves deduced placeholders
+// whose arguments are all resolved.
 template<class M>
 struct create_placeholder_map
 {
@@ -235,6 +238,16 @@ struct add_deductions
     >::type type;
 };
 
+// Fold Op for normalize_concept_impl
+template<class Out, class T>
+struct insert_concept
+{
+    typedef ::boost::mpl::pair<
+        typename ::boost::mpl::insert<typename Out::first, T>::type,
+        typename Out::second
+    > type;
+};
+
 template<class Out, class T, class U>
 struct insert_concept<Out, ::boost::type_erasure::same_type<T, U> >
 {
@@ -262,6 +275,10 @@ struct insert_concept<Out, ::boost::type_erasure::same_type<T, U> >
     > type;
 };
 
+// flattens a concept returning an mpl::pair
+// - first is an MPL sequence containing the leaf concepts
+// - second is an MPL map of the placeholder substitutions
+//   used to resolve same_type.
 template<class Concept, class Out = ::boost::mpl::pair< ::boost::mpl::set0<>, ::boost::mpl::map0<> > >
 struct normalize_concept_impl
 {
@@ -283,6 +300,8 @@ struct append_typeinfo
     };
 };
 
+// Seq should be a flattened MPL sequence of leaf concepts.
+// adds typeid_<P> for every placeholder used.
 template<class Seq>
 struct add_typeinfo
 {
@@ -309,6 +328,8 @@ struct get_placeholder_normalization_map
     >::type type;
 };
 
+// Flattens a Concept to an mpl::vector of primitive
+// concepts.  Resolves same_type and deduced placeholders.
 template<class Concept>
 struct normalize_concept
 {
@@ -337,6 +358,9 @@ struct normalize_concept
     >::type type;
 };
 
+// Returns an MPL sequence containing all the concepts
+// in Concept.  If Concept is considered as a DAG,
+// the result will be sorted topologically.
 template<
     class Concept,
     class Map = typename ::boost::type_erasure::detail::create_placeholder_map<
