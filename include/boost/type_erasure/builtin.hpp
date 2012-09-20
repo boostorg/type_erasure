@@ -40,6 +40,11 @@ struct destructible
     {
         delete static_cast<T*>(arg.data);
     }
+    /** INTERNAL ONLY */
+    static void apply(detail::storage& arg)
+    { 
+        delete static_cast<T*>(arg.data);
+    }
 };
 
 /**
@@ -87,6 +92,11 @@ struct typeid_
     typedef const std::type_info& (*type)();
     /** INTERNAL ONLY */
     static const std::type_info& value()
+    {
+        return typeid(T);
+    }
+    /** INTERNAL ONLY */
+    static const std::type_info& apply()
     {
         return typeid(T);
     }

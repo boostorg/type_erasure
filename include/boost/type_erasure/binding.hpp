@@ -28,6 +28,7 @@
 #include <boost/type_erasure/detail/rebind_placeholders.hpp>
 #include <boost/type_erasure/detail/vtable.hpp>
 #include <boost/type_erasure/detail/normalize.hpp>
+#include <boost/type_erasure/detail/instantiate.hpp>
 
 namespace boost {
 namespace type_erasure {
@@ -88,7 +89,7 @@ public:
      */
     template<class Map>
     explicit binding(const Map&)
-      : impl(static_binding<Map>())
+      : impl((::boost::type_erasure::detail::make_instantiate_concept<Concept, Map>::type::apply(), static_binding<Map>()))
     {}
     
     /**
@@ -99,7 +100,7 @@ public:
      */
     template<class Map>
     binding(const static_binding<Map>&)
-      : impl(static_binding<Map>())
+      : impl((::boost::type_erasure::detail::make_instantiate_concept<Concept, Map>::type::apply(), static_binding<Map>()))
     {}
 
     /**

@@ -35,6 +35,7 @@
 #include <boost/type_erasure/detail/any_base.hpp>
 #include <boost/type_erasure/detail/normalize.hpp>
 #include <boost/type_erasure/detail/storage.hpp>
+#include <boost/type_erasure/detail/instantiate.hpp>
 #include <boost/type_erasure/config.hpp>
 #include <boost/type_erasure/binding.hpp>
 #include <boost/type_erasure/static_binding.hpp>
@@ -171,10 +172,11 @@ public:
      */
     template<class U>
     explicit any(const U& data_arg)
-      : table(
+      : table((::boost::type_erasure::detail::make_instantiate_concept<
+                Concept, ::boost::mpl::map< ::boost::mpl::pair<T, U> > >::type::apply(), 
             ::boost::type_erasure::make_binding<
                 ::boost::mpl::map< ::boost::mpl::pair<T, U> >
-            >()
+            >())
         ),
         data(data_arg)
     {}
