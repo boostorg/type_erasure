@@ -18,14 +18,16 @@ using namespace boost::type_erasure;
 
 //[custom1
 /*`
-    Let's define a concept to allow push_back on a sequence.
-    To do this, we create a class template with a template
-    parameter for each argument, and a static member function
+    Earlier, we used __BOOST_TYPE_ERASURE_MEMBER to define
+    a concept for containers that support `push_back`.  Let's
+    take a look at what this actually entails.  The first thing
+    we need is a class template with a template parameter for
+    each argument, and a static member function
     called `apply` that calls `push_back`.
 */
 
 template<class C, class T>
-struct push_back
+struct has_push_back
 {
     static void apply(C& cont, const T& arg) { cont.push_back(arg); }
 };
@@ -48,10 +50,10 @@ struct push_back
 namespace boost {
 namespace type_erasure {
 template<class C, class T, class Base>
-struct concept_interface< ::push_back<C, T>, Base, C> : Base
+struct concept_interface<has_push_back<C, T>, Base, C> : Base
 {
     void push_back(typename rebind_any<Base, const T&>::type arg)
-    { call(::push_back<C, T>(), *this, arg); }
+    { call(has_push_back<C, T>(), *this, arg); }
 };
 }
 }
@@ -64,9 +66,9 @@ void custom2() {
         __call to dispatch the operation.
     */
     std::vector<int> vec;
-    any<push_back<_self, int>, _self&> c(vec);
+    any<has_push_back<_self, int>, _self&> c(vec);
     int i = 10;
-    call(push_back<_self, int>(), c, i);
+    call(has_push_back<_self, int>(), c, i);
     // vec is [10].
     //]
 }
@@ -81,7 +83,7 @@ void custom4() {
         now becomes
     */
     std::vector<int> vec;
-    any<push_back<_self, int>, _self&> c(vec);
+    any<has_push_back<_self, int>, _self&> c(vec);
     c.push_back(10);
     /*`
         which is what we want.

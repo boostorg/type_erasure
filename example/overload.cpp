@@ -19,8 +19,10 @@ using namespace boost::type_erasure;
 
 //[overload1
 /*`
-    Sometimes we want to use the same concept several times
-    with different parameters.  Specializing __concept_interface
+    __concept_interface allows us to inject arbitrary declarations
+    into an __any.  This is very flexible, but there are some pitfalls
+    to watch out for.  Sometimes we want to use the same concept several
+    times with different parameters.  Specializing __concept_interface
     in a way that handles overloads correctly is a bit tricky.
     Given a concept foo, we'd like the following to work:
 
@@ -147,7 +149,10 @@ struct concept_interface< ::bar_concept<T, U>, Base, U, typename boost::disable_
     __rebind_any, then we could end up violating the one definition
     rule by defining the same function twice.  Similarly, we use
     SFINAE in the second specialization to make sure that bar is
-    only defined once when both arguments are placeholders.
+    only defined once when both arguments are placeholders.  It's
+    possible to merge the two specializations with a bit of metaprogramming,
+    but unless you have a lot of arguments, it's probably not
+    worth while.
     
     At first I tried overloading `bar` at namespace scope.  This
     seems like a more obvious solution at first.  Don't use it.
