@@ -88,8 +88,11 @@ public:
      * \throws Nothing.
      */
     template<class Map>
-    explicit binding(const Map&, BOOST_TYPE_ERASURE_INSTANTIATE(Concept, Map))
-      : impl(static_binding<Map>())
+    explicit binding(const Map&)
+      : impl((
+            BOOST_TYPE_ERASURE_INSTANTIATE(Concept, Map),
+            static_binding<Map>()
+        ))
     {}
     
     /**
@@ -99,8 +102,11 @@ public:
      * \throws Nothing.
      */
     template<class Map>
-    binding(const static_binding<Map>&, BOOST_TYPE_ERASURE_INSTANTIATE(Concept, Map))
-      : impl(static_binding<Map>())
+    binding(const static_binding<Map>&)
+      : impl((
+            BOOST_TYPE_ERASURE_INSTANTIATE(Concept, Map),
+            static_binding<Map>()
+        ))
     {}
 
     /**

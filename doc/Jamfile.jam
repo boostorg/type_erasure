@@ -37,8 +37,6 @@ doxygen reference
         \"BOOST_TYPE_ERASURE_UNARY_OPERATOR(name, op)=template<class T = _self, class R = T> struct name { static R apply(const T&); };\" \\
         \"BOOST_TYPE_ERASURE_BINARY_OPERATOR(name, op)=template<class T = _self, class U = T, class R = T> struct name { static R apply(const T&, const U&); };\" \\
         \"BOOST_TYPE_ERASURE_ASSIGNMENT_OPERATOR(name, op)=template<class T = _self, class U = T> struct name { static void apply(T&, const U&); };\" \\
-        \"BOOST_TYPE_ERASURE_INSTANTIATE(Concept, Map)=\" \\
-        \"BOOST_TYPE_ERASURE_INSTANTIATE1(Concept, T, U)=\" \\
         \"table_arg=table\" \\
         \"binding_arg=binding\" \\
         \"data_arg=data\""

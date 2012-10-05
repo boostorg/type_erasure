@@ -40,23 +40,17 @@ struct make_instantiate_concept {
     >::type type;
 };
 
-struct instantiate_arg {};
-
 #define BOOST_TYPE_ERASURE_INSTANTIATE(Concept, Map)            \
-    ::boost::type_erasure::detail::instantiate_arg =            \
     (::boost::type_erasure::detail::make_instantiate_concept<   \
         Concept                                                 \
-    >::type::apply((Concept*)0, (Map*)0),                       \
-    ::boost::type_erasure::detail::instantiate_arg())
+    >::type::apply((Concept*)0, (Map*)0))
 
 #define BOOST_TYPE_ERASURE_INSTANTIATE1(Concept, P0, T0)        \
-    ::boost::type_erasure::detail::instantiate_arg =            \
     (::boost::type_erasure::detail::make_instantiate_concept<   \
         Concept                                                 \
     >::type::apply(                                             \
         (Concept*)0,                                            \
-        (::boost::mpl::map1< ::boost::mpl::pair<P0, T0> >*)0),  \
-    ::boost::type_erasure::detail::instantiate_arg())
+        (::boost::mpl::map1< ::boost::mpl::pair<P0, T0> >*)0))
 
 #define BOOST_PP_FILENAME_1 <boost/type_erasure/detail/instantiate.hpp>
 #define BOOST_PP_ITERATION_LIMITS (0, BOOST_TYPE_ERASURE_MAX_FUNCTIONS)
