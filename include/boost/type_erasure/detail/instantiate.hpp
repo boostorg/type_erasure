@@ -31,28 +31,32 @@ namespace detail {
 template<int N>
 struct make_instantiate_concept_impl;
 
-template<class Concept, class Map>
+template<class Concept>
 struct make_instantiate_concept {
     typedef typename ::boost::type_erasure::detail::normalize_concept<
         Concept>::type normalized;
-    typedef typename ::boost::type_erasure::detail::get_placeholder_normalization_map<
-        Concept
-    >::type placeholder_subs;
-
-    typedef typename ::boost::mpl::transform<
-        normalized,
-        ::boost::type_erasure::detail::rebind_placeholders<
-            ::boost::mpl::_1,
-            typename ::boost::type_erasure::detail::add_deductions<
-                Map,
-                placeholder_subs
-            >::type
-        >
-    >::type bound_concept;
     typedef typename ::boost::type_erasure::detail::make_instantiate_concept_impl<
-        (::boost::mpl::size<bound_concept>::value)
-    >::template apply<bound_concept>::type type;
+        (::boost::mpl::size<normalized>::value)
+    >::type type;
 };
+
+struct instantiate_arg {};
+
+#define BOOST_TYPE_ERASURE_INSTANTIATE(Concept, Map)            \
+    ::boost::type_erasure::detail::instantiate_arg =            \
+    (::boost::type_erasure::detail::make_instantiate_concept<   \
+        Concept                                                 \
+    >::type::apply((Concept*)0, (Map*)0),                       \
+    ::boost::type_erasure::detail::instantiate_arg())
+
+#define BOOST_TYPE_ERASURE_INSTANTIATE1(Concept, P0, T0)        \
+    ::boost::type_erasure::detail::instantiate_arg =            \
+    (::boost::type_erasure::detail::make_instantiate_concept<   \
+        Concept                                                 \
+    >::type::apply(                                             \
+        (Concept*)0,                                            \
+        (::boost::mpl::map1< ::boost::mpl::pair<P0, T0> >*)0),  \
+    ::boost::type_erasure::detail::instantiate_arg())
 
 #define BOOST_PP_FILENAME_1 <boost/type_erasure/detail/instantiate.hpp>
 #define BOOST_PP_ITERATION_LIMITS (0, BOOST_TYPE_ERASURE_MAX_FUNCTIONS)
@@ -68,44 +72,39 @@ struct make_instantiate_concept {
 
 #define N BOOST_PP_ITERATION()
 
-#define BOOST_TYPE_ERASURE_INSTANTIATE(z, n, data)\
-    (void)&BOOST_PP_CAT(T, n)::apply;
+#define BOOST_TYPE_ERASURE_INSTANTIATE_IMPL(z, n, data)\
+    (void)&::boost::mpl::at_c<data, n>::type::apply;
 
-#define BOOST_TYPE_ERASURE_AT(z, n, data)       \
-    typename ::boost::mpl::at_c<data, n>::type
-
-#if N
-
-template<BOOST_PP_ENUM_PARAMS(N, class T)>
 struct BOOST_PP_CAT(instantiate_concept, N) {
-    static void apply() {
-        BOOST_PP_REPEAT(N, BOOST_TYPE_ERASURE_INSTANTIATE, ~)
+    template<class Concept, class Map>
+    static void apply(Concept *, Map *) {
+        typedef typename ::boost::type_erasure::detail::normalize_concept<
+            Concept>::type normalized;
+        typedef typename ::boost::type_erasure::detail::get_placeholder_normalization_map<
+            Concept
+        >::type placeholder_subs;
+
+        typedef typename ::boost::mpl::transform<
+            normalized,
+            ::boost::type_erasure::detail::rebind_placeholders<
+                ::boost::mpl::_1,
+                typename ::boost::type_erasure::detail::add_deductions<
+                    Map,
+                    placeholder_subs
+                >::type
+            >
+        >::type concept_sequence;
+        BOOST_PP_REPEAT(N, BOOST_TYPE_ERASURE_INSTANTIATE_IMPL, concept_sequence)
     }
 };
-
-#else
-
-template<class T = void>
-struct instantiate_concept0 {
-    static void apply() {}
-};
-
-#endif
 
 template<>
 struct make_instantiate_concept_impl<N>
 {
-    template<class Seq>
-    struct apply
-    {
-        typedef ::boost::type_erasure::detail::BOOST_PP_CAT(instantiate_concept, N)<
-            BOOST_PP_ENUM(N, BOOST_TYPE_ERASURE_AT, Seq)
-        > type;
-    };
+    typedef ::boost::type_erasure::detail::BOOST_PP_CAT(instantiate_concept, N) type;
 };
 
-#undef BOOST_TYPE_ERASURE_AT
-#undef BOOST_TYPE_ERASURE_INSTANTIATE
+#undef BOOST_TYPE_ERASURE_INSTANTIATE_IMPL
 
 #undef N
 

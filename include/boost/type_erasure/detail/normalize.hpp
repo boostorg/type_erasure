@@ -348,12 +348,13 @@ struct normalize_concept
             >
         >
     >::type basic;
+    typedef typename ::boost::mpl::eval_if<
+        ::boost::type_erasure::is_relaxed<Concept>,
+        ::boost::type_erasure::detail::add_typeinfo<basic>,
+        ::boost::mpl::identity<basic>
+    >::type concept_set;
     typedef typename ::boost::mpl::copy<
-        typename ::boost::mpl::eval_if<
-            ::boost::type_erasure::is_relaxed<Concept>,
-            ::boost::type_erasure::detail::add_typeinfo<basic>,
-            ::boost::mpl::identity<basic>
-        >::type,
+        concept_set,
         ::boost::mpl::back_inserter< ::boost::mpl::vector0<> >
     >::type type;
 };

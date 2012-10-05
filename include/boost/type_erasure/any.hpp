@@ -171,12 +171,11 @@ public:
      *         constructor of @c U throws.
      */
     template<class U>
-    explicit any(const U& data_arg)
-      : table((::boost::type_erasure::detail::make_instantiate_concept<
-                Concept, ::boost::mpl::map< ::boost::mpl::pair<T, U> > >::type::apply(), 
+    explicit any(const U& data_arg, BOOST_TYPE_ERASURE_INSTANTIATE1(Concept, T, U))
+      : table(
             ::boost::type_erasure::make_binding<
                 ::boost::mpl::map< ::boost::mpl::pair<T, U> >
-            >())
+            >()
         ),
         data(data_arg)
     {}
@@ -390,17 +389,17 @@ public:
 
     // disambiguating overloads
     template<class U, class Map>
-    any(U& data_arg, static_binding<Map>& binding_arg)
+    any(U& data_arg, static_binding<Map>& binding_arg, BOOST_TYPE_ERASURE_INSTANTIATE(Concept, Map))
       : table(binding_arg),
         data(data_arg)
     {}
     template<class U, class Map>
-    any(const U& data_arg, static_binding<Map>& binding_arg)
+    any(const U& data_arg, static_binding<Map>& binding_arg, BOOST_TYPE_ERASURE_INSTANTIATE(Concept, Map))
       : table(binding_arg),
         data(data_arg)
     {}
     template<class U, class Map>
-    any(U& data_arg, const static_binding<Map>& binding_arg)
+    any(U& data_arg, const static_binding<Map>& binding_arg, BOOST_TYPE_ERASURE_INSTANTIATE(Concept, Map))
       : table(binding_arg),
         data(data_arg)
     {}
@@ -833,7 +832,8 @@ public:
                 ::boost::is_const<U>,
                 ::boost::type_erasure::detail::is_any<U>
             >
-        >::type* = 0
+        >::type* = 0,
+        BOOST_TYPE_ERASURE_INSTANTIATE1(Concept, T, U)
 #endif
         )
       : table(
@@ -858,7 +858,8 @@ public:
      * \throws Nothing.
      */
     template<class U, class Map>
-    any(U& arg, const static_binding<Map>& binding_arg)
+    any(U& arg, const static_binding<Map>& binding_arg,
+        BOOST_TYPE_ERASURE_INSTANTIATE(Concept, Map))
       : table(binding_arg)
     {
         BOOST_MPL_ASSERT((::boost::is_same<
@@ -1222,7 +1223,7 @@ public:
      * \throws Nothing.
      */
     template<class U>
-    explicit any(const U& arg)
+    explicit any(const U& arg, BOOST_TYPE_ERASURE_INSTANTIATE1(Concept, T, U))
       : table(
             ::boost::type_erasure::make_binding<
                 ::boost::mpl::map< ::boost::mpl::pair<T, U> >
@@ -1245,7 +1246,7 @@ public:
      * \throws Nothing.
      */
     template<class U, class Map>
-    any(const U& arg, const static_binding<Map>& binding_arg)
+    any(const U& arg, const static_binding<Map>& binding_arg, BOOST_TYPE_ERASURE_INSTANTIATE(Concept, Map))
       : table(binding_arg)
     {
         BOOST_MPL_ASSERT((::boost::is_same<
