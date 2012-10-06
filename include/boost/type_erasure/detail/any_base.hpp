@@ -17,6 +17,7 @@ namespace type_erasure {
 template<class Derived>
 struct any_base
 {
+    typedef void _boost_type_erasure_is_any;
     typedef Derived _boost_type_erasure_derived_type;
     void* _boost_type_erasure_deduce_constructor(...) { return 0; }
     void* _boost_type_erasure_deduce_assign(...) { return 0; }

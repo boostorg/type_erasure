@@ -32,6 +32,7 @@
 #include <boost/type_erasure/detail/adapt_to_vtable.hpp>
 #include <boost/type_erasure/detail/extract_concept.hpp>
 #include <boost/type_erasure/detail/get_signature.hpp>
+#include <boost/type_erasure/detail/check_call.hpp>
 #include <boost/type_erasure/is_placeholder.hpp>
 #include <boost/type_erasure/concept_of.hpp>
 #include <boost/type_erasure/config.hpp>
@@ -148,8 +149,9 @@ call(const Op&, U&&... args);
 
 namespace detail {
     
-template<class Sig, class Args, class Concept = void>
-struct call_impl;
+template<class Sig, class Args, class Concept = void,
+    bool Check = ::boost::type_erasure::detail::check_call<Sig, Args>::type::value>
+struct call_impl {};
 
 template<class Op, class Args, class Concept = void>
 struct call_result :
@@ -227,7 +229,7 @@ struct call_impl_dispatch<R(T...), void(U...), Concept, true>
 };
 
 template<class R, class... T, class... U, class Concept>
-struct call_impl<R(T...), void(U...), Concept> :
+struct call_impl<R(T...), void(U...), Concept, true> :
     ::boost::type_erasure::detail::call_impl_dispatch<
         R(T...),
         void(U...),
@@ -238,7 +240,7 @@ struct call_impl<R(T...), void(U...), Concept> :
 };
 
 template<class R, class... T, class... U>
-struct call_impl<R(T...), void(U&...), void> :
+struct call_impl<R(T...), void(U&...), void, true> :
     ::boost::type_erasure::detail::call_impl_dispatch<
         R(T...),
         void(U&...),
@@ -449,7 +451,7 @@ template<
     BOOST_PP_ENUM_TRAILING_PARAMS(N, class U),
     class Concept
 >
-struct call_impl<R(BOOST_PP_ENUM_PARAMS(N, T)), void(BOOST_PP_ENUM_BINARY_PARAMS(N, U, &u)), Concept>
+struct call_impl<R(BOOST_PP_ENUM_PARAMS(N, T)), void(BOOST_PP_ENUM_BINARY_PARAMS(N, U, &u)), Concept, true>
   : BOOST_PP_CAT(call_impl, N)<R BOOST_PP_ENUM_TRAILING_PARAMS(N, T) BOOST_PP_ENUM_TRAILING_PARAMS(N, U), Concept>
 {};
 
@@ -460,7 +462,7 @@ template<
     BOOST_PP_ENUM_TRAILING_PARAMS(N, class T)
     BOOST_PP_ENUM_TRAILING_PARAMS(N, class U)
 >
-struct call_impl<R(BOOST_PP_ENUM_PARAMS(N, T)), void(BOOST_PP_ENUM_BINARY_PARAMS(N, U, &u))>
+struct call_impl<R(BOOST_PP_ENUM_PARAMS(N, T)), void(BOOST_PP_ENUM_BINARY_PARAMS(N, U, &u)), void, true>
   : BOOST_PP_CAT(call_impl, N)<R BOOST_PP_ENUM_TRAILING_PARAMS(N, T) BOOST_PP_ENUM_TRAILING_PARAMS(N, U)>
 {};
 
