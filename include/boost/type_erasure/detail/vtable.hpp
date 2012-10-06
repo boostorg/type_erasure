@@ -143,6 +143,20 @@ struct vtable_storage : vtable_entry<T>...
     }
 };
 
+// Provide this specialization manually.
+// gcc 4.7.2 fails to instantiate the primary template.
+template<>
+struct vtable_storage<>
+{
+    vtable_storage() = default;
+
+    template<class Bindings, class Src>
+    void convert_from(const Src& src) {}
+
+    bool operator==(const vtable_storage& other) const
+    { return true; }
+};
+
 template<class... T>
 struct make_vtable_impl<stored_arg_pack<T...> >
 {
