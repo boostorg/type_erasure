@@ -14,6 +14,7 @@
 #include <boost/config.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
+#include <boost/utility/enable_if.hpp>
 #include <boost/mpl/transform.hpp>
 #include <boost/mpl/find_if.hpp>
 #include <boost/mpl/and.hpp>
@@ -23,12 +24,14 @@
 #include <boost/mpl/pair.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/type_erasure/static_binding.hpp>
+#include <boost/type_erasure/is_subconcept.hpp>
 #include <boost/type_erasure/detail/adapt_to_vtable.hpp>
 #include <boost/type_erasure/detail/null.hpp>
 #include <boost/type_erasure/detail/rebind_placeholders.hpp>
 #include <boost/type_erasure/detail/vtable.hpp>
 #include <boost/type_erasure/detail/normalize.hpp>
 #include <boost/type_erasure/detail/instantiate.hpp>
+#include <boost/type_erasure/detail/check_map.hpp>
 
 namespace boost {
 namespace type_erasure {
@@ -119,7 +122,16 @@ public:
      * \throws std::bad_alloc
      */
     template<class Concept2, class Map>
-    binding(const binding<Concept2>& other, const Map&)
+    binding(const binding<Concept2>& other, const Map&
+#ifndef BOOST_TYPE_ERASURE_DOXYGEN
+        , typename ::boost::enable_if<
+            ::boost::mpl::and_<
+                ::boost::type_erasure::detail::check_map<Concept, Map>,
+                ::boost::type_erasure::is_subconcept<Concept, Concept2, Map>
+            >
+        >::type* = 0
+#endif
+        )
       : impl(
             other,
             static_binding<Map>(),
@@ -137,7 +149,16 @@ public:
      * \throws std::bad_alloc
      */
     template<class Concept2, class Map>
-    binding(const binding<Concept2>& other, const static_binding<Map>&)
+    binding(const binding<Concept2>& other, const static_binding<Map>&
+#ifndef BOOST_TYPE_ERASURE_DOXYGEN
+        , typename ::boost::enable_if<
+            ::boost::mpl::and_<
+                ::boost::type_erasure::detail::check_map<Concept, Map>,
+                ::boost::type_erasure::is_subconcept<Concept, Concept2, Map>
+            >
+        >::type* = 0
+#endif
+        )
       : impl(
             other,
             static_binding<Map>(),

@@ -20,6 +20,7 @@
 #include <boost/type_traits/is_same.hpp>
 #include <boost/type_erasure/detail/normalize.hpp>
 #include <boost/type_erasure/detail/rebind_placeholders.hpp>
+#include <boost/type_erasure/static_binding.hpp>
 
 namespace boost {
 namespace type_erasure {
@@ -93,6 +94,13 @@ struct is_subconcept_impl {
 template<class Sub, class Super, class PlaceholderMap = void>
 struct is_subconcept : ::boost::type_erasure::detail::is_subconcept_impl<Sub, Super, PlaceholderMap>::type {
 };
+
+#ifndef BOOST_TYPE_ERASURE_DOXYGEN
+template<class Sub, class Super, class PlaceholderMap>
+struct is_subconcept<Sub, Super, static_binding<PlaceholderMap> > :
+    ::boost::type_erasure::detail::is_subconcept_impl<Sub, Super, PlaceholderMap>::type
+{};
+#endif
 
 }
 }
