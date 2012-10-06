@@ -37,6 +37,8 @@ run test_member.cpp /boost//unit_test_framework ;
 run test_null.cpp /boost//unit_test_framework ;
 run test_free.cpp /boost//unit_test_framework ;
 
+compile test_is_subconcept.cpp ;
+
 compile-fail fail_default_construct.cpp ;
 compile-fail fail_construct_mismatch.cpp ;
 compile-fail fail_construct_mismatch_ref.cpp ;
