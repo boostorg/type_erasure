@@ -19,6 +19,7 @@
 #include <boost/type_erasure/concept_of.hpp>
 #include <boost/type_erasure/derived.hpp>
 #include <boost/type_erasure/rebind_any.hpp>
+#include <boost/type_erasure/param.hpp>
 #include <boost/type_erasure/relaxed_match.hpp>
 #include <boost/type_erasure/check_match.hpp>
 #include <boost/type_erasure/relaxed_match.hpp>
@@ -133,7 +134,7 @@ struct concept_interface<dereferenceable<R, T>, Base, T> : Base
     {                                                                       \
         friend typename rebind_any<Base, R>::type                           \
         operator op(const typename derived<Base>::type& lhs,                \
-                           typename rebind_any<Base, const U&>::type rhs)   \
+                    typename as_param<Base, const U&>::type rhs)            \
         {                                                                   \
             return ::boost::type_erasure::call(name<T, U, R>(), lhs, rhs);  \
         }                                                                   \
@@ -150,7 +151,7 @@ struct concept_interface<dereferenceable<R, T>, Base, T> : Base
     {                                                                       \
         friend typename rebind_any<Base, R>::type                           \
         operator op(const T& lhs,                                           \
-                           const typename derived<Base>::type& rhs)         \
+                    const typename derived<Base>::type& rhs)                \
         {                                                                   \
             return ::boost::type_erasure::call(name<T, U, R>(), lhs, rhs);  \
         }                                                                   \
@@ -182,7 +183,7 @@ BOOST_TYPE_ERASURE_BINARY_OPERATOR(bitxorable, ^)
     {                                                                       \
         friend typename derived<Base>::type&                                \
         operator op(typename derived<Base>::type& lhs,                      \
-                    typename rebind_any<Base, const U&>::type rhs)          \
+                    typename as_param<Base, const U&>::type rhs)            \
         {                                                                   \
             ::boost::type_erasure::call(name<T, U>(),lhs, rhs);             \
             return lhs;                                                     \
@@ -231,7 +232,7 @@ template<class T, class U, class Base>
 struct concept_interface<equality_comparable<T, U>, Base, T> : Base
 {
     friend bool operator==(const typename derived<Base>::type& lhs,
-                           typename rebind_any<Base, const U&>::type rhs)
+                           typename as_param<Base, const U&>::type rhs)
     {
         if(::boost::type_erasure::check_match(equality_comparable<T, U>(), lhs, rhs)) {
             return ::boost::type_erasure::unchecked_call(equality_comparable<T, U>(), lhs, rhs);
@@ -240,7 +241,7 @@ struct concept_interface<equality_comparable<T, U>, Base, T> : Base
         }
     }
     friend bool operator!=(const typename derived<Base>::type& lhs,
-                           typename rebind_any<Base, const U&>::type rhs)
+                           typename as_param<Base, const U&>::type rhs)
     {
         return !(lhs == rhs);
     }
@@ -304,7 +305,7 @@ template<class T, class Base>
 struct concept_interface<less_than_comparable<T, T>, Base, T> : Base
 {
     friend bool operator<(const typename derived<Base>::type& lhs,
-                          typename rebind_any<Base, const T&>::type rhs)
+                          typename as_param<Base, const T&>::type rhs)
     {
         return ::boost::type_erasure::detail::less_impl(
             less_than_comparable<T, T>(),
@@ -313,16 +314,16 @@ struct concept_interface<less_than_comparable<T, T>, Base, T> : Base
                 typename ::boost::type_erasure::concept_of<Base>::type>());
     }
     friend bool operator>=(const typename derived<Base>::type& lhs,
-                           typename rebind_any<Base, const T&>::type rhs)
+                           typename as_param<Base, const T&>::type rhs)
     {
         return !(lhs < rhs);
     }
-    friend bool operator>(typename rebind_any<Base, const T&>::type lhs,
+    friend bool operator>(typename as_param<Base, const T&>::type lhs,
                           const typename derived<Base>::type& rhs)
     {
         return rhs < lhs;
     }
-    friend bool operator<=(typename rebind_any<Base, const T&>::type lhs,
+    friend bool operator<=(typename as_param<Base, const T&>::type lhs,
                           const typename derived<Base>::type& rhs)
     {
         return !(rhs < lhs);
@@ -333,21 +334,21 @@ template<class T, class U, class Base>
 struct concept_interface<less_than_comparable<T, U>, Base, T> : Base
 {
     friend bool operator<(const typename derived<Base>::type& lhs,
-                          typename rebind_any<Base, const U&>::type rhs)
+                          typename as_param<Base, const U&>::type rhs)
     {
         return ::boost::type_erasure::call(less_than_comparable<T, U>(), lhs, rhs);
     }
     friend bool operator>=(const typename derived<Base>::type& lhs,
-                           typename rebind_any<Base, const U&>::type rhs)
+                           typename as_param<Base, const U&>::type rhs)
     {
         return !(lhs < rhs);
     }
-    friend bool operator>(typename rebind_any<Base, const U&>::type lhs,
+    friend bool operator>(typename as_param<Base, const U&>::type lhs,
                           const typename derived<Base>::type& rhs)
     {
         return rhs < lhs;
     }
-    friend bool operator<=(typename rebind_any<Base, const U&>::type lhs,
+    friend bool operator<=(typename as_param<Base, const U&>::type lhs,
                           const typename derived<Base>::type& rhs)
     {
         return !(rhs < lhs);
@@ -394,7 +395,7 @@ template<class R, class T, class N, class Base>
 struct concept_interface<subscriptable<R, T, N>, Base, T> : Base
 {
     typename ::boost::type_erasure::rebind_any<Base, R>::type operator[](
-        typename ::boost::type_erasure::rebind_any<Base, const N&>::type index)
+        typename ::boost::type_erasure::as_param<Base, const N&>::type index)
     {
         return ::boost::type_erasure::call(subscriptable<R, T, N>(), *this, index);
     }
@@ -404,7 +405,7 @@ template<class R, class T, class N, class Base>
 struct concept_interface<subscriptable<R, const T, N>, Base, T> : Base
 {
     typename ::boost::type_erasure::rebind_any<Base, R>::type operator[](
-        typename ::boost::type_erasure::rebind_any<Base, const N&>::type index) const
+        typename ::boost::type_erasure::as_param<Base, const N&>::type index) const
     {
         return ::boost::type_erasure::call(subscriptable<R, const T, N>(), *this, index);
     }
@@ -429,7 +430,7 @@ struct concept_interface<ostreamable<Os, T>, Base, Os> : Base
 {
     friend typename ::boost::type_erasure::derived<Base>::type&
     operator<<(typename ::boost::type_erasure::derived<Base>::type& lhs,
-               typename ::boost::type_erasure::rebind_any<Base, const T&>::type rhs)
+               typename ::boost::type_erasure::as_param<Base, const T&>::type rhs)
     {
         ::boost::type_erasure::call(ostreamable<Os, T>(), lhs, rhs);
         return lhs;
@@ -473,7 +474,7 @@ struct concept_interface<istreamable<Is, T>, Base, Is> : Base
 {
     friend typename ::boost::type_erasure::derived<Base>::type&
     operator>>(typename ::boost::type_erasure::derived<Base>::type& lhs,
-               typename ::boost::type_erasure::rebind_any<Base, T&>::type rhs)
+               typename ::boost::type_erasure::as_param<Base, T&>::type rhs)
     {
         ::boost::type_erasure::call(istreamable<Is, T>(), lhs, rhs);
         return lhs;

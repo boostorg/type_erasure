@@ -90,6 +90,27 @@ convert_arg(const any_base<T>& arg, boost::mpl::true_)
     return ::boost::type_erasure::detail::access::data(arg);
 }
 
+template<class Concept, class T>
+::boost::type_erasure::detail::storage&
+convert_arg(param<Concept, T>& arg, boost::mpl::true_)
+{
+    return ::boost::type_erasure::detail::access::data(arg);
+}
+
+template<class Concept, class T>
+const ::boost::type_erasure::detail::storage&
+convert_arg(param<Concept, const T&>& arg, boost::mpl::true_)
+{
+    return ::boost::type_erasure::detail::access::data(arg);
+}
+
+template<class Concept, class T>
+const ::boost::type_erasure::detail::storage&
+convert_arg(const param<Concept, T>& arg, boost::mpl::true_)
+{
+    return ::boost::type_erasure::detail::access::data(arg);
+}
+
 template<class T>
 T& convert_arg(T& arg, boost::mpl::false_) { return arg; }
 

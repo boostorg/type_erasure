@@ -42,6 +42,7 @@
 #include <boost/type_erasure/concept_interface.hpp>
 #include <boost/type_erasure/call.hpp>
 #include <boost/type_erasure/relaxed_match.hpp>
+#include <boost/type_erasure/param.hpp>
 
 namespace boost {
 namespace type_erasure {
@@ -661,6 +662,13 @@ public:
     {
         table.template find<destructible<T> >()(data);
     }
+
+#ifndef BOOST_NO_FUNCTION_REFERENCE_QUALIFIERS
+    /** INTERNAL ONLY */
+    operator param<Concept, T&>() & { return param<Concept, T&>(data, table); }
+    /** INTERNAL ONLY */
+    operator param<Concept, T&&>() && { return param<Concept, T&&>(data, table); }
+#endif
 private:
     /** INTERNAL ONLY */
     void _boost_type_erasure_swap(any& other)
@@ -1135,7 +1143,11 @@ public:
         _boost_type_erasure_resolve_assign(other);
         return *this;
     }
-
+    
+#ifndef BOOST_NO_FUNCTION_REFERENCE_QUALIFIERS
+    /** INTERNAL ONLY */
+    operator param<Concept, T&>() const { return param<Concept, T&>(data, table); }
+#endif
 private:
 
     /** INTERNAL ONLY */
@@ -1404,7 +1416,11 @@ public:
         _boost_type_erasure_swap(temp);
         return *this;
     }
-
+    
+#ifndef BOOST_NO_FUNCTION_REFERENCE_QUALIFIERS
+    /** INTERNAL ONLY */
+    operator param<Concept, const T&>() const { return param<Concept, const T&>(data, table); }
+#endif
 private:
     /** INTERNAL ONLY */
     void _boost_type_erasure_swap(any& other)

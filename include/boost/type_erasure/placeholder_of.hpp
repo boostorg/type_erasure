@@ -17,6 +17,9 @@ namespace type_erasure {
 template<class Concept, class T>
 class any;
 
+template<class Concept, class T>
+class param;
+
 /**
  * A metafunction returning the (const/reference qualified) placeholder
  * corresponding  to an @ref any.  It will also work for all bases
@@ -38,6 +41,13 @@ struct placeholder_of
 /** INTERNAL ONLY */
 template<class Concept, class T>
 struct placeholder_of< ::boost::type_erasure::any<Concept, T> >
+{
+    typedef T type;
+};
+
+/** INTERNAL ONLY */
+template<class Concept, class T>
+struct placeholder_of< ::boost::type_erasure::param<Concept, T> >
 {
     typedef T type;
 };

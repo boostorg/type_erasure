@@ -28,7 +28,7 @@
 
 /** INTERNAL ONLY */
 #define BOOST_TYPE_ERASURE_MEMBER_ARG(z, n, data)  \
-    typename ::boost::type_erasure::rebind_any<Base, BOOST_PP_CAT(A, n)>::type BOOST_PP_CAT(a, n)
+    typename ::boost::type_erasure::as_param<Base, BOOST_PP_CAT(A, n)>::type BOOST_PP_CAT(a, n)
 
 /** INTERNAL ONLY */
 #define BOOST_TYPE_ERASURE_MEMBER_QUALIFIED_ID(seq, N) \

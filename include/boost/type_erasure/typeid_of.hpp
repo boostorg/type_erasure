@@ -41,6 +41,20 @@ const std::type_info& typeid_of(const any<Concept, T>& arg)
     >()();
 }
 
+#ifndef BOOST_TYPE_ERASURE_DOXYGEN
+template<class Concept, class T>
+const std::type_info& typeid_of(const param<Concept, T>& arg)
+{
+    return ::boost::type_erasure::detail::access::table(arg).template find<
+        ::boost::type_erasure::typeid_<
+            typename ::boost::remove_cv<
+                typename ::boost::remove_reference<T>::type
+            >::type
+        >
+    >()();
+}
+#endif
+
 /**
  * \overload
  */

@@ -20,6 +20,9 @@ namespace type_erasure {
 template<class Concept, class T>
 class any;
 
+template<class Concept, class T>
+class param;
+
 namespace detail {
 
 struct access
@@ -29,6 +32,12 @@ struct access
     table(const ::boost::type_erasure::any_base<Derived>& arg)
     {
         return static_cast<const Derived&>(arg).table;
+    }
+    template<class Concept, class T>
+    static const typename any<Concept, T>::table_type&
+    table(const ::boost::type_erasure::param<Concept, T>& arg)
+    {
+        return arg._impl.table;
     }
     template<class Derived>
     static ::boost::type_erasure::detail::storage&
@@ -47,6 +56,24 @@ struct access
     data(const ::boost::type_erasure::any_base<Derived>& arg)
     {
         return static_cast<const Derived&>(arg).data;
+    }
+    template<class Concept, class T>
+    static ::boost::type_erasure::detail::storage&
+    data(::boost::type_erasure::param<Concept, T>& arg)
+    {
+        return arg._impl.data;
+    }
+    template<class Concept, class T>
+    static const ::boost::type_erasure::detail::storage&
+    data(::boost::type_erasure::param<Concept, const T&>& arg)
+    {
+        return arg._impl.data;
+    }
+    template<class Concept, class T>
+    static const ::boost::type_erasure::detail::storage&
+    data(const ::boost::type_erasure::param<Concept, T>& arg)
+    {
+        return arg._impl.data;
     }
 };
 

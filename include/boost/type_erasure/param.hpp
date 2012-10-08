@@ -1,0 +1,206 @@
+// Boost.TypeErasure library
+//
+// Copyright 2011 Steven Watanabe
+//
+// Distributed under the Boost Software License Version 1.0. (See
+// accompanying file LICENSE_1_0.txt or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
+//
+// $Id$
+
+#ifndef BOOST_TYPE_ERASURE_PARAM_HPP_INCLUDED
+#define BOOST_TYPE_ERASURE_PARAM_HPP_INCLUDED
+
+#include <boost/config.hpp>
+#include <boost/utility/enable_if.hpp>
+#include <boost/type_traits/is_same.hpp>
+#include <boost/type_traits/add_const.hpp>
+#include <boost/type_traits/remove_cv.hpp>
+#include <boost/type_traits/remove_reference.hpp>
+#include <boost/mpl/bool.hpp>
+#include <boost/mpl/if.hpp>
+#include <boost/type_erasure/is_placeholder.hpp>
+#include <boost/type_erasure/concept_of.hpp>
+
+namespace boost {
+namespace type_erasure {
+    
+template<class Concept, class T>
+class any;
+
+namespace detail {
+
+template<class From, class To>
+struct placeholder_conversion : boost::mpl::false_ {};
+template<class T>
+struct placeholder_conversion<T, T> : boost::mpl::true_ {};
+template<class T>
+struct placeholder_conversion<T, T&> : boost::mpl::true_ {};
+template<class T>
+struct placeholder_conversion<T, const T&> : boost::mpl::true_ {};
+template<class T>
+struct placeholder_conversion<const T, T> : boost::mpl::true_ {};
+template<class T>
+struct placeholder_conversion<const T, const T&> : boost::mpl::true_ {};
+template<class T>
+struct placeholder_conversion<T&, T> : boost::mpl::true_ {};
+template<class T>
+struct placeholder_conversion<T&, T&> : boost::mpl::true_ {};
+template<class T>
+struct placeholder_conversion<T&, const T&> : boost::mpl::true_ {};
+template<class T>
+struct placeholder_conversion<const T&, T> : boost::mpl::true_ {};
+template<class T>
+struct placeholder_conversion<const T&, const T&> : boost::mpl::true_ {};
+
+}
+
+/** INTERNAL ONLY */
+#define BOOST_NO_FUNCTION_REFERENCE_QUALIFIERS
+
+/**
+ * \brief A proxy to help with overload resolution for functions
+ * operating on an @ref any.
+ *
+ * The template arguments are interpreted in
+ * the same way as @ref any.
+ *
+ * A parameter of type @ref param can be initialized
+ * with an @ref any that has the same @c Concept
+ * and base placeholder when there exists a corresponding
+ * standard conversion for the placeholder.
+ * A conversion sequence from @ref any<C, P> to @ref param<C, P1> is
+ * a better conversion sequence than @ref any<C, P> to @ref param<C, C2>
+ * iff the corresponding placeholder standard conversion
+ * sequence from P to P1 is a better conversion sequence than
+ * P to P2.
+ *
+ * \note Overloading based on cv-qualifiers and rvalue-ness is
+ * only supported in C++11.  In C++03, all conversion sequences
+ * from @ref any to @ref param have the same rank.
+ *
+ * Example:
+ *
+ * \code
+ * void f(param<C, _a&>);
+ * void f(param<C, const _a&>);
+ * void g(param<C, const _a&>);
+ * void g(param<C, _a&&>);
+ *
+ * any<C, _a> a;
+ * f(any<C, _a>()); // calls void f(param<C, const _a&>);
+ * f(a);            // calls void f(param<C, _a&>); (ambiguous in C++03)
+ * g(any<C, _a>()); // calls void g(param<C, _a&&>); (ambiguous in C++03)
+ * g(a);            // calls void g(param<C, const _a&>);
+ * \endcode
+ *
+ */
+template<class Concept, class T>
+class param {
+public:
+
+    friend struct boost::type_erasure::detail::access;
+
+    /** INTERNAL ONLY */
+    typedef void _boost_type_erasure_is_any;
+    /** INTERNAL ONLY */
+    typedef param _boost_type_erasure_derived_type;
+
+#ifdef BOOST_NO_FUNCTION_REFERENCE_QUALIFIERS
+
+    template<class U>
+    param(any<Concept, U>& a
+#ifndef BOOST_TYPE_ERASURE_DOXYGEN
+        , typename boost::enable_if<
+            ::boost::type_erasure::detail::placeholder_conversion<U, T>
+        >::type* = 0
+#endif
+        )
+      : _impl(a)
+    {}
+    template<class U>
+    param(const any<Concept, U>& a
+#ifndef BOOST_TYPE_ERASURE_DOXYGEN
+        , typename boost::enable_if<
+            ::boost::type_erasure::detail::placeholder_conversion<
+                typename ::boost::add_const<U>::type,
+                T
+            >
+        >::type* = 0
+#endif
+        )
+      : _impl(a)
+    {}
+
+#endif
+
+    /** Returns the stored @ref any. */
+    any<Concept, T> get() const { return _impl; }
+private:
+    any<Concept, T> _impl;
+};
+
+#ifndef BOOST_NO_FUNCTION_REFERENCE_QUALIFIERS
+
+template<class Concept, class T>
+class param<Concept, const T&> {
+public:
+    template<class U>
+    param(U& u, typename boost::enable_if< ::boost::is_same<U, const any<Concept, T> > >::type* = 0) : _impl(u) {}
+    any<Concept, const T&> get() const { return _impl; }
+protected:
+    any<Concept, const T&> _impl;
+};
+
+template<class Concept, class T>
+class param<Concept, T&> : public param<Concept, const T&> {
+public:
+    any<Concept, T&> get() const
+    {
+        return any<Concept, T&>(
+            ::boost::type_erasure::detail::access::data(this->_impl),
+            ::boost::type_erasure::detail::access::table(this->_impl));
+    }
+};
+
+#ifndef BOOST_NO_RVALUE_REFERENCES
+
+template<class Concept, class T>
+class param<Concept, T&&> : public param<Concept, const T&> {
+public:
+    any<Concept, T&&> get() const
+    {
+        return any<Concept, T&&>(
+            ::boost::type_erasure::detail::access::data(this->_impl),
+            ::boost::type_erasure::detail::access::table(this->_impl));
+    }
+};
+
+#endif
+
+#endif
+
+/** \brief Metafunction that creates a @ref param.
+ *
+ * If @c T is a (cv/reference qualifed) placeholder,
+ * returns @ref param<@ref concept_of "concept_of"&lt;Any&gt;::type, T>, otherwise, returns T.
+ */
+template<class Any, class T>
+struct as_param {
+#ifdef BOOST_TYPE_ERASURE_DOXYGEN
+    typedef detail::unspecified type;
+#else
+    typedef typename ::boost::mpl::if_<
+        ::boost::type_erasure::is_placeholder<
+            typename ::boost::remove_cv<
+                typename ::boost::remove_reference<T>::type>::type>,
+        param<typename ::boost::type_erasure::concept_of<Any>::type, T>,
+        T
+    >::type type;
+#endif
+};
+
+}
+}
+
+#endif
