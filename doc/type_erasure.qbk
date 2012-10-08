@@ -205,6 +205,11 @@ assume that a few using directives are in place.
 [print_sequence]
 [endsect]
 
+[section:print_sequence A type-safe printf]
+[import ../example/printf.cpp]
+[printf]
+[endsect]
+
 [endsect]
 
 [section:conceptdef Concept Definitions]
