@@ -63,7 +63,7 @@ void construction2() {
         mpl::pair<_c, double>
     > types;
 
-    any<construct, _b> size(10, make_binding<types>());
+    any<construct, _b> size(std::size_t(10), make_binding<types>());
     any<construct, _c> val(2.5, make_binding<types>());
     any<construct, _a> v(size, val);
     //]
