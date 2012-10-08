@@ -13,6 +13,7 @@
 
 #include <iosfwd>
 #include <boost/utility/enable_if.hpp>
+#include <boost/type_erasure/detail/const.hpp>
 #include <boost/type_erasure/call.hpp>
 #include <boost/type_erasure/concept_interface.hpp>
 #include <boost/type_erasure/placeholder.hpp>
@@ -40,7 +41,11 @@ class any;
     };                                                                              \
                                                                                     \
     template<class T, class Base>                                                   \
-    struct concept_interface<name<T>, Base, T> : Base                               \
+    struct concept_interface<name<T>, Base, T,                                      \
+        typename ::boost::enable_if<                                                \
+            detail::should_be_non_const<T, Base>                                    \
+        >::type                                                                     \
+    > : Base                                                                        \
     {                                                                               \
         typedef typename ::boost::type_erasure::derived<Base>::type _derived;       \
         _derived& operator op()                                                     \
@@ -52,6 +57,28 @@ class any;
         {                                                                           \
             typename ::boost::type_erasure::rebind_any<Base, T>::type result(       \
                 static_cast<_derived&>(*this));                                     \
+            ::boost::type_erasure::call(name<T>(), *this);                          \
+            return result;                                                          \
+        }                                                                           \
+    };                                                                              \
+                                                                                    \
+    template<class T, class Base>                                                   \
+    struct concept_interface<name<T>, Base, T,                                      \
+        typename ::boost::enable_if<                                                \
+            detail::should_be_const<T, Base>                                        \
+        >::type                                                                     \
+    > : Base                                                                        \
+    {                                                                               \
+        typedef typename ::boost::type_erasure::derived<Base>::type _derived;       \
+        const _derived& operator op() const                                         \
+        {                                                                           \
+            ::boost::type_erasure::call(name<T>(), *this);                          \
+            return static_cast<const _derived&>(*this);                             \
+        }                                                                           \
+        typename ::boost::type_erasure::rebind_any<Base, T>::type operator op(int) const \
+        {                                                                           \
+            typename ::boost::type_erasure::rebind_any<Base, T>::type result(       \
+                static_cast<const _derived&>(*this));                               \
             ::boost::type_erasure::call(name<T>(), *this);                          \
             return result;                                                          \
         }                                                                           \
@@ -179,10 +206,17 @@ BOOST_TYPE_ERASURE_BINARY_OPERATOR(bitxorable, ^)
     };                                                                      \
                                                                             \
     template<class T, class U, class Base>                                  \
-    struct concept_interface<name<T, U>, Base, T> : Base                    \
+    struct concept_interface<name<T, U>, Base, T,                           \
+        typename ::boost::disable_if<                                       \
+            ::boost::is_same<                                               \
+                typename ::boost::type_erasure::placeholder_of<Base>::type, \
+                const T&                                                    \
+            >                                                               \
+        >::type                                                             \
+    > : Base                                                                \
     {                                                                       \
-        friend typename derived<Base>::type&                                \
-        operator op(typename derived<Base>::type& lhs,                      \
+        friend typename detail::non_const_this_param<Base>::type&           \
+        operator op(typename detail::non_const_this_param<Base>::type& lhs, \
                     typename as_param<Base, const U&>::type rhs)            \
         {                                                                   \
             ::boost::type_erasure::call(name<T, U>(),lhs, rhs);             \
@@ -392,7 +426,11 @@ struct subscriptable
 /// \cond show_operators
 
 template<class R, class T, class N, class Base>
-struct concept_interface<subscriptable<R, T, N>, Base, T> : Base
+struct concept_interface<subscriptable<R, T, N>, Base, typename ::boost::remove_const<T>::type,
+    typename ::boost::enable_if<
+        ::boost::type_erasure::detail::should_be_non_const<T, Base>
+    >::type
+> : Base
 {
     typename ::boost::type_erasure::rebind_any<Base, R>::type operator[](
         typename ::boost::type_erasure::as_param<Base, const N&>::type index)
@@ -402,7 +440,11 @@ struct concept_interface<subscriptable<R, T, N>, Base, T> : Base
 };
 
 template<class R, class T, class N, class Base>
-struct concept_interface<subscriptable<R, const T, N>, Base, T> : Base
+struct concept_interface<subscriptable<R, T, N>, Base, typename ::boost::remove_const<T>::type,
+    typename ::boost::enable_if<
+        ::boost::type_erasure::detail::should_be_const<T, Base>
+    >::type
+> : Base
 {
     typename ::boost::type_erasure::rebind_any<Base, R>::type operator[](
         typename ::boost::type_erasure::as_param<Base, const N&>::type index) const
@@ -428,8 +470,8 @@ struct ostreamable
 template<class Base, class Os, class T>
 struct concept_interface<ostreamable<Os, T>, Base, Os> : Base
 {
-    friend typename ::boost::type_erasure::derived<Base>::type&
-    operator<<(typename ::boost::type_erasure::derived<Base>::type& lhs,
+    friend typename detail::non_const_this_param<Base>::type&
+    operator<<(typename detail::non_const_this_param<Base>::type& lhs,
                typename ::boost::type_erasure::as_param<Base, const T&>::type rhs)
     {
         ::boost::type_erasure::call(ostreamable<Os, T>(), lhs, rhs);
@@ -472,8 +514,8 @@ struct istreamable
 template<class Base, class Is, class T>
 struct concept_interface<istreamable<Is, T>, Base, Is> : Base
 {
-    friend typename ::boost::type_erasure::derived<Base>::type&
-    operator>>(typename ::boost::type_erasure::derived<Base>::type& lhs,
+    friend typename detail::non_const_this_param<Base>::type&
+    operator>>(typename detail::non_const_this_param<Base>::type& lhs,
                typename ::boost::type_erasure::as_param<Base, T&>::type rhs)
     {
         ::boost::type_erasure::call(istreamable<Is, T>(), lhs, rhs);

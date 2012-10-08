@@ -24,6 +24,7 @@
 #include <boost/mpl/int.hpp>
 #include <boost/mpl/next.hpp>
 #include <boost/type_erasure/detail/macro.hpp>
+#include <boost/type_erasure/detail/const.hpp>
 #include <boost/type_erasure/config.hpp>
 #include <boost/type_erasure/derived.hpp>
 #include <boost/type_erasure/rebind_any.hpp>
@@ -70,7 +71,7 @@ struct first_placeholder_index :
 /** INTERNAL ONLY */
 #define BOOST_TYPE_ERASURE_FREE_PARAM_TYPE(z, n, data)                      \
     typename ::boost::mpl::eval_if_c<(_boost_type_erasure_free_p_idx::value == n), \
-        ::boost::type_erasure::derived<Base>,                               \
+        ::boost::type_erasure::detail::maybe_const_this_param<BOOST_PP_CAT(T, n), Base>,    \
         ::boost::type_erasure::as_param<Base, BOOST_PP_CAT(T, n)>           \
     >::type BOOST_PP_CAT(t, n)
 

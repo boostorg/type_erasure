@@ -126,25 +126,6 @@ void references6() {
 
             any<incrementable<>, _self&> z(y); // error
             ++y; // error
-
-        There is one subtlety about this. The proxy reference
-        can have its own const qualifiers.  In most cases,
-        the effect is cumulative.
-     */
-    const any<incrementable<>, _self&> z(x);
-    /*`
-        `z` is treated as a reference to const even though we
-        used `_self&` instead of `const _self&`.
-
-            ++z; // error
-
-        The one exception to this is the constructor.  The
-        following is well-formed, even though `z` is const.
-     */
-    any<incrementable<>, _self&> w(z);
-    /*`
-        This behavior is not ideal, but anything else
-        is much too difficult to implement.
      */
     //]
 }

@@ -21,6 +21,7 @@
 #include <boost/preprocessor/seq/size.hpp>
 #include <boost/preprocessor/seq/elem.hpp>
 #include <boost/type_erasure/detail/macro.hpp>
+#include <boost/type_erasure/detail/const.hpp>
 #include <boost/type_erasure/rebind_any.hpp>
 #include <boost/type_erasure/placeholder.hpp>
 #include <boost/type_erasure/call.hpp>
@@ -61,7 +62,13 @@
         class T, class Base, class Enable>                                                      \
     struct concept_interface<                                                                   \
         BOOST_TYPE_ERASURE_MEMBER_QUALIFIED_ID(qual_name, N),                                   \
-        Base, T,  Enable> : Base                                                                \
+        Base,                                                                                   \
+        typename ::boost::enable_if<                                                            \
+            ::boost::type_erasure::detail::should_be_non_const<T, Base>,                        \
+            typename ::boost::remove_const<T>::type                                             \
+        >::type,                                                                                \
+        Enable                                                                                  \
+    > : Base                                                                                    \
     {                                                                                           \
         typedef void BOOST_PP_CAT(_boost_type_erasure_has_member, member);                      \
         typename rebind_any<Base, R>::type member(                                              \
@@ -76,22 +83,33 @@
         class R BOOST_PP_ENUM_TRAILING_PARAMS(N, class A),                                      \
         class T, class Base, class Enable>                                                      \
     struct concept_interface<                                                                   \
-        BOOST_TYPE_ERASURE_MEMBER_QUALIFIED_ID_C(qual_name, N),                                 \
-        Base, T, Enable> : Base                                                                 \
+        BOOST_TYPE_ERASURE_MEMBER_QUALIFIED_ID(qual_name, N),                                   \
+        Base,                                                                                   \
+        typename ::boost::enable_if<                                                            \
+            ::boost::type_erasure::detail::should_be_const<T, Base>,                            \
+            typename ::boost::remove_const<T>::type                                             \
+        >::type,                                                                                \
+        Enable                                                                                  \
+    > : Base                                                                                    \
     {                                                                                           \
         typedef void BOOST_PP_CAT(_boost_type_erasure_has_member, member);                      \
         typename rebind_any<Base, R>::type member(                                              \
             BOOST_PP_ENUM(N, BOOST_TYPE_ERASURE_MEMBER_ARG, ~)) const                           \
         {                                                                                       \
             return ::boost::type_erasure::call(                                                 \
-                BOOST_TYPE_ERASURE_MEMBER_QUALIFIED_ID_C(qual_name, N)(),                       \
+                BOOST_TYPE_ERASURE_MEMBER_QUALIFIED_ID(qual_name, N)(),                         \
                 *this BOOST_PP_ENUM_TRAILING_PARAMS(N, a));                                     \
         }                                                                                       \
     };                                                                                          \
     template<class R BOOST_PP_ENUM_TRAILING_PARAMS(N, class A), class T, class Base>            \
     struct concept_interface<                                                                   \
         BOOST_TYPE_ERASURE_MEMBER_QUALIFIED_ID(qual_name, N),                                   \
-        Base, T, typename Base::BOOST_PP_CAT(_boost_type_erasure_has_member, member)> : Base    \
+        Base,                                                                                   \
+        typename ::boost::enable_if<                                                            \
+            ::boost::type_erasure::detail::should_be_non_const<T, Base>,                        \
+            typename ::boost::remove_const<T>::type                                             \
+        >::type,                                                                                \
+        typename Base::BOOST_PP_CAT(_boost_type_erasure_has_member, member)> : Base             \
     {                                                                                           \
         using Base::member;                                                                     \
         typename rebind_any<Base, R>::type member(                                              \
@@ -104,8 +122,12 @@
     };                                                                                          \
     template<class R BOOST_PP_ENUM_TRAILING_PARAMS(N, class A), class T, class Base>            \
     struct concept_interface<                                                                   \
-        BOOST_TYPE_ERASURE_MEMBER_QUALIFIED_ID_C(qual_name, N),                                 \
-        Base, T,                                                                                \
+        BOOST_TYPE_ERASURE_MEMBER_QUALIFIED_ID(qual_name, N),                                   \
+        Base,                                                                                   \
+        typename ::boost::enable_if<                                                            \
+            ::boost::type_erasure::detail::should_be_const<T, Base>,                            \
+            typename ::boost::remove_const<T>::type                                             \
+        >::type,                                                                                \
         typename Base::BOOST_PP_CAT(_boost_type_erasure_has_member, member)> : Base             \
     {                                                                                           \
         using Base::member;                                                                     \
@@ -113,7 +135,7 @@
             BOOST_PP_ENUM(N, BOOST_TYPE_ERASURE_MEMBER_ARG, ~)) const                           \
         {                                                                                       \
             return ::boost::type_erasure::call(                                                 \
-                BOOST_TYPE_ERASURE_MEMBER_QUALIFIED_ID_C(qual_name, N)(),                       \
+                BOOST_TYPE_ERASURE_MEMBER_QUALIFIED_ID(qual_name, N)(),                         \
                 *this BOOST_PP_ENUM_TRAILING_PARAMS(N, a));                                     \
         }                                                                                       \
     };                                                                                          \

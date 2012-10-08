@@ -59,6 +59,18 @@ struct access
     }
     template<class Concept, class T>
     static ::boost::type_erasure::detail::storage&
+    data(const ::boost::type_erasure::any_base< ::boost::type_erasure::any<Concept, T&> >& arg)
+    {
+        return const_cast< ::boost::type_erasure::detail::storage&>(static_cast< const ::boost::type_erasure::any<Concept, T&>&>(arg).data);
+    }
+    template<class Concept, class T>
+    static const ::boost::type_erasure::detail::storage&
+    data(const ::boost::type_erasure::any_base< ::boost::type_erasure::any<Concept, const T&> >& arg)
+    {
+        return static_cast<const ::boost::type_erasure::any<Concept, const T&>&>(arg).data;
+    }
+    template<class Concept, class T>
+    static ::boost::type_erasure::detail::storage&
     data(::boost::type_erasure::param<Concept, T>& arg)
     {
         return arg._impl.data;
