@@ -53,10 +53,26 @@ struct placeholder_conversion<const T&, T> : boost::mpl::true_ {};
 template<class T>
 struct placeholder_conversion<const T&, const T&> : boost::mpl::true_ {};
 
+#ifndef BOOST_NO_RVALUE_REFERENCES
+template<class T>
+struct placeholder_conversion<T&&, T> : boost::mpl::true_ {};
+template<class T>
+struct placeholder_conversion<T&&, const T&> : boost::mpl::true_ {};
+template<class T>
+struct placeholder_conversion<T&&, T&&> : boost::mpl::true_ {};
+#endif
+
 }
 
+#ifdef __clang__
+#if !__has_feature(cxx_reference_qualified_functions)
 /** INTERNAL ONLY */
 #define BOOST_NO_FUNCTION_REFERENCE_QUALIFIERS
+#endif
+#else
+/** INTERNAL ONLY */
+#define BOOST_NO_FUNCTION_REFERENCE_QUALIFIERS
+#endif
 
 /**
  * \brief A proxy to help with overload resolution for functions
@@ -106,8 +122,6 @@ public:
     /** INTERNAL ONLY */
     typedef param _boost_type_erasure_derived_type;
 
-#ifdef BOOST_NO_FUNCTION_REFERENCE_QUALIFIERS
-
     template<class U>
     param(any<Concept, U>& a
 #ifndef BOOST_TYPE_ERASURE_DOXYGEN
@@ -131,7 +145,20 @@ public:
         )
       : _impl(a)
     {}
-
+#ifndef BOOST_NO_RVALUE_REFERENCES
+    template<class U>
+    param(any<Concept, U>&& a
+#ifndef BOOST_TYPE_ERASURE_DOXYGEN
+        , typename boost::enable_if<
+            ::boost::type_erasure::detail::placeholder_conversion<
+                U&&,
+                T
+            >
+        >::type* = 0
+#endif
+        )
+      : _impl(std::move(a))
+    {}
 #endif
 
     /** Returns the stored @ref any. */
@@ -145,6 +172,10 @@ private:
 template<class Concept, class T>
 class param<Concept, const T&> {
 public:
+    param(const ::boost::type_erasure::detail::storage& data,
+          const ::boost::type_erasure::binding<Concept>& table)
+      : _impl(data, table)
+    {}
     template<class U>
     param(U& u, typename boost::enable_if< ::boost::is_same<U, const any<Concept, T> > >::type* = 0) : _impl(u) {}
     any<Concept, const T&> get() const { return _impl; }
@@ -155,6 +186,10 @@ protected:
 template<class Concept, class T>
 class param<Concept, T&> : public param<Concept, const T&> {
 public:
+    param(const ::boost::type_erasure::detail::storage& data,
+          const ::boost::type_erasure::binding<Concept>& table)
+      : param<Concept, const T&>(data, table)
+    {}
     any<Concept, T&> get() const
     {
         return any<Concept, T&>(
@@ -168,6 +203,10 @@ public:
 template<class Concept, class T>
 class param<Concept, T&&> : public param<Concept, const T&> {
 public:
+    param(const ::boost::type_erasure::detail::storage& data,
+          const ::boost::type_erasure::binding<Concept>& table)
+      : param<Concept, const T&>(data, table)
+    {}
     any<Concept, T&&> get() const
     {
         return any<Concept, T&&>(

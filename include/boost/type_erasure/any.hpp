@@ -1433,6 +1433,408 @@ private:
     table_type table;
 };
 
+#ifndef BOOST_NO_RVALUE_REFERENCES
+
+template<class Concept, class T>
+class any<Concept, T&&> :
+    public ::boost::type_erasure::detail::compute_bases<
+        ::boost::type_erasure::any<Concept, T&&>,
+        Concept,
+        T
+    >::type
+{
+    typedef ::boost::type_erasure::binding<Concept> table_type;
+public:
+    /** INTERNAL ONLY */
+    typedef Concept _boost_type_erasure_concept_type;
+    /** INTERNAL ONLY */
+    any(const ::boost::type_erasure::detail::storage& data_arg,
+        const table_type& table_arg)
+      : data(data_arg),
+        table(table_arg)
+    {}
+    /**
+     * Constructs an @ref any from a reference.
+     *
+     * \param arg The object to bind the reference to.
+     *
+     * \pre @c U is a model of @c Concept.
+     * \pre @c Concept must not refer to any placeholder besides @c T.
+     *
+     * \throws Nothing.
+     */
+    template<class U>
+    explicit any(U&& arg
+#ifndef BOOST_TYPE_ERASURE_DOXYGEN
+        ,  typename ::boost::disable_if<
+            ::boost::mpl::or_<
+                ::boost::is_reference<U>,
+                ::boost::is_const<U>,
+                ::boost::type_erasure::detail::is_any<U>
+            >
+        >::type* = 0
+#endif
+        )
+      : table((
+            BOOST_TYPE_ERASURE_INSTANTIATE1(Concept, T, U),
+            ::boost::type_erasure::make_binding<
+                ::boost::mpl::map< ::boost::mpl::pair<T, U> >
+            >()
+        ))
+    {
+        data.data = ::boost::addressof(arg);
+    }
+    /**
+     * Constructs an @ref any from a reference.
+     *
+     * \param arg The object to bind the reference to.
+     * \param binding Specifies the actual types that
+     *        all the placeholders should bind to.
+     *
+     * \pre @c U is a model of @c Concept.
+     * \pre @c Map is an MPL map with an entry for every
+     *         placeholder referred to by @c Concept.
+     *
+     * \throws Nothing.
+     */
+    template<class U, class Map>
+    any(U&& arg, const static_binding<Map>& binding_arg)
+      : table((
+            BOOST_TYPE_ERASURE_INSTANTIATE(Concept, Map),
+            binding_arg
+        ))
+    {
+        BOOST_MPL_ASSERT((::boost::is_same<
+            typename ::boost::mpl::at<Map, T>::type, U>));
+        data.data = ::boost::addressof(arg);
+    }
+    /**
+     * Constructs an @ref any from another rvalue reference.
+     *
+     * \param other The reference to copy.
+     *
+     * \throws Nothing.
+     */
+#ifndef BOOST_TYPE_ERASURE_DOXYGEN
+    any(any&& other)
+      : data(other.data),
+        table(std::move(other.table))
+    {}
+#endif
+    /**
+     * Constructs an @ref any from another @ref any.
+     *
+     * \param other The object to bind the reference to.
+     *
+     * \throws Nothing.
+     */
+    any(any<Concept, T>&& other)
+      : data(::boost::type_erasure::detail::access::data(other)),
+        table(std::move(::boost::type_erasure::detail::access::table(other)))
+    {}
+    /**
+     * Constructs an @ref any from another rvalue reference.
+     *
+     * \param other The reference to copy.
+     *
+     * \pre @c Concept must not refer to any placeholder besides @c T.
+     * \pre After substituting @c T for @c Tag2, the requirements of
+     *      @c Concept2 must be a superset of of the requirements of
+     *      @c Concept.
+     *
+     * \throws std::bad_alloc
+     */
+    template<class Concept2, class Tag2>
+    any(any<Concept2, Tag2&&>&& other
+#ifndef BOOST_TYPE_ERASURE_DOXYGEN
+        , typename ::boost::disable_if<
+            ::boost::mpl::or_<
+                ::boost::is_reference<Tag2>,
+                ::boost::is_same<Concept, Concept2>,
+                ::boost::is_const<Tag2>
+            >
+        >::type* = 0
+#endif
+        )
+      : data(::boost::type_erasure::detail::access::data(other)),
+        table(
+            std::move(::boost::type_erasure::detail::access::table(other)),
+            ::boost::mpl::map<
+                ::boost::mpl::pair<
+                    T,
+                    Tag2
+                >
+            >())
+    {}
+    /**
+     * Constructs an @ref any from another @ref any.
+     *
+     * \param other The object to bind the reference to.
+     *
+     * \pre @c Concept must not refer to any placeholder besides @c T.
+     * \pre After substituting @c T for @c Tag2, the requirements of
+     *      @c Concept2 must be a superset of of the requirements of
+     *      @c Concept.
+     *
+     * \throws std::bad_alloc
+     */
+    template<class Concept2, class Tag2>
+    any(any<Concept2, Tag2>&& other
+#ifndef BOOST_TYPE_ERASURE_DOXYGEN
+        , typename ::boost::disable_if<
+            ::boost::mpl::or_<
+                ::boost::is_same<Concept, Concept2>,
+                ::boost::is_const<typename ::boost::remove_reference<Tag2>::type>
+            >
+        >::type* = 0
+#endif
+        )
+      : data(::boost::type_erasure::detail::access::data(other)),
+        table(
+            std::move(::boost::type_erasure::detail::access::table(other)),
+            ::boost::mpl::map<
+                ::boost::mpl::pair<
+                    T,
+                    typename ::boost::remove_reference<Tag2>::type
+                >
+            >())
+    {}
+    /**
+     * Constructs an @ref any from another reference.
+     *
+     * \param other The reference to copy.
+     * \param binding Specifies the mapping between the two concepts.
+     *
+     * \pre @c Map must be an MPL map with keys for all the placeholders
+     *      used by @c Concept and values for the corresponding
+     *      placeholders in @c Concept2.
+     * \pre After substituting placeholders according to @c Map, the
+     *      requirements of @c Concept2 must be a superset of of the
+     *      requirements of @c Concept.
+     *
+     * \throws std::bad_alloc
+     */
+    template<class Concept2, class Tag2, class Map>
+    any(any<Concept2, Tag2&&>&& other, const static_binding<Map>& binding_arg
+#ifndef BOOST_TYPE_ERASURE_DOXYGEN
+        , typename ::boost::disable_if< ::boost::is_const<Tag2> >::type* = 0
+#endif
+        )
+      : data(::boost::type_erasure::detail::access::data(other)),
+        table(std::move(::boost::type_erasure::detail::access::table(other)), binding_arg)
+    {}
+    /**
+     * Constructs an @ref any from another @ref any.
+     *
+     * \param other The object to bind the reference to.
+     * \param binding Specifies the mapping between the two concepts.
+     *
+     * \pre @c Map must be an MPL map with keys for all the placeholders
+     *      used by @c Concept and values for the corresponding
+     *      placeholders in @c Concept2.
+     * \pre After substituting placeholders according to @c Map, the
+     *      requirements of @c Concept2 must be a superset of of the
+     *      requirements of @c Concept.
+     *
+     * \throws std::bad_alloc
+     */
+    template<class Concept2, class Tag2, class Map>
+    any(any<Concept2, Tag2>&& other, const static_binding<Map>& binding_arg
+#ifndef BOOST_TYPE_ERASURE_DOXYGEN
+        , typename ::boost::disable_if<
+            ::boost::is_const<typename ::boost::remove_reference<Tag2>::type>
+        >::type* = 0
+#endif
+        )
+      : data(::boost::type_erasure::detail::access::data(other)),
+        table(::boost::type_erasure::detail::access::table(other), binding_arg)
+    {}
+    /**
+     * Constructs an @ref any from another rvalue reference.
+     *
+     * \param other The reference to copy.
+     * \param binding Specifies the bindings of placeholders to actual types.
+     *
+     * \pre The type stored in @c other must match the type expected by
+     *      @c binding.
+     *
+     * \post binding_of(*this) == @c binding
+     *
+     * \throws Nothing.
+     */
+    template<class Concept2, class Tag2>
+    any(const any<Concept2, Tag2&&>&& other, const binding<Concept>& binding_arg
+#ifndef BOOST_TYPE_ERASURE_DOXYGEN
+        , typename ::boost::disable_if<
+            ::boost::is_const<Tag2>
+        >::type* = 0
+#endif
+        )
+      : data(::boost::type_erasure::detail::access::data(other)),
+        table(binding_arg)
+    {}
+    /**
+     * Constructs an @ref any from another @ref any.
+     *
+     * \param other The object to bind the reference to.
+     * \param binding Specifies the bindings of placeholders to actual types.
+     *
+     * \pre The type stored in @c other must match the type expected by
+     *      @c binding.
+     *
+     * \post binding_of(*this) == @c binding
+     *
+     * \throws Nothing.
+     */
+    template<class Concept2, class Tag2>
+    any(any<Concept2, Tag2>& other, const binding<Concept>& binding_arg
+#ifndef BOOST_TYPE_ERASURE_DOXYGEN
+        , typename ::boost::disable_if<
+            ::boost::is_const<typename ::boost::remove_reference<Tag2>::type>
+        >::type* = 0
+#endif
+        )
+      : data(::boost::type_erasure::detail::access::data(other)),
+        table(binding_arg)
+    {}
+    
+    /**
+     * Assigns to an @ref any.
+     *
+     * If an appropriate overload of @ref assignable is not available
+     * and @ref relaxed_match is in @c Concept, falls back on
+     * constructing from @c other.
+     *
+     * \throws Whatever the assignment operator of the contained
+     *         type throws.  When falling back on construction,
+     *         throws @c std::bad_alloc.  In this case assignment
+     *         provides the strong exception guarantee.  When
+     *         calling the assignment operator of the contained type,
+     *         the exception guarantee is whatever the contained type provides.
+     */
+    any& operator=(const any& other)
+    {
+        _boost_type_erasure_resolve_assign(other);
+        return *this;
+    }
+    
+    /**
+     * Assigns to an @ref any.
+     *
+     * If an appropriate overload of @ref assignable is not available
+     * and @ref relaxed_match is in @c Concept, falls back on
+     * constructing from @c other.
+     *
+     * \throws Whatever the assignment operator of the contained
+     *         type throws.  When falling back on construction,
+     *         throws @c std::bad_alloc.  In this case assignment
+     *         provides the strong exception guarantee.  When
+     *         calling the assignment operator of the contained type,
+     *         the exception guarantee is whatever the contained type provides.
+     */
+    template<class U>
+    any& operator=(U& other)
+    {
+        _boost_type_erasure_resolve_assign(other);
+        return *this;
+    }
+    
+    /**
+     * Assigns to an @ref any.
+     *
+     * If an appropriate overload of @ref assignable is not available
+     * and @ref relaxed_match is in @c Concept, falls back on
+     * constructing from @c other.
+     *
+     * \throws Whatever the assignment operator of the contained
+     *         type throws.  When falling back on construction,
+     *         throws @c std::bad_alloc.  In this case assignment
+     *         provides the strong exception guarantee.  When
+     *         calling the assignment operator of the contained type,
+     *         the exception guarantee is whatever the contained type provides.
+     */
+    template<class U>
+    any& operator=(const U& other)
+    {
+        _boost_type_erasure_resolve_assign(other);
+        return *this;
+    }
+    
+#ifndef BOOST_NO_FUNCTION_REFERENCE_QUALIFIERS
+    /** INTERNAL ONLY */
+    operator param<Concept, T&&>() const { return param<Concept, T&&>(data, table); }
+#endif
+private:
+
+    /** INTERNAL ONLY */
+    void _boost_type_erasure_swap(any& other)
+    {
+        ::std::swap(data, other.data);
+        ::std::swap(table, other.table);
+    }
+    /** INTERNAL ONLY */
+    template<class Other>
+    void _boost_type_erasure_resolve_assign(Other& other)
+    {
+        _boost_type_erasure_assign_impl(
+            other,
+            false? this->_boost_type_erasure_deduce_assign(
+                ::boost::type_erasure::detail::make_fallback(
+                    other,
+                    ::boost::mpl::bool_<
+                        sizeof(
+                            ::boost::type_erasure::detail::check_overload(
+                                ::boost::declval<any&>().
+                                    _boost_type_erasure_deduce_assign(other)
+                            )
+                        ) == sizeof(::boost::type_erasure::detail::yes)
+                    >()
+                )
+            ) : 0,
+            ::boost::type_erasure::is_relaxed<Concept>()
+        );
+    }
+    /** INTERNAL ONLY */
+    template<class Other, class U>
+    void _boost_type_erasure_assign_impl(
+        Other& other,
+        const assignable<T, U>*,
+        ::boost::mpl::false_)
+    {
+        ::boost::type_erasure::call(assignable<T, U>(), *this, other);
+    }
+    /** INTERNAL ONLY */
+    template<class Other, class U>
+    void _boost_type_erasure_assign_impl(
+        Other& other,
+        const assignable<T, U>*,
+        ::boost::mpl::true_)
+    {
+        if(::boost::type_erasure::check_match(assignable<T, U>(), *this, other)) {
+            ::boost::type_erasure::unchecked_call(assignable<T, U>(), *this, other);
+        } else {
+            any temp(other);
+            _boost_type_erasure_swap(temp);
+        }
+    }
+    /** INTERNAL ONLY */
+    template<class Other>
+    void _boost_type_erasure_assign_impl(
+        Other& other,
+        const void*,
+        ::boost::mpl::true_)
+    {
+        any temp(other);
+        _boost_type_erasure_swap(temp);
+    }
+
+    friend struct ::boost::type_erasure::detail::access;
+    ::boost::type_erasure::detail::storage data;
+    table_type table;
+};
+
+#endif
+
 }
 }
 
