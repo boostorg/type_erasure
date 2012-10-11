@@ -172,7 +172,7 @@ public:
      *         constructor of @c U throws.
      */
     template<class U>
-    explicit any(const U& data_arg)
+    any(const U& data_arg)
       : table((
             BOOST_TYPE_ERASURE_INSTANTIATE1(Concept, T, U),
             ::boost::type_erasure::make_binding<
@@ -846,7 +846,7 @@ public:
      * \throws Nothing.
      */
     template<class U>
-    explicit any(U& arg
+    any(U& arg
 #ifndef BOOST_TYPE_ERASURE_DOXYGEN
         ,  typename ::boost::disable_if<
             ::boost::mpl::or_<
@@ -1250,7 +1250,7 @@ public:
      * \throws Nothing.
      */
     template<class U>
-    explicit any(const U& arg)
+    any(const U& arg)
       : table((
             BOOST_TYPE_ERASURE_INSTANTIATE1(Concept, T, U),
             ::boost::type_erasure::make_binding<
@@ -1464,7 +1464,7 @@ public:
      * \throws Nothing.
      */
     template<class U>
-    explicit any(U&& arg
+    any(U&& arg
 #ifndef BOOST_TYPE_ERASURE_DOXYGEN
         ,  typename ::boost::disable_if<
             ::boost::mpl::or_<

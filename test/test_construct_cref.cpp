@@ -31,6 +31,12 @@ T as_rvalue(const T& arg) { return arg; }
 template<class T>
 const T& as_const(const T& arg) { return arg; }
 
+BOOST_AUTO_TEST_CASE(test_implicit) {
+    int i = 4;
+    any<common<>, const _self&> x = i;
+    BOOST_CHECK_EQUAL(any_cast<const int*>(&x), &i);
+}
+
 BOOST_AUTO_TEST_CASE(test_from_int_with_binding)
 {
     typedef ::boost::mpl::vector<common<> > test_concept;

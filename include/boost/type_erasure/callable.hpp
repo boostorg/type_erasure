@@ -28,6 +28,7 @@
 #include <boost/type_erasure/call.hpp>
 #include <boost/type_erasure/concept_interface.hpp>
 #include <boost/type_erasure/rebind_any.hpp>
+#include <boost/type_erasure/param.hpp>
 
 namespace boost {
 namespace type_erasure {
@@ -90,7 +91,7 @@ struct concept_interface<callable<R(T...), F>, Base, F, Enable>
     _boost_type_erasure_deduce_callable(
         typename ::boost::type_erasure::rebind_any<Base, T>::type...);
     typename ::boost::type_erasure::rebind_any<Base, R>::type
-    operator()(typename ::boost::type_erasure::rebind_any<Base, T>::type... arg)
+    operator()(typename ::boost::type_erasure::as_param<Base, T>::type... arg)
     {
         return ::boost::type_erasure::call(callable<R(T...), F>(), *this, arg...);
     }
@@ -111,7 +112,7 @@ struct concept_interface<callable<R(T...), const F>, Base, F, Enable>
     _boost_type_erasure_deduce_callable(
         typename ::boost::type_erasure::rebind_any<Base, T>::type...) const;
     typename ::boost::type_erasure::rebind_any<Base, R>::type operator()(
-        typename ::boost::type_erasure::rebind_any<Base, T>::type... arg) const
+        typename ::boost::type_erasure::as_param<Base, T>::type... arg) const
     {
         return ::boost::type_erasure::call(callable<R(T...), const F>(), *this, arg...);
     }
@@ -138,7 +139,7 @@ struct concept_interface<
         typename ::boost::type_erasure::rebind_any<Base, T>::type...);
     using Base::operator();
     typename ::boost::type_erasure::rebind_any<Base, R>::type
-    operator()(typename ::boost::type_erasure::rebind_any<Base, T>::type... arg)
+    operator()(typename ::boost::type_erasure::as_param<Base, T>::type... arg)
     {
         return ::boost::type_erasure::call(callable<R(T...), F>(), *this, arg...);
     }
@@ -165,7 +166,7 @@ struct concept_interface<
         typename ::boost::type_erasure::rebind_any<Base, T>::type...) const;
     using Base::operator();
     typename ::boost::type_erasure::rebind_any<Base, R>::type
-    operator()(typename ::boost::type_erasure::rebind_any<Base, T>::type... arg) const
+    operator()(typename ::boost::type_erasure::as_param<Base, T>::type... arg) const
     {
         return ::boost::type_erasure::call(callable<R(T...), const F>(), *this, arg...);
     }
@@ -206,7 +207,7 @@ struct result_of_callable<This(T...)>
 #define BOOST_TYPE_ERASURE_DECLVAL(z, n, data) ::boost::declval<BOOST_PP_CAT(T, n)>()
 
 #define BOOST_TYPE_ERASURE_REBIND(z, n, data)\
-    typename ::boost::type_erasure::rebind_any<Base, BOOST_PP_CAT(T, n)>::type BOOST_PP_CAT(arg, n)
+    typename ::boost::type_erasure::as_param<Base, BOOST_PP_CAT(T, n)>::type BOOST_PP_CAT(arg, n)
 
 template<class R BOOST_PP_ENUM_TRAILING_PARAMS(N, class T), class F>
 struct callable<R(BOOST_PP_ENUM_PARAMS(N, T)), F>

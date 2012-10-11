@@ -21,7 +21,7 @@
 #include <boost/type_erasure/call.hpp>
 #include <boost/type_erasure/concept_interface.hpp>
 #include <boost/type_erasure/config.hpp>
-#include <boost/type_erasure/rebind_any.hpp>
+#include <boost/type_erasure/param.hpp>
 
 namespace boost {
 namespace type_erasure {
@@ -80,7 +80,7 @@ struct concept_interface<
     using Base::_boost_type_erasure_deduce_constructor;
     ::boost::type_erasure::constructible<R(T...)>*
     _boost_type_erasure_deduce_constructor(
-        typename ::boost::type_erasure::rebind_any<Base, T>::type...)
+        typename ::boost::type_erasure::as_param<Base, T>::type...)
     {
         return 0;
     }
@@ -126,7 +126,7 @@ struct get_null_vtable_entry<vtable_adapter<constructible<T(const T&)>, R(U...)>
 #define N BOOST_PP_ITERATION()
 
 #define BOOST_TYPE_ERASURE_ARG_DECL(z, n, data)     \
-    typename ::boost::type_erasure::rebind_any<     \
+    typename ::boost::type_erasure::as_param<          \
         Base,                                       \
         BOOST_PP_CAT(T, n)                          \
     >::type
@@ -143,15 +143,15 @@ struct constructible<R(BOOST_PP_ENUM_PARAMS(N, T))>
     }
 };
 
-template<class Base, class R BOOST_PP_ENUM_TRAILING_PARAMS(N, class T), class Tag>
+template<class Base BOOST_PP_ENUM_TRAILING_PARAMS(N, class T), class Tag>
 struct concept_interface<
-    ::boost::type_erasure::constructible<R(BOOST_PP_ENUM_PARAMS(N, T))>,
+    ::boost::type_erasure::constructible<Tag(BOOST_PP_ENUM_PARAMS(N, T))>,
     Base,
     Tag
 > : Base
 {
     using Base::_boost_type_erasure_deduce_constructor;
-    ::boost::type_erasure::constructible<R(BOOST_PP_ENUM_PARAMS(N, T))>*
+    ::boost::type_erasure::constructible<Tag(BOOST_PP_ENUM_PARAMS(N, T))>*
     _boost_type_erasure_deduce_constructor(
         BOOST_PP_ENUM(N, BOOST_TYPE_ERASURE_ARG_DECL, ~))
     {

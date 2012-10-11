@@ -564,27 +564,6 @@ greatly appreciated.
   substitute for template parameters, I'd really like
   to use `_T`.  Alack-a-day, `_T` is a reserved identifier.
   `_self` was the best I could think of.
-* Implicit conversions.  Implicit conversion from the
-  contained type to a reference any is not allowed.
-  The reason for this is that I found that such
-  conversions were interefering with overload resolution.
-  Getting overload resolution to work correctly in
-  the following would be a lot more difficult if
-  implicit conversion were allowed:
-  ``
-    typedef mpl::vector<
-        copy_constructible<>,
-        constructible<_self(const std::string&)>
-    > concept;
-    any<concept> x = ...;
-    any<concept> y(binding_of(x), "hello");
-  ``
-  Without great care we end up with an ambiguity
-  between the `std::string` constructor and the
-  copy constructor.  User-defined overloaded
-  functions would also need to handle this somehow.
-  I decided that it was better to avoid the whole
-  problem by disabling implicit conversions.
 * __relaxed_match.  I considered a lot of names
   for this, `strict_match<false>`, `enable_mixed`,
   `nonstrict_match`, `loose_match`, `best_effort`,

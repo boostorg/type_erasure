@@ -29,6 +29,11 @@ struct common : ::boost::mpl::vector<
     typeid_<T>
 > {};
 
+BOOST_AUTO_TEST_CASE(test_implicit) {
+    any<common<> > x = 1;
+    BOOST_CHECK_EQUAL(any_cast<int>(x), 1);
+}
+
 BOOST_AUTO_TEST_CASE(test_unary)
 {
     typedef ::boost::mpl::vector<
