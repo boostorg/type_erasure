@@ -36,6 +36,7 @@ run test_same_type.cpp /boost//unit_test_framework ;
 run test_member.cpp /boost//unit_test_framework ;
 run test_null.cpp /boost//unit_test_framework ;
 run test_free.cpp /boost//unit_test_framework ;
+run test_is_empty.cpp /boost//unit_test_framework ;
 
 compile test_param.cpp ;
 compile test_is_subconcept.cpp ;
