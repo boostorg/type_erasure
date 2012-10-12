@@ -34,6 +34,37 @@ BOOST_AUTO_TEST_CASE(test_implicit) {
     BOOST_CHECK_EQUAL(any_cast<int>(x), 1);
 }
 
+void func() {}
+
+BOOST_AUTO_TEST_CASE(test_decay) {
+    char array[] = "Hello World!";
+    const char carray[] = "Hello World!";
+
+    any<common<> > x1(array);
+    any<common<> > y1(func);
+    any<common<> > z1(carray);
+    BOOST_CHECK_EQUAL(any_cast<char *>(x1), &array[0]);
+    BOOST_CHECK(any_cast<void(*)()>(y1) == &func);
+    BOOST_CHECK_EQUAL(any_cast<const char *>(z1), &carray[0]);
+
+    any<common<> > x2(array, make_binding<boost::mpl::map<boost::mpl::pair<_self, char *> > >());
+    any<common<> > y2(func, make_binding<boost::mpl::map<boost::mpl::pair<_self, void(*)()> > >());
+    any<common<> > z2(carray, make_binding<boost::mpl::map<boost::mpl::pair<_self, const char *> > >());
+    BOOST_CHECK_EQUAL(any_cast<char *>(x2), &array[0]);
+    BOOST_CHECK(any_cast<void(*)()>(y2) == &func);
+    BOOST_CHECK_EQUAL(any_cast<const char *>(z2), &carray[0]);
+
+    static_binding<boost::mpl::map<boost::mpl::pair<_self, char *> > > bx3;
+    static_binding<boost::mpl::map<boost::mpl::pair<_self, void (*)()> > > by3;
+    static_binding<boost::mpl::map<boost::mpl::pair<_self, const char *> > > bz3;
+    any<common<> > x3(array, bx3);
+    any<common<> > y3(func, by3);
+    any<common<> > z3(carray, bz3);
+    BOOST_CHECK_EQUAL(any_cast<char *>(x3), &array[0]);
+    BOOST_CHECK(any_cast<void(*)()>(y3) == &func);
+    BOOST_CHECK_EQUAL(any_cast<const char *>(z3), &carray[0]);
+}
+
 BOOST_AUTO_TEST_CASE(test_unary)
 {
     typedef ::boost::mpl::vector<

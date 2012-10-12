@@ -207,6 +207,30 @@ public:
         BOOST_MPL_ASSERT((::boost::is_same<
             typename ::boost::mpl::at<Map, T>::type, U>));
     }
+    // Handle array/function-to-pointer decay
+    /** INTERNAL ONLY */
+    template<class U>
+    any(U* data_arg)
+      : table((
+            BOOST_TYPE_ERASURE_INSTANTIATE1(Concept, T, U*),
+            ::boost::type_erasure::make_binding<
+                ::boost::mpl::map< ::boost::mpl::pair<T, U*> >
+            >()
+        )),
+        data(data_arg)
+    {}
+    /** INTERNAL ONLY */
+    template<class U, class Map>
+    any(U* data_arg, const static_binding<Map>& binding_arg)
+      : table((
+            BOOST_TYPE_ERASURE_INSTANTIATE(Concept, Map),
+            binding_arg
+        )),
+        data(data_arg)
+    {
+        BOOST_MPL_ASSERT((::boost::is_same<
+            typename ::boost::mpl::at<Map, T>::type, U*>));
+    }
     /**
      * Copies an @ref any.
      *
@@ -395,6 +419,14 @@ public:
     // disambiguating overloads
     template<class U, class Map>
     any(U& data_arg, static_binding<Map>& binding_arg)
+      : table((
+            BOOST_TYPE_ERASURE_INSTANTIATE(Concept, Map),
+            binding_arg
+        )),
+        data(data_arg)
+    {}
+    template<class U, class Map>
+    any(U* data_arg, static_binding<Map>& binding_arg)
       : table((
             BOOST_TYPE_ERASURE_INSTANTIATE(Concept, Map),
             binding_arg
