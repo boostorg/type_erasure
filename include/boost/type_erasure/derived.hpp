@@ -18,6 +18,8 @@ namespace type_erasure {
  * A metafunction which returns the full @ref any type,
  * when given any of its base classes.  This is primarily
  * intended to be used when implementing @ref concept_interface.
+ *
+ * \see rebind_any, as_param
  */
 template<class T>
 struct derived

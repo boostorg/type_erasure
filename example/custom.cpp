@@ -19,11 +19,16 @@ using namespace boost::type_erasure;
 //[custom1
 /*`
     Earlier, we used __BOOST_TYPE_ERASURE_MEMBER to define
-    a concept for containers that support `push_back`.  Let's
-    take a look at what this actually entails.  The first thing
-    we need is a class template with a template parameter for
-    each argument, and a static member function
-    called `apply` that calls `push_back`.
+    a concept for containers that support `push_back`.  Sometimes
+    this interface isn't flexible enough, however.  The library
+    also provides a lower level interface that gives full
+    control of the behavior.  Let's take a look at what we
+    would need in order to define `has_push_back.`  First,
+    we need to define the `has_push_back` template itself.  We'll
+    give it two template parameters, one for the container
+    and one for the element type.  This template must have
+    a static member function called apply which is used
+    to dispatch the operation.
 */
 
 template<class C, class T>
@@ -35,13 +40,13 @@ struct has_push_back
 
 //[custom3
 /*`
-    This works, but we'd really like to call `c.push_back(10)`.
-    We can add members to __any by specializing __concept_interface.
-    The first argument is `push_back`, since we want to inject a member
+    The second part is to customize __any so that we can call `c.push_back(10)`.
+    We do this by specializing __concept_interface.
+    The first argument is `has_push_back`, since we want to inject a member
     into every __any that uses the `push_back` concept.  The second argument,
-    Base, is used by the library to chain multiple uses of __concept_interface
-    together.  We have to inherit from it publicly.  Other than
-    that we can ignore it.  The third argument is the placeholder
+    `Base`, is used by the library to chain multiple uses of __concept_interface
+    together.  We have to inherit from it publicly.  `Base` is also used
+    to get access to the full __any type.  The third argument is the placeholder
     that represents this any.  If someone used `push_back<_c, _b>`,
     we only want to insert a `push_back` member in the container,
     not the value type.  Thus, the third argument is the container
@@ -52,7 +57,7 @@ namespace type_erasure {
 template<class C, class T, class Base>
 struct concept_interface<has_push_back<C, T>, Base, C> : Base
 {
-    void push_back(typename rebind_any<Base, const T&>::type arg)
+    void push_back(const T& arg)
     { call(has_push_back<C, T>(), *this, arg); }
 };
 }
@@ -76,11 +81,7 @@ void custom2() {
 void custom4() {
     //[custom4
     /*`
-        Note the use of __rebind_any to determine the argument
-        type.  We could just use `T`, but that would fail when
-        `T` is a placeholder.  __rebind_any does the work to
-        determine the correct type in that case.  Our example
-        now becomes
+        Our example now becomes
     */
     std::vector<int> vec;
     any<has_push_back<_self, int>, _self&> c(vec);

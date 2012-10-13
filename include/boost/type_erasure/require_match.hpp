@@ -47,7 +47,7 @@ class binding;
  * If @c binding is not specified, it will be deduced from
  * the arguments.
  *
- * \post @c call(binding, concept, args...) is valid.
+ * \post \call<code>(binding, f, args...)</code> is valid.
  */
 template<class Concept, class Op, class... U>
 void require_match(const binding<Concept>& binding_arg, const Op& f, U&&... args);

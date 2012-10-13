@@ -23,6 +23,7 @@
 #include <boost/mpl/bool.hpp>
 #include <boost/type_erasure/any.hpp>
 #include <boost/type_erasure/builtin.hpp>
+#include <boost/type_erasure/exception.hpp>
 #include <boost/type_erasure/detail/access.hpp>
 
 namespace boost {
@@ -92,13 +93,8 @@ bool check_any_cast(const any<Concept, Tag>& arg)
 }
 
 /**
- * Exception thrown when an any_cast to a reference or value fails.
- */
-class bad_any_cast : public std::bad_cast {};
-
-/**
  * Attempts to extract the object that @c arg holds.
- * If casting to a pointer fails, @ref any_cast returns
+ * If casting to a pointer fails, \any_cast returns
  * a null pointer.  Casting to @c void* always succeeds
  * and returns the address of stored object.
  *

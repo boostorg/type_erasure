@@ -9,7 +9,7 @@
 // $Id$
 
 #include <boost/type_erasure/concept_interface.hpp>
-#include <boost/type_erasure/rebind_any.hpp>
+#include <boost/type_erasure/as_param.hpp>
 #include <boost/type_erasure/derived.hpp>
 #include <boost/type_erasure/is_placeholder.hpp>
 #include <boost/utility/enable_if.hpp>
@@ -120,7 +120,7 @@ namespace type_erasure {
 template<class T, class U, class Base>
 struct concept_interface< ::bar_concept<T, U>, Base, T>
 {
-    friend void bar(typename derived<Base>::type& t, typename rebind_any<Base, const U&>::type u)
+    friend void bar(typename derived<Base>::type& t, typename as_param<Base, const U&>::type u)
     {
         call(::bar_concept<T, U>(), t, u);
     }
@@ -153,10 +153,6 @@ struct concept_interface< ::bar_concept<T, U>, Base, U, typename boost::disable_
     possible to merge the two specializations with a bit of metaprogramming,
     but unless you have a lot of arguments, it's probably not
     worth while.
-    
-    At first I tried overloading `bar` at namespace scope.  This
-    seems like a more obvious solution at first.  Don't use it.
-    It doesn't work with overloads.
 */
 
 //]

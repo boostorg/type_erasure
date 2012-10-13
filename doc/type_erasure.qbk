@@ -27,6 +27,7 @@
 [def __placeholder [classref boost::type_erasure::placeholder placeholder]]
 [def __call [funcref boost::type_erasure::call call]]
 [def __deduced [classref boost::type_erasure::deduced deduced]]
+[def __as_param [classref boost::type_erasure::as_param as_param]]
 
 [def __addable [classref boost::type_erasure::addable addable]]
 [def __subtractable [classref boost::type_erasure::subtractable subtractable]]

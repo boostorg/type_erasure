@@ -19,11 +19,19 @@ namespace type_erasure {
 /**
  * Exception thrown when the arguments to a primitive concept
  * are incorrect.
+ *
+ * \see \call, \require_match
  */
-struct bad_function_call : ::std::invalid_argument
+class bad_function_call : public ::std::invalid_argument
 {
+public:
     bad_function_call() : ::std::invalid_argument("bad_function_call") {}
 };
+
+/**
+ * Exception thrown when an \any_cast to a reference or value fails.
+ */
+class bad_any_cast : public std::bad_cast {};
 
 }
 }

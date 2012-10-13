@@ -83,7 +83,7 @@ struct concept_interface<assignable<T, U>, Base, T> : Base
 
 /**
  * Enables runtime type information.  This is required
- * if you want to use @ref any_cast or @ref typeid_of.
+ * if you want to use \any_cast or \typeid_of.
  */
 template<class T = _self>
 struct typeid_

@@ -137,9 +137,9 @@ T& convert_arg(T& arg, boost::mpl::false_) { return arg; }
  *
  * @c Op must be a primitive concept which is present in
  * @c Concept.  Its signature determines how the arguments of
- * @ref call are handled.  If the argument is a @ref placeholder,
- * @ref call expects an @ref any using that @ref placeholder.
- * This @ref any is unwrapped by @ref call.  The type that
+ * \call are handled.  If the argument is a @ref placeholder,
+ * \call expects an @ref any using that @ref placeholder.
+ * This @ref any is unwrapped by \call.  The type that
  * it stores must be the same type specified by @c binding.
  * Any arguments that are not placeholders in the signature
  * of @c Op are passed through unchanged.

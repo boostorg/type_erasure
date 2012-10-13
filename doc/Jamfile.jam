@@ -30,7 +30,11 @@ doxygen reference
   :
     <doxygen:param>EXPAND_ONLY_PREDEF=YES
     <doxygen:param>"ALIASES= \\
-        CopyConstructible=\"<a href=\\\"$(BOOST_ROOT)/doc/html/CopyConstructible.html\\\">CopyConstructible</a>\" "
+        CopyConstructible=\"<a href=\\\"$(BOOST_ROOT)/doc/html/CopyConstructible.html\\\">CopyConstructible</a>\" \\
+        call=\"@xmlonly<functionname alt=\\\"boost::type_erasure::call\\\">call</functionname>@endxmlonly\" \\
+        any_cast=\"@xmlonly<functionname alt=\\\"boost::type_erasure::any_cast\\\">any_cast</functionname>@endxmlonly\" \\
+        typeid_of=\"@xmlonly<functionname alt=\\\"boost::type_erasure::typeid_of\\\">typeid_of</functionname>@endxmlonly\" \\
+        require_match=\"@xmlonly<functionname alt=\\\"boost::type_erasure::require_match\\\">require_match</functionname>@endxmlonly\" "
     <doxygen:param>"PREDEFINED= \\
         \"BOOST_TYPE_ERASURE_DOXYGEN=1\" \\
         \"BOOST_TYPE_ERASURE_UNARY_INPLACE_OPERATOR(name, op)=template<class T = _self> struct name { static void apply(T&); };\" \\

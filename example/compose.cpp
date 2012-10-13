@@ -17,11 +17,10 @@ using namespace boost::type_erasure;
 
 //[compose1
 /*`
-    The basic concepts, like __copy_constructible and
-    __incrementable, are useful, but dealing with many
-    such concepts quickly gets cumbersome.  Fortunately,
-    the library allows us to combine several concepts into
-    a single concept using an MPL sequence.
+    This can be generalized to define a concept that
+    is composed of multiple other concepts.  The
+    MPL sequence can contain as many concepts as
+    we need.
 */
 template<class T = _self>
 struct arithmetic :
@@ -36,11 +35,8 @@ struct arithmetic :
     >
 {};
 /*`
-    Now, `arithmetic` can be used just like any
-    of the base concepts.  We can even specialize
-    __concept_interface for it if we want to
-    add to or override the behavior of the base
-    concepts.
+    Now, `arithmetic` is a concept that can be used just
+    like any of the base concepts.
 */
 //]
 

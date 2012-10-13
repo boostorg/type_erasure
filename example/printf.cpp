@@ -286,7 +286,7 @@ int main() {
     print("double: %+20.9e\n", 3.14159265358979323846);
     print("double: %0+20.9g\n", 3.14159265358979323846);
     print("double: %*.*g\n", 20, 5, 3.14159265358979323846);
-    print("string: %.10s\n", (const char *)"Hello World!");
+    print("string: %.10s\n", "Hello World!");
     print("double: %2$*.*g int: %1$d\n", 10, 20, 5, 3.14159265358979323846);
 }
 
