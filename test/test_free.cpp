@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE(test_global_has_f1_1_const) {
         ns1::ns2::ns_has_f1_1<int(const _self&)>,
         copy_constructible<> > concept_type;
     model_const m(10);
-    any<concept_type> x(m);
+    const any<concept_type> x(m);
     BOOST_CHECK_EQUAL(f1(x), 10);
 }
 
@@ -93,7 +93,7 @@ BOOST_AUTO_TEST_CASE(test_global_has_f1_overload_const) {
         global_has_f1_2<int(const _self&, int)>,
         copy_constructible<> > concept_type;
     model_const m(10);
-    any<concept_type> x(m);
+    const any<concept_type> x(m);
     BOOST_CHECK_EQUAL(f1(x), 10);
     BOOST_CHECK_EQUAL(f1(x, 5), 15);
 }

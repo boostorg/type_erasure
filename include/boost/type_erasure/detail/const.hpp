@@ -79,14 +79,18 @@ template<class Placeholder, class Base>
 struct maybe_const_this_param
 {
     typedef typename ::boost::type_erasure::derived<Base>::type plain_type;
-    typedef typename ::boost::mpl::if_<
-        ::boost::type_erasure::detail::should_be_non_const<Placeholder, Base>,
-        plain_type&,
+    typedef typename ::boost::remove_reference<Placeholder>::type plain_placeholder;
+    typedef typename ::boost::mpl::if_< ::boost::is_reference<Placeholder>,
         typename ::boost::mpl::if_<
-            ::boost::type_erasure::detail::should_be_const<Placeholder, Base>,
-            const plain_type&,
-            uncallable<plain_type>
-        >::type
+            ::boost::type_erasure::detail::should_be_non_const<plain_placeholder, Base>,
+            plain_type&,
+            typename ::boost::mpl::if_<
+                ::boost::type_erasure::detail::should_be_const<plain_placeholder, Base>,
+                const plain_type&,
+                uncallable<plain_type>
+            >::type
+        >::type,
+        plain_type
     >::type type;
 };
 
