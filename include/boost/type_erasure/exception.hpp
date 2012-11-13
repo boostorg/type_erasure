@@ -12,6 +12,7 @@
 #define BOOST_TYPE_ERASURE_EXCEPTION_HPP_INCLUDED
 
 #include <stdexcept>
+#include <typeinfo>
 
 namespace boost {
 namespace type_erasure {
