@@ -75,7 +75,7 @@ struct placeholder_conversion<T&&, T&&> : boost::mpl::true_ {};
 #endif
 
 /**
- * \brief A proxy to help with overload resolution for functions
+ * \brief A wrapper to help with overload resolution for functions
  * operating on an @ref any.
  *
  * The template arguments are interpreted in
@@ -219,10 +219,16 @@ public:
 
 #endif
 
-/** \brief Metafunction that creates a @ref param.
+/**
+ * \brief Metafunction that creates a @ref param.
  *
  * If @c T is a (cv/reference qualifed) placeholder,
- * returns @ref param<@ref concept_of "concept_of"&lt;Any&gt;::type, T>, otherwise, returns T.
+ * returns @ref param<@ref concept_of "concept_of"&lt;Any&gt;::type, T>,
+ * otherwise, returns T.  This metafunction is intended
+ * to be used for function arguments in specializations of
+ * @ref concept_interface.
+ *
+ * \see derived, rebind_any
  */
 template<class Any, class T>
 struct as_param {

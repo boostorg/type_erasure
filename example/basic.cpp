@@ -103,6 +103,18 @@ void append_many(any<has_push_back<void(int)>, _self&> container) {
 */
 
 /*`
+    The concepts created by __BOOST_TYPE_ERASURE_MEMBER take
+    a __placeholder as an optional second parameter.  This
+    __placeholder defaults to `_self`.  If we wanted to use a
+    different placeholder or have a constant member function,
+    we'd have to specify it explicitly.
+ */
+BOOST_TYPE_ERASURE_MEMBER((has_empty), empty, 0)
+bool is_empty(any<has_empty<bool(), const _self>, const _self&> x) {
+    return x.empty();
+}
+
+/*`
     For free functions, we can use the macro __BOOST_TYPE_ERASURE_FREE.
 */
 

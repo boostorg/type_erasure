@@ -28,7 +28,7 @@ using namespace boost::type_erasure;
     give it two template parameters, one for the container
     and one for the element type.  This template must have
     a static member function called apply which is used
-    to dispatch the operation.
+    to execute the operation.
 */
 
 template<class C, class T>
@@ -43,7 +43,7 @@ struct has_push_back
     The second part is to customize __any so that we can call `c.push_back(10)`.
     We do this by specializing __concept_interface.
     The first argument is `has_push_back`, since we want to inject a member
-    into every __any that uses the `push_back` concept.  The second argument,
+    into every __any that uses the `has_push_back` concept.  The second argument,
     `Base`, is used by the library to chain multiple uses of __concept_interface
     together.  We have to inherit from it publicly.  `Base` is also used
     to get access to the full __any type.  The third argument is the placeholder
@@ -51,13 +51,18 @@ struct has_push_back
     we only want to insert a `push_back` member in the container,
     not the value type.  Thus, the third argument is the container
     placeholder.
+
+    When we define `push_back` the argument type uses the metafunction
+    __as_param.  This is just to handle the case where `T` is a
+    placeholder.  If `T` is not a placeholder, then the metafunction
+    just returns its argument, `const T&`, unchanged.
 */
 namespace boost {
 namespace type_erasure {
 template<class C, class T, class Base>
 struct concept_interface<has_push_back<C, T>, Base, C> : Base
 {
-    void push_back(const T& arg)
+    void push_back(typename as_param<Base, const T&>::type arg)
     { call(has_push_back<C, T>(), *this, arg); }
 };
 }

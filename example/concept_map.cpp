@@ -33,6 +33,14 @@ struct less_than_comparable<std::type_info>
 
 }
 }
+
+/*`
+    [note Most, but not all of the builtin concepts can be specialized.
+    Constructors, destructors, and RTTI need special treatment from the
+    library and cannot be specialized.  Only primitive concepts can
+    be specialized, so the iterator concepts are also out.]
+*/
+
 //]
 
 //[concept_map

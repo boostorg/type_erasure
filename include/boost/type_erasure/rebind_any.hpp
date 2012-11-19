@@ -38,6 +38,8 @@ class any;
  * rebind_any<any<Concept>, _b&>::type -> any<Concept, _b&>
  * rebind_any<any<Concept>, int>::type -> int
  * \endcode
+ *
+ * @see derived, as_param
  */
 template<class Any, class T>
 struct rebind_any

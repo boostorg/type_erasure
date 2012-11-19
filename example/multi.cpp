@@ -23,8 +23,7 @@ void multi1() {
     //[multi1
     /*`
         Operations can have more than one __any argument.
-        Let's change the example from the previous section
-        to use binary addition, instead of increment.
+        Let's use binary addition as an example.
     */
     typedef any<
         mpl::vector<

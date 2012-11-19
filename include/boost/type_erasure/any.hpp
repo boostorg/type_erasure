@@ -117,10 +117,13 @@ struct is_any<any<Concept, T> > : ::boost::mpl::true_ {};
 #endif
 
 /**
- * The class template @ref any provides runtime polymorphism.
+ * The class template @ref any can store any object that
+ * models a specific @c Concept.  It dispatches all
+ * the function defined by the @c Concept to the contained type
+ * at runtime.
  *
  * \tparam Concept The concept that the type should model.
- * \tparam T A placeholder specifying which type this is.
+ * \tparam T A @ref placeholder specifying which type this is.
  *
  * @c Concept is defined as follows:
  * - The built-in concepts provided by the library are valid concepts.
@@ -161,6 +164,8 @@ public:
     }
     /**
      * Constructs an @ref any to hold a copy of @c data.
+     * The @c Concept will be instantiated with the
+     * placeholder @c T bound to U.
      *
      * \param data The object to construct the @ref any from.
      *
@@ -182,7 +187,8 @@ public:
         data(data_arg)
     {}
     /**
-     * Constructs an @ref any to hold a copy of @c data.
+     * Constructs an @ref any to hold a copy of @c data
+     * with explicitly specified placeholder bindings.
      *
      * \param data The object to construct the @ref any from.
      * \param binding Specifies the actual types that
@@ -192,6 +198,7 @@ public:
      * \pre @c U must be \CopyConstructible.
      * \pre @c Map is an MPL map with an entry for every
      *         placeholder referred to by @c Concept.
+     * \pre @c @c T must map to @c U in @c Map.
      *
      * \throws std::bad_alloc or whatever that the copy
      *         constructor of @c U throws.
@@ -237,6 +244,7 @@ public:
      * \param other The object to make a copy of.
      *
      * \pre @c Concept must contain @ref constructible<T(const T&)>.
+     *     (This is included in @ref copy_constructible<T>)
      *
      * \throws std::bad_alloc or whatever that the copy
      *         constructor of the contained type throws.
@@ -285,7 +293,8 @@ public:
      * Constructs an @ref any from another @ref any.
      *
      * \param other The object to make a copy of.
-     * \param binding Specifies the mapping between the two concepts.
+     * \param binding Specifies the mapping between the placeholders
+     *        used by the two concepts.
      *
      * \pre @c Concept must contain @ref constructible<T(const T&)>.
      * \pre @c Map must be an MPL map with keys for all the placeholders

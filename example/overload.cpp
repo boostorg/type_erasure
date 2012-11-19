@@ -61,7 +61,7 @@ template<class T, class U, class Base, class Enable>
 struct concept_interface< ::foo<T, U>, Base, T, Enable>
 {
     typedef void _fun_defined;
-    void foo(typename rebind_any<Base, const U&>::type arg)
+    void foo(typename as_param<Base, const U&>::type arg)
     {
         call(::foo<T, U>(), *this, arg);
     }
@@ -71,7 +71,7 @@ template<class T, class U, class Base>
 struct concept_interface< ::foo<T, U>, Base, T, typename Base::_fun_defined>
 {
     using Base::foo;
-    void foo(typename rebind_any<Base, const U&>::type arg)
+    void foo(typename as_param<Base, const U&>::type arg)
     {
         call(::foo<T, U>(), *this, arg);
     }
@@ -145,8 +145,8 @@ struct concept_interface< ::bar_concept<T, U>, Base, U, typename boost::disable_
     the first argument that's a placeholder.
     As you might have noticed, the argument types are a bit tricky.
     In the first specialization, the first argument uses __derived
-    instead of __rebind_any. The reason for this is that if we used
-    __rebind_any, then we could end up violating the one definition
+    instead of __as_param. The reason for this is that if we used
+    __as_param, then we could end up violating the one definition
     rule by defining the same function twice.  Similarly, we use
     SFINAE in the second specialization to make sure that bar is
     only defined once when both arguments are placeholders.  It's
