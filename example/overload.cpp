@@ -9,7 +9,7 @@
 // $Id$
 
 #include <boost/type_erasure/concept_interface.hpp>
-#include <boost/type_erasure/as_param.hpp>
+#include <boost/type_erasure/param.hpp>
 #include <boost/type_erasure/derived.hpp>
 #include <boost/type_erasure/is_placeholder.hpp>
 #include <boost/utility/enable_if.hpp>
@@ -58,7 +58,7 @@ namespace boost {
 namespace type_erasure {
 
 template<class T, class U, class Base, class Enable>
-struct concept_interface< ::foo<T, U>, Base, T, Enable>
+struct concept_interface< ::foo<T, U>, Base, T, Enable> : Base
 {
     typedef void _fun_defined;
     void foo(typename as_param<Base, const U&>::type arg)
@@ -68,7 +68,7 @@ struct concept_interface< ::foo<T, U>, Base, T, Enable>
 };
 
 template<class T, class U, class Base>
-struct concept_interface< ::foo<T, U>, Base, T, typename Base::_fun_defined>
+struct concept_interface< ::foo<T, U>, Base, T, typename Base::_fun_defined> : Base
 {
     using Base::foo;
     void foo(typename as_param<Base, const U&>::type arg)
@@ -118,7 +118,7 @@ namespace boost {
 namespace type_erasure {
 
 template<class T, class U, class Base>
-struct concept_interface< ::bar_concept<T, U>, Base, T>
+struct concept_interface< ::bar_concept<T, U>, Base, T> : Base
 {
     friend void bar(typename derived<Base>::type& t, typename as_param<Base, const U&>::type u)
     {
@@ -127,7 +127,7 @@ struct concept_interface< ::bar_concept<T, U>, Base, T>
 };
 
 template<class T, class U, class Base>
-struct concept_interface< ::bar_concept<T, U>, Base, U, typename boost::disable_if<is_placeholder<T> >::type>
+struct concept_interface< ::bar_concept<T, U>, Base, U, typename boost::disable_if<is_placeholder<T> >::type> : Base
 {
     using Base::bar;
     friend void bar(T& t, const typename derived<Base>::type& u)
