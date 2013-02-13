@@ -30,6 +30,12 @@ class any;
 
 namespace detail {
 
+struct access;
+
+}
+
+namespace detail {
+
 template<class From, class To>
 struct placeholder_conversion : boost::mpl::false_ {};
 template<class T>
