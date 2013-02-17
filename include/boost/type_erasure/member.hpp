@@ -1,6 +1,6 @@
 // Boost.TypeErasure library
 //
-// Copyright 2012 Steven Watanabe
+// Copyright 2012-2013 Steven Watanabe
 //
 // Distributed under the Boost Software License Version 1.0. (See
 // accompanying file LICENSE_1_0.txt or copy at
@@ -31,119 +31,22 @@
 #define BOOST_TYPE_ERASURE_MEMBER_ARG(z, n, data)  \
     typename ::boost::type_erasure::as_param<Base, BOOST_PP_CAT(A, n)>::type BOOST_PP_CAT(a, n)
 
+#if defined(BOOST_NO_VARIADIC_TEMPLATES) || defined(BOOST_TYPE_ERASURE_DOXYGEN)
+
 /** INTERNAL ONLY */
 #define BOOST_TYPE_ERASURE_MEMBER_QUALIFIED_ID(seq, N) \
     BOOST_TYPE_ERASURE_QUALIFIED_NAME(seq)<R(BOOST_PP_ENUM_PARAMS(N, A)), T>
 
 /** INTERNAL ONLY */
-#define BOOST_TYPE_ERASURE_MEMBER_QUALIFIED_ID_C(seq, N) \
-    BOOST_TYPE_ERASURE_QUALIFIED_NAME(seq)<R(BOOST_PP_ENUM_PARAMS(N, A)), const T>
-
+#define BOOST_TYPE_ERASURE_MEMBER_TPL_ARG_LIST(N, X) BOOST_PP_ENUM_TRAILING_PARAMS(N, X)
 /** INTERNAL ONLY */
-#define BOOST_TYPE_ERASURE_MEMBER_II(qual_name, concept_name, member, N)                        \
-    BOOST_TYPE_ERASURE_OPEN_NAMESPACE(qual_name)                                                \
-    template<class Sig, class T = ::boost::type_erasure::_self>                                 \
-    struct concept_name;                                                                        \
-    template<class R BOOST_PP_ENUM_TRAILING_PARAMS(N, class A), class T>                        \
-    struct concept_name<R(BOOST_PP_ENUM_PARAMS(N, A)), T> {                                     \
-        static R apply(T& t BOOST_PP_ENUM_TRAILING_BINARY_PARAMS(N, A, a))                      \
-        { return t.member(BOOST_PP_ENUM_PARAMS(N, a)); }                                        \
-    };                                                                                          \
-    template<BOOST_PP_ENUM_PARAMS(N, class A) BOOST_PP_COMMA_IF(N) class T>                     \
-    struct concept_name<void(BOOST_PP_ENUM_PARAMS(N, A)), T> {                                  \
-        static void apply(T& t BOOST_PP_ENUM_TRAILING_BINARY_PARAMS(N, A, a))                   \
-        { t.member(BOOST_PP_ENUM_PARAMS(N, a)); }                                               \
-    };                                                                                          \
-    BOOST_TYPE_ERASURE_CLOSE_NAMESPACE(qual_name)                                               \
-    namespace boost {                                                                           \
-    namespace type_erasure {                                                                    \
-    template<                                                                                   \
-        class R BOOST_PP_ENUM_TRAILING_PARAMS(N, class A),                                      \
-        class T, class Base, class Enable>                                                      \
-    struct concept_interface<                                                                   \
-        BOOST_TYPE_ERASURE_MEMBER_QUALIFIED_ID(qual_name, N),                                   \
-        Base,                                                                                   \
-        typename ::boost::enable_if<                                                            \
-            ::boost::type_erasure::detail::should_be_non_const<T, Base>,                        \
-            typename ::boost::remove_const<T>::type                                             \
-        >::type,                                                                                \
-        Enable                                                                                  \
-    > : Base                                                                                    \
-    {                                                                                           \
-        typedef void BOOST_PP_CAT(_boost_type_erasure_has_member, member);                      \
-        typename rebind_any<Base, R>::type member(                                              \
-            BOOST_PP_ENUM(N, BOOST_TYPE_ERASURE_MEMBER_ARG, ~))                                 \
-        {                                                                                       \
-            return ::boost::type_erasure::call(                                                 \
-                BOOST_TYPE_ERASURE_MEMBER_QUALIFIED_ID(qual_name, N)(),                         \
-                *this BOOST_PP_ENUM_TRAILING_PARAMS(N, a));                                     \
-        }                                                                                       \
-    };                                                                                          \
-    template<                                                                                   \
-        class R BOOST_PP_ENUM_TRAILING_PARAMS(N, class A),                                      \
-        class T, class Base, class Enable>                                                      \
-    struct concept_interface<                                                                   \
-        BOOST_TYPE_ERASURE_MEMBER_QUALIFIED_ID(qual_name, N),                                   \
-        Base,                                                                                   \
-        typename ::boost::enable_if<                                                            \
-            ::boost::type_erasure::detail::should_be_const<T, Base>,                            \
-            typename ::boost::remove_const<T>::type                                             \
-        >::type,                                                                                \
-        Enable                                                                                  \
-    > : Base                                                                                    \
-    {                                                                                           \
-        typedef void BOOST_PP_CAT(_boost_type_erasure_has_member, member);                      \
-        typename rebind_any<Base, R>::type member(                                              \
-            BOOST_PP_ENUM(N, BOOST_TYPE_ERASURE_MEMBER_ARG, ~)) const                           \
-        {                                                                                       \
-            return ::boost::type_erasure::call(                                                 \
-                BOOST_TYPE_ERASURE_MEMBER_QUALIFIED_ID(qual_name, N)(),                         \
-                *this BOOST_PP_ENUM_TRAILING_PARAMS(N, a));                                     \
-        }                                                                                       \
-    };                                                                                          \
-    template<class R BOOST_PP_ENUM_TRAILING_PARAMS(N, class A), class T, class Base>            \
-    struct concept_interface<                                                                   \
-        BOOST_TYPE_ERASURE_MEMBER_QUALIFIED_ID(qual_name, N),                                   \
-        Base,                                                                                   \
-        typename ::boost::enable_if<                                                            \
-            ::boost::type_erasure::detail::should_be_non_const<T, Base>,                        \
-            typename ::boost::remove_const<T>::type                                             \
-        >::type,                                                                                \
-        typename Base::BOOST_PP_CAT(_boost_type_erasure_has_member, member)> : Base             \
-    {                                                                                           \
-        using Base::member;                                                                     \
-        typename rebind_any<Base, R>::type member(                                              \
-            BOOST_PP_ENUM(N, BOOST_TYPE_ERASURE_MEMBER_ARG, ~))                                 \
-        {                                                                                       \
-            return ::boost::type_erasure::call(                                                 \
-                BOOST_TYPE_ERASURE_MEMBER_QUALIFIED_ID(qual_name, N)(),                         \
-                *this BOOST_PP_ENUM_TRAILING_PARAMS(N, a));                                     \
-        }                                                                                       \
-    };                                                                                          \
-    template<class R BOOST_PP_ENUM_TRAILING_PARAMS(N, class A), class T, class Base>            \
-    struct concept_interface<                                                                   \
-        BOOST_TYPE_ERASURE_MEMBER_QUALIFIED_ID(qual_name, N),                                   \
-        Base,                                                                                   \
-        typename ::boost::enable_if<                                                            \
-            ::boost::type_erasure::detail::should_be_const<T, Base>,                            \
-            typename ::boost::remove_const<T>::type                                             \
-        >::type,                                                                                \
-        typename Base::BOOST_PP_CAT(_boost_type_erasure_has_member, member)> : Base             \
-    {                                                                                           \
-        using Base::member;                                                                     \
-        typename rebind_any<Base, R>::type member(                                              \
-            BOOST_PP_ENUM(N, BOOST_TYPE_ERASURE_MEMBER_ARG, ~)) const                           \
-        {                                                                                       \
-            return ::boost::type_erasure::call(                                                 \
-                BOOST_TYPE_ERASURE_MEMBER_QUALIFIED_ID(qual_name, N)(),                         \
-                *this BOOST_PP_ENUM_TRAILING_PARAMS(N, a));                                     \
-        }                                                                                       \
-    };                                                                                          \
-    }}
-
+#define BOOST_TYPE_ERASURE_MEMBER_ENUM_PARAMS(N, X) BOOST_PP_ENUM_PARAMS(N, X)
 /** INTERNAL ONLY */
-#define BOOST_TYPE_ERASURE_MEMBER_I(namespace_name, concept_name, member, N)\
-    BOOST_TYPE_ERASURE_MEMBER_II(namespace_name, concept_name, member, N)
+#define BOOST_TYPE_ERASURE_MEMBER_ENUM_TRAILING_PARAMS(N, X) BOOST_PP_ENUM_TRAILING_PARAMS(N, X)
+/** INTERNAL ONLY */
+#define BOOST_TYPE_ERASURE_MEMBER_ENUM_TRAILING_BINARY_PARAMS(N, X, x) BOOST_PP_ENUM_TRAILING_BINARY_PARAMS(N, X, x)
+/** INTERNAL ONLY */
+#define BOOST_TYPE_ERASURE_MEMBER_ENUM_ARGS(N) BOOST_PP_ENUM(N, BOOST_TYPE_ERASURE_MEMBER_ARG, ~)
 
 /**
  * \brief Defines a primitive concept for a member function.
@@ -169,7 +72,11 @@
  *
  * \code
  * BOOST_TYPE_ERASURE_MEMBER((boost)(has_push_back), push_back, 1)
+ * typedef boost::has_push_back<void(int), _self> push_back_concept;
  * \endcode
+ *
+ * \note In C++11 the argument N is ignored and may be omitted.
+ * BOOST_TYPE_ERASURE_MEMBER will alway define a variadic concept.
  */
 #define BOOST_TYPE_ERASURE_MEMBER(qualified_name, member, N)                                \
     BOOST_TYPE_ERASURE_MEMBER_I(                                                            \
@@ -177,5 +84,133 @@
         BOOST_PP_SEQ_ELEM(BOOST_PP_DEC(BOOST_PP_SEQ_SIZE(qualified_name)), qualified_name), \
         member,                                                                             \
         N)
+
+#else
+
+/** INTERNAL ONLY */
+#define BOOST_TYPE_ERASURE_MEMBER_QUALIFIED_ID(seq, N) \
+    BOOST_TYPE_ERASURE_QUALIFIED_NAME(seq)<R(A...), T>
+
+#define BOOST_TYPE_ERASURE_MEMBER_TPL_ARG_LIST(N, X) , class... A
+#define BOOST_TYPE_ERASURE_MEMBER_ENUM_PARAMS(N, X) X...
+#define BOOST_TYPE_ERASURE_MEMBER_ENUM_TRAILING_PARAMS(N, X) , X...
+#define BOOST_TYPE_ERASURE_MEMBER_ENUM_TRAILING_BINARY_PARAMS(N, X, x) , X... x
+#define BOOST_TYPE_ERASURE_MEMBER_ENUM_ARGS(N) typename ::boost::type_erasure::as_param<Base, A>::type... a
+
+
+#define BOOST_TYPE_ERASURE_MEMBER(qualified_name, member, ...)                              \
+    BOOST_TYPE_ERASURE_MEMBER_I(                                                            \
+        qualified_name,                                                                     \
+        BOOST_PP_SEQ_ELEM(BOOST_PP_DEC(BOOST_PP_SEQ_SIZE(qualified_name)), qualified_name), \
+        member,                                                                             \
+        N)
+
+#endif
+
+/** INTERNAL ONLY */
+#define BOOST_TYPE_ERASURE_MEMBER_II(qual_name, concept_name, member, N)                        \
+    BOOST_TYPE_ERASURE_OPEN_NAMESPACE(qual_name)                                                \
+    template<class Sig, class T = ::boost::type_erasure::_self>                                 \
+    struct concept_name;                                                                        \
+    template<class R BOOST_TYPE_ERASURE_MEMBER_TPL_ARG_LIST(N, class A), class T>               \
+    struct concept_name<R(BOOST_TYPE_ERASURE_MEMBER_ENUM_PARAMS(N, A)), T> {                    \
+        static R apply(T& t BOOST_TYPE_ERASURE_MEMBER_ENUM_TRAILING_BINARY_PARAMS(N, A, a))     \
+        { return t.member(BOOST_TYPE_ERASURE_MEMBER_ENUM_PARAMS(N, a)); }                       \
+    };                                                                                          \
+    template<class T BOOST_TYPE_ERASURE_MEMBER_TPL_ARG_LIST(N, class A)>                        \
+    struct concept_name<void(BOOST_TYPE_ERASURE_MEMBER_ENUM_PARAMS(N, A)), T> {                 \
+        static void apply(T& t BOOST_TYPE_ERASURE_MEMBER_ENUM_TRAILING_BINARY_PARAMS(N, A, a))  \
+        { t.member(BOOST_TYPE_ERASURE_MEMBER_ENUM_PARAMS(N, a)); }                              \
+    };                                                                                          \
+    BOOST_TYPE_ERASURE_CLOSE_NAMESPACE(qual_name)                                               \
+    namespace boost {                                                                           \
+    namespace type_erasure {                                                                    \
+    template<                                                                                   \
+        class R BOOST_TYPE_ERASURE_MEMBER_TPL_ARG_LIST(N, class A),                             \
+        class T, class Base, class Enable>                                                      \
+    struct concept_interface<                                                                   \
+        BOOST_TYPE_ERASURE_MEMBER_QUALIFIED_ID(qual_name, N),                                   \
+        Base,                                                                                   \
+        typename ::boost::enable_if<                                                            \
+            ::boost::type_erasure::detail::should_be_non_const<T, Base>,                        \
+            typename ::boost::remove_const<T>::type                                             \
+        >::type,                                                                                \
+        Enable                                                                                  \
+    > : Base                                                                                    \
+    {                                                                                           \
+        typedef void BOOST_PP_CAT(_boost_type_erasure_has_member, member);                      \
+        typename rebind_any<Base, R>::type member(                                              \
+            BOOST_TYPE_ERASURE_MEMBER_ENUM_ARGS(N))                                             \
+        {                                                                                       \
+            return ::boost::type_erasure::call(                                                 \
+                BOOST_TYPE_ERASURE_MEMBER_QUALIFIED_ID(qual_name, N)(),                         \
+                *this BOOST_TYPE_ERASURE_MEMBER_ENUM_TRAILING_PARAMS(N, a));                    \
+        }                                                                                       \
+    };                                                                                          \
+    template<                                                                                   \
+        class R BOOST_TYPE_ERASURE_MEMBER_TPL_ARG_LIST(N, class A),                             \
+        class T, class Base, class Enable>                                                      \
+    struct concept_interface<                                                                   \
+        BOOST_TYPE_ERASURE_MEMBER_QUALIFIED_ID(qual_name, N),                                   \
+        Base,                                                                                   \
+        typename ::boost::enable_if<                                                            \
+            ::boost::type_erasure::detail::should_be_const<T, Base>,                            \
+            typename ::boost::remove_const<T>::type                                             \
+        >::type,                                                                                \
+        Enable                                                                                  \
+    > : Base                                                                                    \
+    {                                                                                           \
+        typedef void BOOST_PP_CAT(_boost_type_erasure_has_member, member);                      \
+        typename rebind_any<Base, R>::type member(                                              \
+            BOOST_TYPE_ERASURE_MEMBER_ENUM_ARGS(N)) const                                       \
+        {                                                                                       \
+            return ::boost::type_erasure::call(                                                 \
+                BOOST_TYPE_ERASURE_MEMBER_QUALIFIED_ID(qual_name, N)(),                         \
+                *this BOOST_TYPE_ERASURE_MEMBER_ENUM_TRAILING_PARAMS(N, a));                    \
+        }                                                                                       \
+    };                                                                                          \
+    template<class R BOOST_TYPE_ERASURE_MEMBER_TPL_ARG_LIST(N, class A), class T, class Base>   \
+    struct concept_interface<                                                                   \
+        BOOST_TYPE_ERASURE_MEMBER_QUALIFIED_ID(qual_name, N),                                   \
+        Base,                                                                                   \
+        typename ::boost::enable_if<                                                            \
+            ::boost::type_erasure::detail::should_be_non_const<T, Base>,                        \
+            typename ::boost::remove_const<T>::type                                             \
+        >::type,                                                                                \
+        typename Base::BOOST_PP_CAT(_boost_type_erasure_has_member, member)> : Base             \
+    {                                                                                           \
+        using Base::member;                                                                     \
+        typename rebind_any<Base, R>::type member(                                              \
+            BOOST_TYPE_ERASURE_MEMBER_ENUM_ARGS(N))                                             \
+        {                                                                                       \
+            return ::boost::type_erasure::call(                                                 \
+                BOOST_TYPE_ERASURE_MEMBER_QUALIFIED_ID(qual_name, N)(),                         \
+                *this BOOST_TYPE_ERASURE_MEMBER_ENUM_TRAILING_PARAMS(N, a));                    \
+        }                                                                                       \
+    };                                                                                          \
+    template<class R BOOST_TYPE_ERASURE_MEMBER_TPL_ARG_LIST(N, class A), class T, class Base>   \
+    struct concept_interface<                                                                   \
+        BOOST_TYPE_ERASURE_MEMBER_QUALIFIED_ID(qual_name, N),                                   \
+        Base,                                                                                   \
+        typename ::boost::enable_if<                                                            \
+            ::boost::type_erasure::detail::should_be_const<T, Base>,                            \
+            typename ::boost::remove_const<T>::type                                             \
+        >::type,                                                                                \
+        typename Base::BOOST_PP_CAT(_boost_type_erasure_has_member, member)> : Base             \
+    {                                                                                           \
+        using Base::member;                                                                     \
+        typename rebind_any<Base, R>::type member(                                              \
+            BOOST_TYPE_ERASURE_MEMBER_ENUM_ARGS(N)) const                                       \
+        {                                                                                       \
+            return ::boost::type_erasure::call(                                                 \
+                BOOST_TYPE_ERASURE_MEMBER_QUALIFIED_ID(qual_name, N)(),                         \
+                *this BOOST_TYPE_ERASURE_MEMBER_ENUM_TRAILING_PARAMS(N, a));                    \
+        }                                                                                       \
+    };                                                                                          \
+    }}
+
+/** INTERNAL ONLY */
+#define BOOST_TYPE_ERASURE_MEMBER_I(namespace_name, concept_name, member, N)\
+    BOOST_TYPE_ERASURE_MEMBER_II(namespace_name, concept_name, member, N)
 
 #endif
