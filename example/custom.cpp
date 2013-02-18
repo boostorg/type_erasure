@@ -40,7 +40,7 @@ struct has_push_back
 
 //[custom3
 /*`
-    The second part is to customize __any so that we can call `c.push_back(10)`.
+    Our second task is to customize __any so that we can call `c.push_back(10)`.
     We do this by specializing __concept_interface.
     The first argument is `has_push_back`, since we want to inject a member
     into every __any that uses the `has_push_back` concept.  The second argument,

@@ -76,7 +76,7 @@ in C++ that is more flexible than that provided by the
 core language.
 
 C++ has two distinct kinds of polymorphism,
-virtual functions and templates, which each has
+virtual functions and templates, each of which has
 its own advantages and disadvantages.
 
 * Virtual functions are not resolved until runtime,
