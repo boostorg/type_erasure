@@ -88,7 +88,7 @@ its own advantages and disadvantages.
   The body of a template has to be available
   in every translation unit in which it is used,
   slowing down compiles and increasing rebuilds.
-* Virtual function automatically make the requirements
+* Virtual functions automatically make the requirements
   on the aruments explicit.  Templates are only
   checked when they're instantiated, requiring
   extra work in testing, assertions, and documentation.
