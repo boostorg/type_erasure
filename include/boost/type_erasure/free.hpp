@@ -60,6 +60,8 @@ struct first_placeholder_index :
 }
 }
 
+#if defined(BOOST_NO_VARIADIC_TEMPLATES) || defined(BOOST_TYPE_ERASURE_DOXYGEN)
+
 /** INTERNAL ONLY */
 #define BOOST_TYPE_ERASURE_FREE_QUALIFIED_ID(seq, N) \
     BOOST_TYPE_ERASURE_QUALIFIED_NAME(seq)<R(BOOST_PP_ENUM_PARAMS(N, T))>
@@ -120,6 +122,105 @@ struct first_placeholder_index :
                                                                         \
     }                                                                   \
     }
+
+#else
+
+namespace boost {
+namespace type_erasure {
+    
+template<int... N>
+struct index_list {};
+
+namespace detail {
+
+template<class Sig>
+struct transform_free_signature;
+
+template<class T, int N>
+struct push_back_index;
+
+template<int... N, int X>
+struct push_back_index<index_list<N...>, X>
+{
+    typedef index_list<N..., X> type;
+};
+
+template<int N>
+struct make_index_list {
+    typedef typename push_back_index<
+        typename make_index_list<N-1>::type,
+        N-1
+    >::type type;
+};
+
+template<>
+struct make_index_list<0> {
+    typedef index_list<> type;
+};
+
+}
+}
+}
+
+/** INTERNAL ONLY */
+#define BOOST_TYPE_ERASURE_FREE_II(qual_name, concept_name, function_name, N)  \
+    BOOST_TYPE_ERASURE_OPEN_NAMESPACE(qual_name)                        \
+                                                                        \
+    template<class Sig>                                                 \
+    struct concept_name;                                                \
+                                                                        \
+    template<class R, class... T>                                       \
+    struct concept_name<R(T...)> {                                      \
+        static R apply(T... t)                                          \
+        { return function_name(t...); }                                 \
+    };                                                                  \
+                                                                        \
+    template<class... T>                                                \
+    struct concept_name<void(T...)> {                                   \
+        static void apply(T... t)                                       \
+        { function_name(t...); }                                        \
+    };                                                                  \
+                                                                        \
+    BOOST_TYPE_ERASURE_CLOSE_NAMESPACE(qual_name)                       \
+                                                                        \
+    namespace boost {                                                   \
+    namespace type_erasure {                                            \
+                                                                        \
+    template<class Sig, class Base, class Idx>                          \
+    struct inject ## concept_name;                                      \
+    template<class R, class... T, class Base, int... I>                 \
+    struct inject ## concept_name<R(T...), Base, index_list<I...> > : Base {\
+        typedef typename ::boost::type_erasure::detail::first_placeholder_index<    \
+            typename ::boost::remove_cv<                                \
+                typename ::boost::remove_reference<T>::type             \
+            >::type...                                                  \
+        >::type _boost_type_erasure_free_p_idx;                         \
+        friend typename ::boost::type_erasure::rebind_any<Base, R>::type\
+        function_name(                                                  \
+            typename ::boost::mpl::eval_if_c<(_boost_type_erasure_free_p_idx::value == I), \
+                ::boost::type_erasure::detail::maybe_const_this_param<T, Base>, \
+                ::boost::type_erasure::as_param<Base, T>                \
+            >::type... t)                                               \
+       {                                                                \
+            return ::boost::type_erasure::call(                         \
+                BOOST_TYPE_ERASURE_QUALIFIED_NAME(qual_name)<R(T...)>(),\
+                t...);                                                  \
+        }                                                               \
+    };                                                                  \
+                                                                        \
+    template<class R, class... T, class Base>                           \
+    struct concept_interface<                                           \
+        BOOST_TYPE_ERASURE_QUALIFIED_NAME(qual_name)<R(T...)>,          \
+        Base,                                                           \
+        typename ::boost::type_erasure::detail::first_placeholder<      \
+            typename ::boost::remove_cv<typename ::boost::remove_reference<T>::type>::type...>::type  \
+    > :  inject ## concept_name<R(T...), Base, typename ::boost::type_erasure::detail::make_index_list<sizeof...(T)>::type>\
+    {};                                                                 \
+                                                                        \
+    }                                                                   \
+    }
+
+#endif
     
 /** INTERNAL ONLY */
 #define BOOST_TYPE_ERASURE_FREE_I(namespace_name, concept_name, function_name, N)\
