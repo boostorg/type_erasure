@@ -15,11 +15,13 @@
 #include <boost/preprocessor/dec.hpp>
 #include <boost/preprocessor/comma_if.hpp>
 #include <boost/preprocessor/repetition/enum.hpp>
+#include <boost/preprocessor/repetition/enum_trailing.hpp>
 #include <boost/preprocessor/repetition/enum_params.hpp>
 #include <boost/preprocessor/repetition/enum_trailing_params.hpp>
 #include <boost/preprocessor/repetition/enum_trailing_binary_params.hpp>
 #include <boost/preprocessor/seq/size.hpp>
 #include <boost/preprocessor/seq/elem.hpp>
+#include <boost/preprocessor/tuple/elem.hpp>
 #include <boost/type_erasure/detail/macro.hpp>
 #include <boost/type_erasure/detail/const.hpp>
 #include <boost/type_erasure/rebind_any.hpp>
@@ -41,6 +43,27 @@
 #define BOOST_TYPE_ERASURE_MEMBER_TPL_ARG_LIST(N, X) BOOST_PP_ENUM_TRAILING_PARAMS(N, X)
 /** INTERNAL ONLY */
 #define BOOST_TYPE_ERASURE_MEMBER_ENUM_PARAMS(N, X) BOOST_PP_ENUM_PARAMS(N, X)
+
+#ifndef BOOST_NO_RVALUE_REFERENCES
+
+/** INTERNAL ONLY */
+#define BOOST_TYPE_ERASURE_MEMBER_FORWARD(z, n, data) ::std::forward<BOOST_PP_CAT(BOOST_PP_TUPLE_ELEM(2, 0, data), n)>(BOOST_PP_CAT(BOOST_PP_TUPLE_ELEM(2, 1, data), n))
+/** INTERNAL ONLY */
+#define BOOST_TYPE_ERASURE_MEMBER_FORWARD_PARAMS(N, X, x) BOOST_PP_ENUM(N, BOOST_TYPE_ERASURE_MEMBER_FORWARD, (X, x))
+/** INTERNAL ONLY*/
+#define BOOST_TYPE_ERASURE_FORWARD_REBIND1(z, n, data) ::std::forward<typename ::boost::type_erasure::as_param<Base, BOOST_PP_CAT(A, n)>::type>(BOOST_PP_CAT(a, n))
+/** INTERNAL ONLY*/
+#define BOOST_TYPE_ERASURE_MEMBER_FORWARD_REBIND(N) BOOST_PP_ENUM_TRAILING(N, BOOST_TYPE_ERASURE_FORWARD_REBIND1, ~)
+
+#else
+
+/** INTERNAL ONLY */
+#define BOOST_TYPE_ERASURE_MEMBER_FORWARD_PARAMS(N, X, x) BOOST_PP_ENUM_PARAMS(N, x)
+/** INTERNAL ONLY*/
+#define BOOST_TYPE_ERASURE_MEMBER_FORWARD_REBIND(N) BOOST_PP_ENUM_TRAILING_PARAMS(N, a)
+
+#endif
+
 /** INTERNAL ONLY */
 #define BOOST_TYPE_ERASURE_MEMBER_ENUM_TRAILING_PARAMS(N, X) BOOST_PP_ENUM_TRAILING_PARAMS(N, X)
 /** INTERNAL ONLY */
@@ -93,7 +116,9 @@
 
 #define BOOST_TYPE_ERASURE_MEMBER_TPL_ARG_LIST(N, X) , class... A
 #define BOOST_TYPE_ERASURE_MEMBER_ENUM_PARAMS(N, X) X...
+#define BOOST_TYPE_ERASURE_MEMBER_FORWARD_PARAMS(N, X, x) ::std::forward<X>(x)...
 #define BOOST_TYPE_ERASURE_MEMBER_ENUM_TRAILING_PARAMS(N, X) , X...
+#define BOOST_TYPE_ERASURE_MEMBER_FORWARD_REBIND(N, X, x) , ::std::forward<typename ::boost::type_erasure::as_param<Base, A>::type>(x)...
 #define BOOST_TYPE_ERASURE_MEMBER_ENUM_TRAILING_BINARY_PARAMS(N, X, x) , X... x
 #define BOOST_TYPE_ERASURE_MEMBER_ENUM_ARGS(N) typename ::boost::type_erasure::as_param<Base, A>::type... a
 
@@ -115,12 +140,12 @@
     template<class R BOOST_TYPE_ERASURE_MEMBER_TPL_ARG_LIST(N, class A), class T>               \
     struct concept_name<R(BOOST_TYPE_ERASURE_MEMBER_ENUM_PARAMS(N, A)), T> {                    \
         static R apply(T& t BOOST_TYPE_ERASURE_MEMBER_ENUM_TRAILING_BINARY_PARAMS(N, A, a))     \
-        { return t.member(BOOST_TYPE_ERASURE_MEMBER_ENUM_PARAMS(N, a)); }                       \
+        { return t.member(BOOST_TYPE_ERASURE_MEMBER_FORWARD_PARAMS(N, A, a)); }                 \
     };                                                                                          \
     template<class T BOOST_TYPE_ERASURE_MEMBER_TPL_ARG_LIST(N, class A)>                        \
     struct concept_name<void(BOOST_TYPE_ERASURE_MEMBER_ENUM_PARAMS(N, A)), T> {                 \
         static void apply(T& t BOOST_TYPE_ERASURE_MEMBER_ENUM_TRAILING_BINARY_PARAMS(N, A, a))  \
-        { t.member(BOOST_TYPE_ERASURE_MEMBER_ENUM_PARAMS(N, a)); }                              \
+        { t.member(BOOST_TYPE_ERASURE_MEMBER_FORWARD_PARAMS(N, A, a)); }                        \
     };                                                                                          \
     BOOST_TYPE_ERASURE_CLOSE_NAMESPACE(qual_name)                                               \
     namespace boost {                                                                           \
@@ -144,7 +169,7 @@
         {                                                                                       \
             return ::boost::type_erasure::call(                                                 \
                 BOOST_TYPE_ERASURE_MEMBER_QUALIFIED_ID(qual_name, N)(),                         \
-                *this BOOST_TYPE_ERASURE_MEMBER_ENUM_TRAILING_PARAMS(N, a));                    \
+                *this BOOST_TYPE_ERASURE_MEMBER_FORWARD_REBIND(N));                             \
         }                                                                                       \
     };                                                                                          \
     template<                                                                                   \
@@ -166,7 +191,7 @@
         {                                                                                       \
             return ::boost::type_erasure::call(                                                 \
                 BOOST_TYPE_ERASURE_MEMBER_QUALIFIED_ID(qual_name, N)(),                         \
-                *this BOOST_TYPE_ERASURE_MEMBER_ENUM_TRAILING_PARAMS(N, a));                    \
+                *this BOOST_TYPE_ERASURE_MEMBER_FORWARD_REBIND(N));                             \
         }                                                                                       \
     };                                                                                          \
     template<class R BOOST_TYPE_ERASURE_MEMBER_TPL_ARG_LIST(N, class A), class T, class Base>   \
@@ -185,7 +210,7 @@
         {                                                                                       \
             return ::boost::type_erasure::call(                                                 \
                 BOOST_TYPE_ERASURE_MEMBER_QUALIFIED_ID(qual_name, N)(),                         \
-                *this BOOST_TYPE_ERASURE_MEMBER_ENUM_TRAILING_PARAMS(N, a));                    \
+                *this BOOST_TYPE_ERASURE_MEMBER_FORWARD_REBIND(N));                             \
         }                                                                                       \
     };                                                                                          \
     template<class R BOOST_TYPE_ERASURE_MEMBER_TPL_ARG_LIST(N, class A), class T, class Base>   \
@@ -204,7 +229,7 @@
         {                                                                                       \
             return ::boost::type_erasure::call(                                                 \
                 BOOST_TYPE_ERASURE_MEMBER_QUALIFIED_ID(qual_name, N)(),                         \
-                *this BOOST_TYPE_ERASURE_MEMBER_ENUM_TRAILING_PARAMS(N, a));                    \
+                *this BOOST_TYPE_ERASURE_MEMBER_FORWARD_REBIND(N));                             \
         }                                                                                       \
     };                                                                                          \
     }}
