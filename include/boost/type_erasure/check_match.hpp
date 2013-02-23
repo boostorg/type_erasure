@@ -90,7 +90,7 @@ bool check_match(const Op& f, U&&... args);
 
 #else
 
-#if !defined(BOOST_NO_VARIADIC_TEMPLATES)
+#if !defined(BOOST_NO_VARIADIC_TEMPLATES) && !defined(BOOST_NO_RVALUE_REFERENCES)
 
 namespace detail {
 
@@ -125,7 +125,7 @@ template<class Concept, class Op, class... U>
 bool check_match(
     const ::boost::type_erasure::binding<Concept>& table,
     const Op&,
-    U&... arg)
+    U&&... arg)
 {
 
     return ::boost::type_erasure::detail::check_table(
@@ -140,7 +140,7 @@ template<
 >
 bool check_match(
     const Op&,
-    U&... arg)
+    U&&... arg)
 {
     const ::boost::type_erasure::binding<
         typename ::boost::type_erasure::detail::extract_concept<
@@ -219,6 +219,12 @@ struct BOOST_PP_CAT(do_extract_concept, N)<
 
 }
 
+#ifdef BOOST_NO_RVALUE_REFERENCES
+#define RREF &
+#else
+#define RREF &&
+#endif
+
 template<
     class Concept,
     class Op
@@ -227,7 +233,7 @@ template<
 bool check_match(
     const ::boost::type_erasure::binding<Concept>& table,
     const Op&
-    BOOST_PP_ENUM_TRAILING_BINARY_PARAMS(N, U, & arg))
+    BOOST_PP_ENUM_TRAILING_BINARY_PARAMS(N, U, RREF arg))
 {
 
     return ::boost::type_erasure::detail::BOOST_PP_CAT(check_table, N)(
@@ -244,7 +250,7 @@ template<
 >
 bool check_match(
     const Op&
-    BOOST_PP_ENUM_TRAILING_BINARY_PARAMS(N, U, & arg))
+    BOOST_PP_ENUM_TRAILING_BINARY_PARAMS(N, U, RREF arg))
 {
     const ::boost::type_erasure::binding<
         typename ::boost::type_erasure::detail::BOOST_PP_CAT(do_extract_concept, N)<
@@ -257,6 +263,7 @@ bool check_match(
         BOOST_PP_ENUM_TRAILING_PARAMS(N, arg));
 }
 
+#undef RREF
 #undef BOOST_TYPE_ERASURE_CHECK_TABLE
 #undef N
 

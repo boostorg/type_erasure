@@ -213,11 +213,25 @@ struct get_vtable_signature<R(T...)>
 #else
 
 #define N BOOST_PP_ITERATION()
+
+#ifndef BOOST_NO_RVALUE_REFERENCES
+
+#define BOOST_TYPE_ERASURE_EXTRACT(z, n, data)                  \
+    ::boost::type_erasure::detail::extract<                     \
+        typename traits::                                       \
+        BOOST_PP_CAT(BOOST_PP_CAT(arg, BOOST_PP_INC(n)), _type) \
+    >(std::forward<BOOST_PP_CAT(T, n)>(BOOST_PP_CAT(arg, n)))
+
+#else
+
 #define BOOST_TYPE_ERASURE_EXTRACT(z, n, data)                  \
     ::boost::type_erasure::detail::extract<                     \
         typename traits::                                       \
         BOOST_PP_CAT(BOOST_PP_CAT(arg, BOOST_PP_INC(n)), _type) \
     >(BOOST_PP_CAT(arg, n))
+
+#endif
+
 #define BOOST_TYPE_ERASURE_REPLACE_PARAM(z, n, data)                    \
     typename ::boost::type_erasure::detail::replace_param_for_vtable<   \
         BOOST_PP_CAT(T, n)>::type

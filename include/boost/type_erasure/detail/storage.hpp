@@ -25,8 +25,18 @@ struct storage
     void* data;
 };
 
+
+#ifndef BOOST_NO_RVALUE_REFERENCES
+
+template<class T>
+T extract(T arg) { return std::forward<T>(arg); }
+
+#else
+
 template<class T>
 T extract(T arg) { return arg; }
+
+#endif
 
 template<class T>
 T extract(storage& arg)
@@ -39,6 +49,16 @@ T extract(const storage& arg)
 {
     return *static_cast<const typename ::boost::remove_reference<T>::type*>(arg.data);
 }
+
+#ifndef BOOST_NO_RVALUE_REFERENCES
+
+template<class T>
+T extract(storage&& arg)
+{
+    return static_cast<T>(*static_cast<typename ::boost::remove_reference<T>::type*>(arg.data));
+}
+
+#endif
 
 }
 }

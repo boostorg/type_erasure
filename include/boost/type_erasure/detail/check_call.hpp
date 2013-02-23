@@ -43,7 +43,7 @@ struct qualified_placeholder
 };
 
 template<class T>
-struct qualified_placeholder<T, typename T::_boost_type_erasure_is_any>
+struct qualified_placeholder<T&, typename T::_boost_type_erasure_is_any>
 {
     typedef typename ::boost::type_erasure::placeholder_of<T>::type placeholder;
     typedef typename ::boost::remove_reference<placeholder>::type unref;
@@ -54,26 +54,58 @@ struct qualified_placeholder<T, typename T::_boost_type_erasure_is_any>
     typedef typename ::boost::mpl::if_< ::boost::is_reference<placeholder>,
         unref,
         add_const
+    >::type& type;
+};
+
+#ifndef BOOST_NO_RVALUE_REFERENCES
+
+template<class T>
+struct qualified_placeholder<T&&, typename T::_boost_type_erasure_is_any>
+{
+    typedef typename ::boost::type_erasure::placeholder_of<T>::type placeholder;
+    typedef typename ::boost::remove_reference<placeholder>::type unref;
+    typedef typename ::boost::mpl::if_< ::boost::is_reference<placeholder>,
+        unref&,
+        unref&&
     >::type type;
 };
+
+#endif
 
 template<class P, class A>
 struct check_placeholder_arg_impl : ::boost::mpl::false_ {};
 
 template<class P>
-struct check_placeholder_arg_impl<P, P> : ::boost::mpl::true_ {};
+struct check_placeholder_arg_impl<P, P&> : ::boost::mpl::true_ {};
 
 template<class P>
-struct check_placeholder_arg_impl<P, const P> : ::boost::mpl::true_ {};
+struct check_placeholder_arg_impl<P, const P&> : ::boost::mpl::true_ {};
+
+#ifndef BOOST_NO_RVALUE_REFERENCES
 
 template<class P>
-struct check_placeholder_arg_impl<P&, P> : ::boost::mpl::true_ {};
+struct check_placeholder_arg_impl<P, P&&> : ::boost::mpl::true_ {};
+
+#endif
 
 template<class P>
-struct check_placeholder_arg_impl<const P&, P> : ::boost::mpl::true_ {};
+struct check_placeholder_arg_impl<P&, P&> : ::boost::mpl::true_ {};
 
 template<class P>
-struct check_placeholder_arg_impl<const P&, const P> : ::boost::mpl::true_ {};
+struct check_placeholder_arg_impl<const P&, P&> : ::boost::mpl::true_ {};
+
+template<class P>
+struct check_placeholder_arg_impl<const P&, const P&> : ::boost::mpl::true_ {};
+
+#ifndef BOOST_NO_RVALUE_REFERENCES
+
+template<class P>
+struct check_placeholder_arg_impl<const P&, P&&> : ::boost::mpl::true_ {};
+
+template<class P>
+struct check_placeholder_arg_impl<P&&, P&&> : ::boost::mpl::true_ {};
+
+#endif
 
 template<class P, class Arg>
 struct check_placeholder_arg :
@@ -93,7 +125,7 @@ struct check_arg
             >::type
         >,
         ::boost::type_erasure::detail::check_placeholder_arg<FormalArg, ActualArg>,
-        ::boost::is_convertible<ActualArg&, FormalArg>
+        ::boost::is_convertible<ActualArg, FormalArg>
     >::type type;
 };
 
@@ -126,7 +158,7 @@ template<
     BOOST_PP_ENUM_TRAILING_PARAMS(N, class T)
     BOOST_PP_ENUM_TRAILING_PARAMS(N, class U)
 >
-struct check_call<R(BOOST_PP_ENUM_PARAMS(N, T)), void(BOOST_PP_ENUM_BINARY_PARAMS(N, U, &u))> {
+struct check_call<R(BOOST_PP_ENUM_PARAMS(N, T)), void(BOOST_PP_ENUM_BINARY_PARAMS(N, U, u))> {
     typedef ::boost::mpl::true_ type0;
     BOOST_PP_REPEAT(N, BOOST_TYPE_ERASURE_CHECK_ARG, ~)
     typedef BOOST_PP_CAT(type, N) type;

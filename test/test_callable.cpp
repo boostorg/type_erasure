@@ -375,3 +375,22 @@ BOOST_AUTO_TEST_CASE(test_overload_return_const)
     BOOST_MPL_ASSERT((boost::is_same<boost::result_of<const any<test_concept>(int)>::type, int>));
     BOOST_MPL_ASSERT((boost::is_same<boost::result_of<const any<test_concept>(any<test_concept, _a>)>::type, int>));
 }
+
+#ifndef BOOST_NO_RVALUE_REFERENCES
+
+int f_rv_value = 0;
+void f_rv(int&& i) { f_rv_value += i; }
+
+BOOST_AUTO_TEST_CASE(test_rvalue_int)
+{
+    typedef ::boost::mpl::vector<
+        common<>,
+        callable<void(int&&)>
+    > test_concept;
+    any<test_concept> f(&f_rv);
+
+    f(2);
+    BOOST_CHECK_EQUAL(f_rv_value, 2);
+}
+
+#endif

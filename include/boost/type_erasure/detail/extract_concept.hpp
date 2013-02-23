@@ -51,7 +51,7 @@ struct maybe_extract_concept
                 typename ::boost::remove_reference<T>::type
             >::type
         >,
-        ::boost::type_erasure::concept_of<U>,
+        ::boost::type_erasure::concept_of<typename ::boost::remove_reference<U>::type>,
         ::boost::mpl::identity<void>
     >::type type;
 };

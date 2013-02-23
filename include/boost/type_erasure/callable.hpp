@@ -56,14 +56,14 @@ struct result_of_callable;
 }
 
 #if defined(BOOST_TYPE_ERASURE_DOXYGEN)
-#elif !defined(BOOST_NO_VARIADIC_TEMPLATES)
+#elif !defined(BOOST_NO_VARIADIC_TEMPLATES) && !defined(BOOST_NO_RVALUE_REFERENCES)
 
 template<class R, class... T, class F>
 struct callable<R(T...), F>
 {
     static R apply(F& f, T... arg)
     {
-        return f(arg...);
+        return f(std::forward<T>(arg)...);
     }
 };
 
@@ -72,7 +72,7 @@ struct callable<void(T...), F>
 {
     static void apply(F& f, T... arg)
     {
-        f(arg...);
+        f(std::forward<T>(arg)...);
     }
 };
 
@@ -93,7 +93,8 @@ struct concept_interface<callable<R(T...), F>, Base, F, Enable>
     typename ::boost::type_erasure::rebind_any<Base, R>::type
     operator()(typename ::boost::type_erasure::as_param<Base, T>::type... arg)
     {
-        return ::boost::type_erasure::call(callable<R(T...), F>(), *this, arg...);
+        return ::boost::type_erasure::call(callable<R(T...), F>(), *this,
+            ::std::forward<typename ::boost::type_erasure::as_param<Base, T>::type>(arg)...);
     }
 };
 
@@ -114,7 +115,8 @@ struct concept_interface<callable<R(T...), const F>, Base, F, Enable>
     typename ::boost::type_erasure::rebind_any<Base, R>::type operator()(
         typename ::boost::type_erasure::as_param<Base, T>::type... arg) const
     {
-        return ::boost::type_erasure::call(callable<R(T...), const F>(), *this, arg...);
+        return ::boost::type_erasure::call(callable<R(T...), const F>(), *this,
+            ::std::forward<typename ::boost::type_erasure::as_param<Base, T>::type>(arg)...);
     }
 };
 
@@ -141,7 +143,8 @@ struct concept_interface<
     typename ::boost::type_erasure::rebind_any<Base, R>::type
     operator()(typename ::boost::type_erasure::as_param<Base, T>::type... arg)
     {
-        return ::boost::type_erasure::call(callable<R(T...), F>(), *this, arg...);
+        return ::boost::type_erasure::call(callable<R(T...), F>(), *this,
+            ::std::forward<typename ::boost::type_erasure::as_param<Base, T>::type>(arg)...);
     }
 };
 
@@ -168,7 +171,8 @@ struct concept_interface<
     typename ::boost::type_erasure::rebind_any<Base, R>::type
     operator()(typename ::boost::type_erasure::as_param<Base, T>::type... arg) const
     {
-        return ::boost::type_erasure::call(callable<R(T...), const F>(), *this, arg...);
+        return ::boost::type_erasure::call(callable<R(T...), const F>(), *this,
+            ::std::forward<typename ::boost::type_erasure::as_param<Base, T>::type>(arg)...);
     }
 };
 
@@ -209,12 +213,20 @@ struct result_of_callable<This(T...)>
 #define BOOST_TYPE_ERASURE_REBIND(z, n, data)\
     typename ::boost::type_erasure::as_param<Base, BOOST_PP_CAT(T, n)>::type BOOST_PP_CAT(arg, n)
 
+#ifdef BOOST_NO_RVALUE_REFERENCES
+#define BOOST_TYPE_ERASURE_FORWARD(z, n, data) BOOST_PP_CAT(BOOST_PP_TUPLE_ELEM(2, 1, data), n)
+#define BOOST_TYPE_ERASURE_FORWARD_REBIND(z, n, data) BOOST_PP_CAT(arg, n)
+#else
+#define BOOST_TYPE_ERASURE_FORWARD(z, n, data) ::std::forward<BOOST_PP_CAT(BOOST_PP_TUPLE_ELEM(2, 0, data), n)>(BOOST_PP_CAT(BOOST_PP_TUPLE_ELEM(2, 1, data), n))
+#define BOOST_TYPE_ERASURE_FORWARD_REBIND(z, n, data) ::std::forward<typename ::boost::type_erasure::as_param<Base, BOOST_PP_CAT(T, n)>::type>(BOOST_PP_CAT(arg, n))
+#endif
+
 template<class R BOOST_PP_ENUM_TRAILING_PARAMS(N, class T), class F>
 struct callable<R(BOOST_PP_ENUM_PARAMS(N, T)), F>
 {
     static R apply(F& f BOOST_PP_ENUM_TRAILING_BINARY_PARAMS(N, T, arg))
     {
-        return f(BOOST_PP_ENUM_PARAMS(N, arg));
+        return f(BOOST_PP_ENUM(N, BOOST_TYPE_ERASURE_FORWARD, (T, arg)));
     }
 };
 
@@ -223,7 +235,7 @@ struct callable<void(BOOST_PP_ENUM_PARAMS(N, T)), F>
 {
     static void apply(F& f BOOST_PP_ENUM_TRAILING_BINARY_PARAMS(N, T, arg))
     {
-        f(BOOST_PP_ENUM_PARAMS(N, arg));
+        f(BOOST_PP_ENUM(N, BOOST_TYPE_ERASURE_FORWARD, (T, arg)));
     }
 };
 
@@ -251,7 +263,7 @@ struct concept_interface<
     {
         return ::boost::type_erasure::call(
             callable<R(BOOST_PP_ENUM_PARAMS(N, T)), F>(),
-            *this BOOST_PP_ENUM_TRAILING_PARAMS(N, arg));
+            *this BOOST_PP_ENUM_TRAILING(N, BOOST_TYPE_ERASURE_FORWARD_REBIND, ~));
     }
 };
 
@@ -279,7 +291,7 @@ struct concept_interface<
     {
         return ::boost::type_erasure::call(
             callable<R(BOOST_PP_ENUM_PARAMS(N, T)), const F>(),
-            *this BOOST_PP_ENUM_TRAILING_PARAMS(N, arg));
+            *this BOOST_PP_ENUM_TRAILING(N, BOOST_TYPE_ERASURE_FORWARD_REBIND, ~));
     }
 };
 
@@ -308,7 +320,7 @@ struct concept_interface<
     {
         return ::boost::type_erasure::call(
             callable<R(BOOST_PP_ENUM_PARAMS(N, T)), F>(),
-            *this BOOST_PP_ENUM_TRAILING_PARAMS(N, arg));
+            *this BOOST_PP_ENUM_TRAILING(N, BOOST_TYPE_ERASURE_FORWARD_REBIND, ~));
     }
 };
 
@@ -337,7 +349,7 @@ struct concept_interface<
     {
         return ::boost::type_erasure::call(
             callable<R(BOOST_PP_ENUM_PARAMS(N, T)), const F>(),
-            *this BOOST_PP_ENUM_TRAILING_PARAMS(N, arg));
+            *this BOOST_PP_ENUM_TRAILING(N, BOOST_TYPE_ERASURE_FORWARD_REBIND, ~));
     }
 };
 
