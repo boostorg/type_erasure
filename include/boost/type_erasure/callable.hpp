@@ -89,7 +89,7 @@ struct concept_interface<callable<R(T...), F>, Base, F, Enable>
     typedef char (&_boost_type_erasure_callable_size)[1];
     _boost_type_erasure_callable_size
     _boost_type_erasure_deduce_callable(
-        typename ::boost::type_erasure::rebind_any<Base, T>::type...);
+        typename ::boost::type_erasure::as_param<Base, T>::type...);
     typename ::boost::type_erasure::rebind_any<Base, R>::type
     operator()(typename ::boost::type_erasure::as_param<Base, T>::type... arg)
     {
@@ -111,7 +111,7 @@ struct concept_interface<callable<R(T...), const F>, Base, F, Enable>
     typedef char (&_boost_type_erasure_callable_size)[1];
     _boost_type_erasure_callable_size
     _boost_type_erasure_deduce_callable(
-        typename ::boost::type_erasure::rebind_any<Base, T>::type...) const;
+        typename ::boost::type_erasure::as_param<Base, T>::type...) const;
     typename ::boost::type_erasure::rebind_any<Base, R>::type operator()(
         typename ::boost::type_erasure::as_param<Base, T>::type... arg) const
     {
@@ -138,7 +138,7 @@ struct concept_interface<
     using Base::_boost_type_erasure_deduce_callable;
     _boost_type_erasure_callable_size
     _boost_type_erasure_deduce_callable(
-        typename ::boost::type_erasure::rebind_any<Base, T>::type...);
+        typename ::boost::type_erasure::as_param<Base, T>::type...);
     using Base::operator();
     typename ::boost::type_erasure::rebind_any<Base, R>::type
     operator()(typename ::boost::type_erasure::as_param<Base, T>::type... arg)
@@ -166,7 +166,7 @@ struct concept_interface<
     using Base::_boost_type_erasure_deduce_callable;
     _boost_type_erasure_callable_size
     _boost_type_erasure_deduce_callable(
-        typename ::boost::type_erasure::rebind_any<Base, T>::type...) const;
+        typename ::boost::type_erasure::as_param<Base, T>::type...) const;
     using Base::operator();
     typename ::boost::type_erasure::rebind_any<Base, R>::type
     operator()(typename ::boost::type_erasure::as_param<Base, T>::type... arg) const
