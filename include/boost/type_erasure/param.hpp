@@ -19,6 +19,8 @@
 #include <boost/type_traits/remove_reference.hpp>
 #include <boost/mpl/bool.hpp>
 #include <boost/mpl/if.hpp>
+#include <boost/type_erasure/detail/access.hpp>
+#include <boost/type_erasure/detail/storage.hpp>
 #include <boost/type_erasure/is_placeholder.hpp>
 #include <boost/type_erasure/concept_of.hpp>
 
@@ -27,6 +29,9 @@ namespace type_erasure {
     
 template<class Concept, class T>
 class any;
+    
+template<class Concept>
+class binding;
 
 namespace detail {
 
@@ -178,6 +183,14 @@ private:
 template<class Concept, class T>
 class param<Concept, const T&> {
 public:
+
+    friend struct boost::type_erasure::detail::access;
+
+    /** INTERNAL ONLY */
+    typedef void _boost_type_erasure_is_any;
+    /** INTERNAL ONLY */
+    typedef param _boost_type_erasure_derived_type;
+
     param(const ::boost::type_erasure::detail::storage& data,
           const ::boost::type_erasure::binding<Concept>& table)
       : _impl(data, table)
@@ -192,6 +205,14 @@ protected:
 template<class Concept, class T>
 class param<Concept, T&> : public param<Concept, const T&> {
 public:
+
+    friend struct boost::type_erasure::detail::access;
+
+    /** INTERNAL ONLY */
+    typedef void _boost_type_erasure_is_any;
+    /** INTERNAL ONLY */
+    typedef param _boost_type_erasure_derived_type;
+
     param(const ::boost::type_erasure::detail::storage& data,
           const ::boost::type_erasure::binding<Concept>& table)
       : param<Concept, const T&>(data, table)
@@ -209,6 +230,14 @@ public:
 template<class Concept, class T>
 class param<Concept, T&&> : public param<Concept, const T&> {
 public:
+
+    friend struct boost::type_erasure::detail::access;
+
+    /** INTERNAL ONLY */
+    typedef void _boost_type_erasure_is_any;
+    /** INTERNAL ONLY */
+    typedef param _boost_type_erasure_derived_type;
+
     param(const ::boost::type_erasure::detail::storage& data,
           const ::boost::type_erasure::binding<Concept>& table)
       : param<Concept, const T&>(data, table)
