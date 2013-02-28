@@ -70,15 +70,15 @@ struct constructible<R(T...)>
 };
 
 /// INTERNAL ONLY
-template<class Base, class R, class... T, class Tag>
+template<class Base, class Tag, class... T>
 struct concept_interface<
-    ::boost::type_erasure::constructible<R(T...)>,
+    ::boost::type_erasure::constructible<Tag(T...)>,
     Base,
     Tag
 > : Base
 {
     using Base::_boost_type_erasure_deduce_constructor;
-    ::boost::type_erasure::constructible<R(T...)>*
+    ::boost::type_erasure::constructible<Tag(T...)>*
     _boost_type_erasure_deduce_constructor(
         typename ::boost::type_erasure::as_param<Base, T>::type...)
     {
