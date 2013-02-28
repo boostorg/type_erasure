@@ -33,6 +33,8 @@
 #include <boost/type_erasure/call.hpp>
 #include <boost/type_erasure/concept_interface.hpp>
 
+#if defined(BOOST_NO_VARIADIC_TEMPLATES) || defined(BOOST_TYPE_ERASURE_DOXYGEN)
+
 namespace boost {
 namespace type_erasure {
 namespace detail {
@@ -59,8 +61,6 @@ struct first_placeholder_index :
 }
 }
 }
-
-#if defined(BOOST_NO_VARIADIC_TEMPLATES) || defined(BOOST_TYPE_ERASURE_DOXYGEN)
 
 /** INTERNAL ONLY */
 #define BOOST_TYPE_ERASURE_FREE_QUALIFIED_ID(seq, N) \
@@ -132,6 +132,31 @@ template<int... N>
 struct index_list {};
 
 namespace detail {
+    
+template<class... T>
+struct first_placeholder;
+
+template<class T0, class... T>
+struct first_placeholder<T0, T...> {
+    typedef typename ::boost::mpl::eval_if<is_placeholder<T0>,
+        ::boost::mpl::identity<T0>,
+        first_placeholder<T...>
+    >::type type;
+};
+
+template<>
+struct first_placeholder<> {};
+
+template<class... T>
+struct first_placeholder_index;
+
+template<class T0, class... T>
+struct first_placeholder_index<T0, T...> :
+    ::boost::mpl::eval_if<is_placeholder<T0>,
+        ::boost::mpl::int_<0>,
+        ::boost::mpl::next<first_placeholder<T...> >
+    >::type
+{};
 
 template<class Sig>
 struct transform_free_signature;
