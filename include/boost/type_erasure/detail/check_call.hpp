@@ -115,7 +115,9 @@ struct check_placeholder_arg :
     >::type
 {};
 
-#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES) && defined(__GNUC__) && !(__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 6))
+#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES) && \
+    ((defined(__GNUC__) && !(__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 6))) || \
+    defined(__MINGW32__) || defined(__MINGW64__))
 #define BOOST_TYPE_ERASURE_BROKEN_RVALUE_IS_CONVERTIBLE
 #endif
 
