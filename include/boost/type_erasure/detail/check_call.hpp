@@ -115,6 +115,10 @@ struct check_placeholder_arg :
     >::type
 {};
 
+#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES) && defined(__GNUC__) && !(__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 6))
+#define BOOST_TYPE_ERASURE_BROKEN_RVALUE_IS_CONVERTIBLE
+#endif
+
 template<class FormalArg, class ActualArg>
 struct check_arg
 {
@@ -125,7 +129,11 @@ struct check_arg
             >::type
         >,
         ::boost::type_erasure::detail::check_placeholder_arg<FormalArg, ActualArg>,
+#ifdef BOOST_TYPE_ERASURE_BROKEN_RVALUE_IS_CONVERTIBLE
+        ::boost::mpl::true_
+#else
         ::boost::is_convertible<ActualArg, FormalArg>
+#endif
     >::type type;
 };
 
