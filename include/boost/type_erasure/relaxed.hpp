@@ -43,24 +43,27 @@ struct is_relaxed_impl :
 }
 
 /**
- * This special concept does not have any behavior by
- * itself.  However it affects the behavior of other
- * concepts.  In the presence of this concept, the
- * requirement that all the arguments to a function
- * must match is relaxed.  Instead, if there is a
- * reasonable default implementation, it will be used,
- * otherwise a @ref bad_function_call exception will
- * be thrown.
+ * This special concept enables various useful default behavior that
+ * makes @ref any act like an ordinary object.  By default @ref any
+ * forwards all operations to the underlying type, and provides only
+ * the operations that are specified in its @c Concept.
  *
- * The following concepts have special behavior with
- * this flag:
- * - @ref assignable "assignable": If the types are not the same,
- *   it will fall back on copy and swap.
+ * In detail, @ref relaxed enables the following:
+ * - A raw value can be assigned to an @ref any.  This will replace
+ *   the value stored by the @ref any.  (But note that if @ref assignable
+ *   is present, it takes priority.)
+ * - copy assignment of @ref any uses the copy constructor if it can't
+ *   use @ref assignable (either because @ref assignable is missing,
+ *   or because the stored types do not match).
+ * - default construction of @ref any is allowed and creates a null any.
  * - @ref equality_comparable "equality_comparable": If the types do not
  *   match, it will return false.
  * - @ref less_than_comparable "less_than_comparable": If the types do not
  *   match, the ordering will be according to
  *   @c std::type_info::before.
+ * - if the arguments to any other function do not match, it will throw
+ *   a @ref bad_function_call exception instead of having undefined
+ *   behavior.
  */
 struct relaxed : ::boost::mpl::vector0<> {};
 
