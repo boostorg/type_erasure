@@ -83,6 +83,20 @@ struct replace_param_for_vtable<const T&>
     >::type type;
 };
 
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+
+template<class T>
+struct replace_param_for_vtable<T&&>
+{
+    typedef typename ::boost::mpl::if_<
+        ::boost::type_erasure::is_placeholder<typename ::boost::remove_cv<T>::type>,
+        ::boost::type_erasure::detail::storage&&,
+        T&&
+    >::type type;
+};
+
+#endif
+
 template<class T>
 struct replace_result_for_vtable
 {
@@ -112,6 +126,20 @@ struct replace_result_for_vtable<const T&>
         const T&
     >::type type;
 };
+
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+
+template<class T>
+struct replace_result_for_vtable<T&&>
+{
+    typedef typename ::boost::mpl::if_<
+        ::boost::type_erasure::is_placeholder<typename ::boost::remove_cv<T>::type>,
+        ::boost::type_erasure::detail::storage&&,
+        T&&
+    >::type type;
+};
+
+#endif
 
 template<class Sig>
 struct get_vtable_signature;
@@ -158,7 +186,7 @@ struct vtable_adapter_impl<PrimitiveConcept, R(T...), R2(U...)>
     static R value(T... arg)
     {
         return PrimitiveConcept::apply(
-            ::boost::type_erasure::detail::extract<U>(arg)...);
+            ::boost::type_erasure::detail::extract<U>(std::forward<T>(arg))...);
     }
 };
 
@@ -171,7 +199,7 @@ struct vtable_adapter_impl<PrimitiveConcept, ::boost::type_erasure::detail::stor
         ::boost::type_erasure::detail::storage result;
         typename ::boost::remove_reference<R2>::type* p =
             ::boost::addressof(
-                PrimitiveConcept::apply(::boost::type_erasure::detail::extract<U>(arg)...));
+                PrimitiveConcept::apply(::boost::type_erasure::detail::extract<U>(std::forward<T>(arg))...));
         result.data = const_cast<void*>(static_cast<const void*>(p));
         return result;
     }

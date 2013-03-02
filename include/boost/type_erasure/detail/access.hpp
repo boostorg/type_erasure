@@ -87,6 +87,37 @@ struct access
     {
         return arg._impl.data;
     }
+
+#ifndef BOOST_NO_RVALUE_REFERENCES
+
+    template<class Derived>
+    static ::boost::type_erasure::detail::storage&&
+    data(::boost::type_erasure::any_base<Derived>&& arg)
+    {
+        return static_cast<Derived&&>(arg).data;
+    }
+    template<class Concept, class T>
+    static ::boost::type_erasure::detail::storage&&
+    data(::boost::type_erasure::any_base< ::boost::type_erasure::any<Concept, T&&> >& arg)
+    {
+        return static_cast< ::boost::type_erasure::any<Concept, T&&>&>(arg).data;
+    }
+
+    template<class Concept, class T>
+    static ::boost::type_erasure::detail::storage&&
+    data(::boost::type_erasure::param<Concept, T>&& arg)
+    {
+        return std::move(arg._impl.data);
+    }
+    template<class Concept, class T>
+    static ::boost::type_erasure::detail::storage&&
+    data(::boost::type_erasure::param<Concept, T&&>& arg)
+    {
+        return std::move(arg._impl.data);
+    }
+
+#endif
+
 };
 
 }

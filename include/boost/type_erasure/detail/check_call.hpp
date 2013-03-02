@@ -63,11 +63,7 @@ template<class T>
 struct qualified_placeholder<T&&, typename T::_boost_type_erasure_is_any>
 {
     typedef typename ::boost::type_erasure::placeholder_of<T>::type placeholder;
-    typedef typename ::boost::remove_reference<placeholder>::type unref;
-    typedef typename ::boost::mpl::if_< ::boost::is_reference<placeholder>,
-        unref&,
-        unref&&
-    >::type type;
+    typedef placeholder&& type;
 };
 
 #endif

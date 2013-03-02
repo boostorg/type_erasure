@@ -70,6 +70,19 @@ struct rebind_placeholders_in_argument<T&, Bindings>
     >::type& type;
 };
 
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+
+template<class T, class Bindings>
+struct rebind_placeholders_in_argument<T&&, Bindings>
+{
+    typedef typename ::boost::type_erasure::detail::rebind_placeholders_in_argument<
+        T,
+        Bindings
+    >::type&& type;
+};
+
+#endif
+
 template<class T, class Bindings>
 struct rebind_placeholders_in_argument<const T, Bindings>
 {

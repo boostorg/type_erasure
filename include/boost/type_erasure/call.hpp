@@ -128,6 +128,34 @@ convert_arg(const param<Concept, T>& arg, boost::mpl::true_)
 
 #ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
 
+template<class Concept, class T>
+::boost::type_erasure::detail::storage&&
+convert_arg(any_base<any<Concept, T> >&& arg, boost::mpl::true_)
+{
+    return ::boost::type_erasure::detail::access::data(std::move(arg));
+}
+
+template<class Concept, class T>
+::boost::type_erasure::detail::storage&&
+convert_arg(any_base<any<Concept, T&&> >& arg, boost::mpl::true_)
+{
+    return ::boost::type_erasure::detail::access::data(arg);
+}
+
+template<class Concept, class T>
+::boost::type_erasure::detail::storage&&
+convert_arg(param<Concept, T>&& arg, boost::mpl::true_)
+{
+    return ::boost::type_erasure::detail::access::data(std::move(arg));
+}
+
+template<class Concept, class T>
+::boost::type_erasure::detail::storage&&
+convert_arg(param<Concept, T&&>& arg, boost::mpl::true_)
+{
+    return ::boost::type_erasure::detail::access::data(arg);
+}
+
 template<class T>
 T&& convert_arg(T&& arg, boost::mpl::false_) { return std::forward<T>(arg); }
 

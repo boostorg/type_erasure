@@ -55,7 +55,7 @@ T extract(const storage& arg)
 template<class T>
 T extract(storage&& arg)
 {
-    return static_cast<T>(*static_cast<typename ::boost::remove_reference<T>::type*>(arg.data));
+    return std::move(*static_cast<typename ::boost::remove_reference<T>::type*>(arg.data));
 }
 
 #endif
