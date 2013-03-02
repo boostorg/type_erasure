@@ -109,4 +109,13 @@ BOOST_AUTO_TEST_CASE(test_global_has_f1_rv) {
     BOOST_CHECK_EQUAL(x.f1(5), 15);
 }
 
+BOOST_AUTO_TEST_CASE(test_global_has_f1_rv_const) {
+    typedef ::boost::mpl::vector<
+        global_has_f1_1<int(int&&), const _self>,
+        copy_constructible<> > concept_type;
+    model_const m(10);
+    const any<concept_type> x(m);
+    BOOST_CHECK_EQUAL(x.f1(5), 15);
+}
+
 #endif

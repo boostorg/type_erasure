@@ -409,4 +409,32 @@ BOOST_AUTO_TEST_CASE(test_rvalue_any)
     BOOST_CHECK_EQUAL(f_rv_value, 4);
 }
 
+BOOST_AUTO_TEST_CASE(test_const_rvalue_int)
+{
+    typedef ::boost::mpl::vector<
+        common<>,
+        callable<void(int&&), const _self>
+    > test_concept;
+    const any<test_concept> f(&f_rv);
+    
+    f_rv_value = 1;
+    f(2);
+    BOOST_CHECK_EQUAL(f_rv_value, 3);
+}
+
+BOOST_AUTO_TEST_CASE(test_const_rvalue_any)
+{
+    typedef ::boost::mpl::vector<
+        common<>,
+        common<_a>,
+        callable<void(_a&&), const _self>
+    > test_concept;
+    
+    tuple<test_concept, _self, _a> t1(&f_rv, 3);
+    const any<test_concept> x1(get<0>(t1));
+    f_rv_value = 1;
+    x1(std::move(get<1>(t1)));
+    BOOST_CHECK_EQUAL(f_rv_value, 4);
+}
+
 #endif
