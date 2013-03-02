@@ -124,14 +124,6 @@ struct is_any<any<Concept, T> > : ::boost::mpl::true_ {};
  *
  * \tparam Concept The concept that the type should model.
  * \tparam T A @ref placeholder specifying which type this is.
- *
- * @c Concept is defined as follows:
- * - The built-in concepts provided by the library are valid concepts.
- * - Any user-defined primitive concept is a valid concept.
- * - An MPL Forward Sequence of concepts is a valid concept.
- *
- * Note that this definition is recursive and allows concepts to
- * composed in a natural way.
  */
 template<class Concept, class T = _self>
 class any :
@@ -171,7 +163,7 @@ public:
      *
      * \pre @c U is a model of @c Concept.
      * \pre @c U must be \CopyConstructible.
-     * \pre @c Concept must not refer to any placeholder besides @c T.
+     * \pre @c Concept must not refer to any non-deduced placeholder besides @c T.
      *
      * \throws std::bad_alloc or whatever that the copy
      *         constructor of @c U throws.
@@ -197,7 +189,7 @@ public:
      * \pre @c U is a model of @c Concept.
      * \pre @c U must be \CopyConstructible.
      * \pre @c Map is an MPL map with an entry for every
-     *         placeholder referred to by @c Concept.
+     *         non-deduced placeholder referred to by @c Concept.
      * \pre @c @c T must map to @c U in @c Map.
      *
      * \throws std::bad_alloc or whatever that the copy
@@ -260,7 +252,7 @@ public:
      * \param other The object to make a copy of.
      *
      * \pre @c Concept must contain @ref constructible<T(const T&)>.
-     * \pre @c Concept must not refer to any placeholder besides @c T.
+     * \pre @c Concept must not refer to any non-deduced placeholder besides @c T.
      * \pre After substituting @c T for @c Tag2, the requirements of
      *      @c Concept2 must be a superset of of the requirements of
      *      @c Concept.
@@ -297,8 +289,8 @@ public:
      *        used by the two concepts.
      *
      * \pre @c Concept must contain @ref constructible<T(const T&)>.
-     * \pre @c Map must be an MPL map with keys for all the placeholders
-     *      used by @c Concept and values for the corresponding
+     * \pre @c Map must be an MPL map with keys for all the non-deduced
+     *      placeholders used by @c Concept and values for the corresponding
      *      placeholders in @c Concept2.
      * \pre After substituting placeholders according to @c Map, the
      *      requirements of @c Concept2 must be a superset of of the
@@ -882,7 +874,7 @@ public:
      * \param arg The object to bind the reference to.
      *
      * \pre @c U is a model of @c Concept.
-     * \pre @c Concept must not refer to any placeholder besides @c T.
+     * \pre @c Concept must not refer to any non-deduced placeholder besides @c T.
      *
      * \throws Nothing.
      */
@@ -915,7 +907,7 @@ public:
      *
      * \pre @c U is a model of @c Concept.
      * \pre @c Map is an MPL map with an entry for every
-     *         placeholder referred to by @c Concept.
+     *         non-deduced placeholder referred to by @c Concept.
      *
      * \throws Nothing.
      */
@@ -963,7 +955,7 @@ public:
      *
      * \param other The reference to copy.
      *
-     * \pre @c Concept must not refer to any placeholder besides @c T.
+     * \pre @c Concept must not refer to any non-deduced placeholder besides @c T.
      * \pre After substituting @c T for @c Tag2, the requirements of
      *      @c Concept2 must be a superset of of the requirements of
      *      @c Concept.
@@ -996,7 +988,7 @@ public:
      *
      * \param other The object to bind the reference to.
      *
-     * \pre @c Concept must not refer to any placeholder besides @c T.
+     * \pre @c Concept must not refer to any non-deduced placeholder besides @c T.
      * \pre After substituting @c T for @c Tag2, the requirements of
      *      @c Concept2 must be a superset of of the requirements of
      *      @c Concept.
@@ -1030,8 +1022,8 @@ public:
      * \param other The reference to copy.
      * \param binding Specifies the mapping between the two concepts.
      *
-     * \pre @c Map must be an MPL map with keys for all the placeholders
-     *      used by @c Concept and values for the corresponding
+     * \pre @c Map must be an MPL map with keys for all the non-deduced
+     *      placeholders used by @c Concept and values for the corresponding
      *      placeholders in @c Concept2.
      * \pre After substituting placeholders according to @c Map, the
      *      requirements of @c Concept2 must be a superset of of the
@@ -1054,8 +1046,8 @@ public:
      * \param other The object to bind the reference to.
      * \param binding Specifies the mapping between the two concepts.
      *
-     * \pre @c Map must be an MPL map with keys for all the placeholders
-     *      used by @c Concept and values for the corresponding
+     * \pre @c Map must be an MPL map with keys for all the non-deduced
+     *      placeholders used by @c Concept and values for the corresponding
      *      placeholders in @c Concept2.
      * \pre After substituting placeholders according to @c Map, the
      *      requirements of @c Concept2 must be a superset of of the
@@ -1286,7 +1278,7 @@ public:
      * \param arg The object to bind the reference to.
      *
      * \pre @c U is a model of @c Concept.
-     * \pre @c Concept must not refer to any placeholder besides @c T.
+     * \pre @c Concept must not refer to any non-deduced placeholder besides @c T.
      *
      * \throws Nothing.
      */
@@ -1310,7 +1302,7 @@ public:
      *
      * \pre @c U is a model of @c Concept.
      * \pre @c Map is an MPL map with an entry for every
-     *         placeholder referred to by @c Concept.
+     *         non-deduced placeholder referred to by @c Concept.
      *
      * \throws Nothing.
      */
@@ -1363,7 +1355,7 @@ public:
      *
      * \param other The object to bind the reference to.
      *
-     * \pre @c Concept must not refer to any placeholder besides @c T.
+     * \pre @c Concept must not refer to any non-deduced placeholder besides @c T.
      * \pre After substituting @c T for @c Tag2, the requirements of
      *      @c Concept2 must be a superset of of the requirements of
      *      @c Concept.
@@ -1394,8 +1386,8 @@ public:
      * \param other The object to bind the reference to.
      * \param binding Specifies the mapping between the two concepts.
      *
-     * \pre @c Map must be an MPL map with keys for all the placeholders
-     *      used by @c Concept and values for the corresponding
+     * \pre @c Map must be an MPL map with keys for all the non-deduced
+     *      placeholders used by @c Concept and values for the corresponding
      *      placeholders in @c Concept2.
      * \pre After substituting placeholders according to @c Map, the
      *      requirements of @c Concept2 must be a superset of of the
@@ -1500,7 +1492,7 @@ public:
      * \param arg The object to bind the reference to.
      *
      * \pre @c U is a model of @c Concept.
-     * \pre @c Concept must not refer to any placeholder besides @c T.
+     * \pre @c Concept must not refer to any non-deduced placeholder besides @c T.
      *
      * \throws Nothing.
      */
@@ -1534,7 +1526,7 @@ public:
      *
      * \pre @c U is a model of @c Concept.
      * \pre @c Map is an MPL map with an entry for every
-     *         placeholder referred to by @c Concept.
+     *         non-deduced placeholder referred to by @c Concept.
      *
      * \throws Nothing.
      */
@@ -1578,7 +1570,7 @@ public:
      *
      * \param other The reference to copy.
      *
-     * \pre @c Concept must not refer to any placeholder besides @c T.
+     * \pre @c Concept must not refer to any non-deduced placeholder besides @c T.
      * \pre After substituting @c T for @c Tag2, the requirements of
      *      @c Concept2 must be a superset of of the requirements of
      *      @c Concept.
@@ -1612,7 +1604,7 @@ public:
      *
      * \param other The object to bind the reference to.
      *
-     * \pre @c Concept must not refer to any placeholder besides @c T.
+     * \pre @c Concept must not refer to any non-deduced placeholder besides @c T.
      * \pre After substituting @c T for @c Tag2, the requirements of
      *      @c Concept2 must be a superset of of the requirements of
      *      @c Concept.
@@ -1646,8 +1638,8 @@ public:
      * \param other The reference to copy.
      * \param binding Specifies the mapping between the two concepts.
      *
-     * \pre @c Map must be an MPL map with keys for all the placeholders
-     *      used by @c Concept and values for the corresponding
+     * \pre @c Map must be an MPL map with keys for all the non-deduced
+     *      placeholders used by @c Concept and values for the corresponding
      *      placeholders in @c Concept2.
      * \pre After substituting placeholders according to @c Map, the
      *      requirements of @c Concept2 must be a superset of of the
@@ -1670,8 +1662,8 @@ public:
      * \param other The object to bind the reference to.
      * \param binding Specifies the mapping between the two concepts.
      *
-     * \pre @c Map must be an MPL map with keys for all the placeholders
-     *      used by @c Concept and values for the corresponding
+     * \pre @c Map must be an MPL map with keys for all the non-deduced
+     *      placeholders used by @c Concept and values for the corresponding
      *      placeholders in @c Concept2.
      * \pre After substituting placeholders according to @c Map, the
      *      requirements of @c Concept2 must be a superset of of the
