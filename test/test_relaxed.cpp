@@ -13,7 +13,7 @@
 #include <boost/type_erasure/builtin.hpp>
 #include <boost/type_erasure/operators.hpp>
 #include <boost/type_erasure/any_cast.hpp>
-#include <boost/type_erasure/relaxed_match.hpp>
+#include <boost/type_erasure/relaxed.hpp>
 #include <boost/mpl/vector.hpp>
 
 #define BOOST_TEST_MAIN
@@ -29,7 +29,7 @@ struct common : ::boost::mpl::vector<
 
 BOOST_AUTO_TEST_CASE(test_simple)
 {
-    typedef ::boost::mpl::vector<copy_constructible<>, addable<>, relaxed_match> src_concept;
+    typedef ::boost::mpl::vector<copy_constructible<>, addable<>, relaxed> src_concept;
     any<src_concept> x(1);
     any<src_concept> y(2.0);
     BOOST_CHECK_THROW(x + y, bad_function_call);

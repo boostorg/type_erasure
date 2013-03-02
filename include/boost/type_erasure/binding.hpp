@@ -78,7 +78,7 @@ class binding
 public:
 
     /**
-     * \pre @ref relaxed_match must be in @c Concept.
+     * \pre @ref relaxed must be in @c Concept.
      *
      * \throws Nothing.
      */

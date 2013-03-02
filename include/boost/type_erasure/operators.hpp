@@ -21,9 +21,8 @@
 #include <boost/type_erasure/derived.hpp>
 #include <boost/type_erasure/rebind_any.hpp>
 #include <boost/type_erasure/param.hpp>
-#include <boost/type_erasure/relaxed_match.hpp>
 #include <boost/type_erasure/check_match.hpp>
-#include <boost/type_erasure/relaxed_match.hpp>
+#include <boost/type_erasure/relaxed.hpp>
 #include <boost/type_erasure/typeid_of.hpp>
 
 namespace boost {

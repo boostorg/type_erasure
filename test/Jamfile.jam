@@ -15,7 +15,7 @@ run test_add_assign.cpp /boost//unit_test_framework ;
 run test_callable.cpp /boost//unit_test_framework ;
 run test_reference.cpp /boost//unit_test_framework ;
 run test_construct.cpp /boost//unit_test_framework ;
-run test_relaxed_match.cpp /boost//unit_test_framework ;
+run test_relaxed.cpp /boost//unit_test_framework ;
 run test_assign.cpp /boost//unit_test_framework ;
 run test_construct_ref.cpp /boost//unit_test_framework ;
 run test_construct_cref.cpp /boost//unit_test_framework ;

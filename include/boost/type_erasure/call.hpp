@@ -164,7 +164,7 @@ T& convert_arg(T& arg, boost::mpl::false_) { return arg; }
  *         result will be converted to the appropriate @ref
  *         any type.
  *
- * \throws bad_function_call if @ref relaxed_match is
+ * \throws bad_function_call if @ref relaxed is
  *         in @c Concept and there is a type mismatch.
  *
  * Example:

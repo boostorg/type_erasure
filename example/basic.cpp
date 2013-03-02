@@ -31,13 +31,13 @@ void basic1() {
         In the rare case when we only want a single concept, it doesn't
         need to be wrapped in an MPL sequence.]
     */
-    any<mpl::vector<copy_constructible<>, typeid_<>, relaxed_match> > x(10);
+    any<mpl::vector<copy_constructible<>, typeid_<>, relaxed> > x(10);
     int i = any_cast<int>(x); // i == 10
     /*`
         __copy_constructible is a builtin concept that allows us to
         copy and destroy the object.  __typeid_ provides run-time
-        type information so that we can use __any_cast.  __relaxed_match
-        enables various useful defaults.  Without __relaxed_match,
+        type information so that we can use __any_cast.  __relaxed
+        enables various useful defaults.  Without __relaxed,
         __any supports /exactly/ what you specify and nothing else.
         In particular, it allows default construction and assignment of __any.
      */

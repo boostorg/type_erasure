@@ -8,8 +8,8 @@
 //
 // $Id$
 
-#ifndef BOOST_TYPE_ERASURE_RELAXED_MATCH_HPP_INCLUDED
-#define BOOST_TYPE_ERASURE_RELAXED_MATCH_HPP_INCLUDED
+#ifndef BOOST_TYPE_ERASURE_RELAXED_HPP_INCLUDED
+#define BOOST_TYPE_ERASURE_RELAXED_HPP_INCLUDED
 
 #include <boost/mpl/vector.hpp>
 #include <boost/mpl/bool.hpp>
@@ -62,11 +62,11 @@ struct is_relaxed_impl :
  *   match, the ordering will be according to
  *   @c std::type_info::before.
  */
-struct relaxed_match : ::boost::mpl::vector0<> {};
+struct relaxed : ::boost::mpl::vector0<> {};
 
 /**
  * A metafunction indicating whether @c Concept
- * includes @ref relaxed_match.
+ * includes @ref relaxed.
  */
 template<class Concept>
 struct is_relaxed :
@@ -78,7 +78,7 @@ struct is_relaxed :
 
 /** INTERNAL ONLY */
 template<>
-struct is_relaxed< ::boost::type_erasure::relaxed_match> :
+struct is_relaxed< ::boost::type_erasure::relaxed> :
     ::boost::mpl::true_
 {};
 

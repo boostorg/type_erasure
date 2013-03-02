@@ -23,7 +23,7 @@ using namespace boost::type_erasure;
 template<class T = _self>
 struct common : ::boost::mpl::vector<
     copy_constructible<T>,
-    relaxed_match
+    relaxed
 > {};
 
 BOOST_AUTO_TEST_CASE(test_typeid) {

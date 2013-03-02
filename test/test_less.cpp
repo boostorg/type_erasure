@@ -158,7 +158,7 @@ BOOST_AUTO_TEST_CASE(test_fixed_rhs_greater)
 
 BOOST_AUTO_TEST_CASE(test_relaxed)
 {
-    typedef boost::mpl::vector<copy_constructible<>, less_than_comparable<>, relaxed_match> test_concept;
+    typedef boost::mpl::vector<copy_constructible<>, less_than_comparable<>, relaxed> test_concept;
     any<test_concept> x(1);
     any<test_concept> y(2);
     any<test_concept> z(std::string("test"));

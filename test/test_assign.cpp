@@ -13,7 +13,7 @@
 #include <boost/type_erasure/builtin.hpp>
 #include <boost/type_erasure/operators.hpp>
 #include <boost/type_erasure/any_cast.hpp>
-#include <boost/type_erasure/relaxed_match.hpp>
+#include <boost/type_erasure/relaxed.hpp>
 #include <boost/mpl/vector.hpp>
 
 #define BOOST_TEST_MAIN
@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE(test_basic)
 
 BOOST_AUTO_TEST_CASE(test_basic_relaxed)
 {
-    typedef ::boost::mpl::vector<common<>, assignable<>, relaxed_match > test_concept;
+    typedef ::boost::mpl::vector<common<>, assignable<>, relaxed > test_concept;
     any<test_concept> x(1);
     int* ip = any_cast<int*>(&x);
     any<test_concept> y(2);
@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE(test_relaxed_no_copy)
         destructible<>,
         typeid_<>,
         assignable<>,
-        relaxed_match
+        relaxed
     > test_concept;
     any<test_concept> x(1);
     int* ip = any_cast<int*>(&x);
@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE(test_relaxed_no_assign)
 {
     typedef ::boost::mpl::vector<
         common<>,
-        relaxed_match
+        relaxed
     > test_concept;
     any<test_concept> x(1);
     any<test_concept> y(2);
@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE(test_relaxed_no_assign)
 
 BOOST_AUTO_TEST_CASE(test_dynamic_fallback)
 {
-    typedef ::boost::mpl::vector<common<>, assignable<>, relaxed_match> test_concept;
+    typedef ::boost::mpl::vector<common<>, assignable<>, relaxed> test_concept;
     any<test_concept> x(1);
     any<test_concept> y(2.0);
     x = y;
@@ -94,7 +94,7 @@ BOOST_AUTO_TEST_CASE(test_dynamic_fallback)
 
 BOOST_AUTO_TEST_CASE(test_dynamic_fail)
 {
-    typedef ::boost::mpl::vector<destructible<>, typeid_<>, assignable<>, relaxed_match> test_concept;
+    typedef ::boost::mpl::vector<destructible<>, typeid_<>, assignable<>, relaxed> test_concept;
     any<test_concept> x(1);
     any<test_concept> y(2.0);
     BOOST_CHECK_THROW(x = y, bad_function_call);
@@ -114,7 +114,7 @@ BOOST_AUTO_TEST_CASE(test_basic_int)
 
 BOOST_AUTO_TEST_CASE(test_basic_relaxed_int)
 {
-    typedef ::boost::mpl::vector<common<>, assignable<_self, int>, relaxed_match > test_concept;
+    typedef ::boost::mpl::vector<common<>, assignable<_self, int>, relaxed > test_concept;
     any<test_concept> x(1);
     int* ip = any_cast<int*>(&x);
     x = 2;
@@ -130,7 +130,7 @@ BOOST_AUTO_TEST_CASE(test_relaxed_no_copy_int)
         destructible<>,
         typeid_<>,
         assignable<_self, int>,
-        relaxed_match
+        relaxed
     > test_concept;
     any<test_concept> x(1);
     int* ip = any_cast<int*>(&x);
@@ -145,7 +145,7 @@ BOOST_AUTO_TEST_CASE(test_relaxed_no_assign_int)
 {
     typedef ::boost::mpl::vector<
         common<>,
-        relaxed_match
+        relaxed
     > test_concept;
     any<test_concept> x(1);
     x = 2;
@@ -164,7 +164,7 @@ BOOST_AUTO_TEST_CASE(test_basic_ref)
 
 BOOST_AUTO_TEST_CASE(test_basic_relaxed_ref)
 {
-    typedef ::boost::mpl::vector<common<>, assignable<>, relaxed_match > test_concept;
+    typedef ::boost::mpl::vector<common<>, assignable<>, relaxed > test_concept;
     int i = 1;
     any<test_concept, _self&> x(i);
     any<test_concept> y(2);
@@ -176,7 +176,7 @@ BOOST_AUTO_TEST_CASE(test_relaxed_no_assign_ref)
 {
     typedef ::boost::mpl::vector<
         common<>,
-        relaxed_match
+        relaxed
     > test_concept;
     int i = 1;
     any<test_concept, _self&> x(i);
@@ -188,7 +188,7 @@ BOOST_AUTO_TEST_CASE(test_relaxed_no_assign_ref)
 
 BOOST_AUTO_TEST_CASE(test_dynamic_fallback_ref)
 {
-    typedef ::boost::mpl::vector<common<>, assignable<>, relaxed_match> test_concept;
+    typedef ::boost::mpl::vector<common<>, assignable<>, relaxed> test_concept;
     int i = 1;
     any<test_concept, _self&> x(i);
     any<test_concept> y(2.0);

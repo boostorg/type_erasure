@@ -21,7 +21,7 @@
 [def __copy_constructible [classref boost::type_erasure::copy_constructible copy_constructible]]
 [def __assignable [classref boost::type_erasure::assignable assignable]]
 [def __typeid_ [classref boost::type_erasure::typeid_ typeid_]]
-[def __relaxed_match [classref boost::type_erasure::relaxed_match relaxed_match]]
+[def __relaxed [classref boost::type_erasure::relaxed relaxed]]
 [def __binding [classref boost::type_erasure::binding binding]]
 [def __static_binding [classref boost::type_erasure::static_binding static_binding]]
 [def __placeholder [classref boost::type_erasure::placeholder placeholder]]

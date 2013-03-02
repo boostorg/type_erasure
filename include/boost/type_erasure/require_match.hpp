@@ -25,7 +25,7 @@
 #include <boost/preprocessor/repetition/enum_trailing_params.hpp>
 #include <boost/preprocessor/repetition/enum_trailing_binary_params.hpp>
 #include <boost/type_erasure/detail/extract_concept.hpp>
-#include <boost/type_erasure/relaxed_match.hpp>
+#include <boost/type_erasure/relaxed.hpp>
 #include <boost/type_erasure/check_match.hpp>
 #include <boost/type_erasure/exception.hpp>
 
@@ -41,7 +41,7 @@ class binding;
  * Checks that the actual types stored in all the @ref any
  * arguments match the types specified by @c binding.  If
  * they do not match then,
- * - If @ref relaxed_match is in @c Concept, throws @ref bad_function_call.
+ * - If @ref relaxed is in @c Concept, throws @ref bad_function_call.
  * - Otherwise the behavior is undefined.
  *
  * If @c binding is not specified, it will be deduced from

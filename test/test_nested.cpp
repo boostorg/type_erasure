@@ -50,8 +50,8 @@ BOOST_AUTO_TEST_CASE(test_basic)
 
 BOOST_AUTO_TEST_CASE(test_relaxed)
 {
-    typedef boost::mpl::vector<common<_a>, addable<_a, any1_type>, relaxed_match> test_concept;
-    typedef boost::mpl::vector<common<_b>, addable<_b, any1_type>, relaxed_match> dest_concept;
+    typedef boost::mpl::vector<common<_a>, addable<_a, any1_type>, relaxed> test_concept;
+    typedef boost::mpl::vector<common<_b>, addable<_b, any1_type>, relaxed> dest_concept;
     any1_type a1(1);
     test_class v = { 2 };
     any<test_concept, _a> x(v);

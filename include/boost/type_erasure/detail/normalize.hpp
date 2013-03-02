@@ -30,7 +30,7 @@
 #include <boost/type_erasure/detail/get_placeholders.hpp>
 #include <boost/type_erasure/detail/rebind_placeholders.hpp>
 #include <boost/type_erasure/detail/normalize_deduced.hpp>
-#include <boost/type_erasure/relaxed_match.hpp>
+#include <boost/type_erasure/relaxed.hpp>
 #include <boost/type_erasure/builtin.hpp>
 
 namespace boost {

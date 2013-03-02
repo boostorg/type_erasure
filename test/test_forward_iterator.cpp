@@ -77,7 +77,7 @@ BOOST_AUTO_TEST_CASE(test_relaxed)
     typedef boost::mpl::vector<
         forward_iterator<>,
         same_type<forward_iterator<>::value_type, int>,
-        relaxed_match
+        relaxed
     > test_concept;
     std::vector<int> vec(10);
     any<test_concept> x(vec.begin());

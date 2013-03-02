@@ -82,7 +82,7 @@ void references4() {
     typedef mpl::vector<
         copy_constructible<>,
         incrementable<>,
-        relaxed_match
+        relaxed
     > requirements;
     any<requirements> x(10);
     any<requirements, _self&> y(x);

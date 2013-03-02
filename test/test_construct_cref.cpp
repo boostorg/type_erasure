@@ -12,7 +12,7 @@
 #include <boost/type_erasure/builtin.hpp>
 #include <boost/type_erasure/operators.hpp>
 #include <boost/type_erasure/any_cast.hpp>
-#include <boost/type_erasure/relaxed_match.hpp>
+#include <boost/type_erasure/relaxed.hpp>
 #include <boost/mpl/vector.hpp>
 
 #define BOOST_TEST_MAIN

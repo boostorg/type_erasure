@@ -27,7 +27,7 @@ BOOST_AUTO_TEST_CASE(test_non_relaxed)
 
 BOOST_AUTO_TEST_CASE(test_relaxed)
 {
-    typedef boost::mpl::vector<copy_constructible<>, relaxed_match> test_concept;
+    typedef boost::mpl::vector<copy_constructible<>, relaxed> test_concept;
     any<test_concept> x(2);
     BOOST_CHECK(!is_empty(x));
     any<test_concept> y;

@@ -27,7 +27,7 @@
 #include <boost/preprocessor/repetition/enum_trailing_params.hpp>
 #include <boost/preprocessor/repetition/enum_trailing_binary_params.hpp>
 #include <boost/type_erasure/detail/extract_concept.hpp>
-#include <boost/type_erasure/relaxed_match.hpp>
+#include <boost/type_erasure/relaxed.hpp>
 #include <boost/type_erasure/detail/access.hpp>
 
 namespace boost {
@@ -73,9 +73,9 @@ struct should_check :
 #ifdef BOOST_TYPE_ERASURE_DOXYGEN
 
 /**
- * If @ref relaxed_match is in @c Concept, checks whether the
+ * If @ref relaxed is in @c Concept, checks whether the
  * arguments to @c f match the types specified by
- * @c binding.  If @ref relaxed_match is not in @c Concept,
+ * @c binding.  If @ref relaxed is not in @c Concept,
  * returns true.  If @c binding is not specified, it will
  * be deduced from the arguments.
  */

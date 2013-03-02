@@ -41,7 +41,7 @@
 #include <boost/type_erasure/static_binding.hpp>
 #include <boost/type_erasure/concept_interface.hpp>
 #include <boost/type_erasure/call.hpp>
-#include <boost/type_erasure/relaxed_match.hpp>
+#include <boost/type_erasure/relaxed.hpp>
 #include <boost/type_erasure/param.hpp>
 
 namespace boost {
@@ -145,7 +145,7 @@ public:
     /**
      * Constructs a null @ref any.
      *
-     * \pre @ref relaxed_match must be in @c Concept.
+     * \pre @ref relaxed must be in @c Concept.
      *
      * \throws Nothing.
      */
@@ -649,7 +649,7 @@ public:
      * Assigns to an @ref any.
      *
      * If an appropriate overload of @ref assignable is not available
-     * and @ref relaxed_match is in @c Concept, falls back on
+     * and @ref relaxed is in @c Concept, falls back on
      * constructing from @c other.
      *
      * \throws Whatever the assignment operator of the contained
@@ -670,7 +670,7 @@ public:
      * Assigns to an @ref any.
      *
      * If an appropriate overload of @ref assignable is not available
-     * and @ref relaxed_match is in @c Concept, falls back on
+     * and @ref relaxed is in @c Concept, falls back on
      * constructing from @c other.
      *
      * \throws Whatever the assignment operator of the contained
@@ -1119,7 +1119,7 @@ public:
      * Assigns to an @ref any.
      *
      * If an appropriate overload of @ref assignable is not available
-     * and @ref relaxed_match is in @c Concept, falls back on
+     * and @ref relaxed is in @c Concept, falls back on
      * constructing from @c other.
      *
      * \throws Whatever the assignment operator of the contained
@@ -1139,7 +1139,7 @@ public:
      * Assigns to an @ref any.
      *
      * If an appropriate overload of @ref assignable is not available
-     * and @ref relaxed_match is in @c Concept, falls back on
+     * and @ref relaxed is in @c Concept, falls back on
      * constructing from @c other.
      *
      * \throws Whatever the assignment operator of the contained
@@ -1160,7 +1160,7 @@ public:
      * Assigns to an @ref any.
      *
      * If an appropriate overload of @ref assignable is not available
-     * and @ref relaxed_match is in @c Concept, falls back on
+     * and @ref relaxed is in @c Concept, falls back on
      * constructing from @c other.
      *
      * \throws Whatever the assignment operator of the contained
@@ -1423,7 +1423,7 @@ public:
     /**
      * Assigns to an @ref any.
      *
-     * \pre @ref relaxed_match is in @c Concept.
+     * \pre @ref relaxed is in @c Concept.
      *
      * \throws Nothing.
      */
@@ -1437,7 +1437,7 @@ public:
     /**
      * Assigns to an @ref any.
      *
-     * \pre @ref relaxed_match is in @c Concept.
+     * \pre @ref relaxed is in @c Concept.
      *
      * \throws std::bad_alloc.  Provides the strong exception guarantee.
      */
@@ -1735,7 +1735,7 @@ public:
      * Assigns to an @ref any.
      *
      * If an appropriate overload of @ref assignable is not available
-     * and @ref relaxed_match is in @c Concept, falls back on
+     * and @ref relaxed is in @c Concept, falls back on
      * constructing from @c other.
      *
      * \throws Whatever the assignment operator of the contained
@@ -1755,7 +1755,7 @@ public:
      * Assigns to an @ref any.
      *
      * If an appropriate overload of @ref assignable is not available
-     * and @ref relaxed_match is in @c Concept, falls back on
+     * and @ref relaxed is in @c Concept, falls back on
      * constructing from @c other.
      *
      * \throws Whatever the assignment operator of the contained
@@ -1776,7 +1776,7 @@ public:
      * Assigns to an @ref any.
      *
      * If an appropriate overload of @ref assignable is not available
-     * and @ref relaxed_match is in @c Concept, falls back on
+     * and @ref relaxed is in @c Concept, falls back on
      * constructing from @c other.
      *
      * \throws Whatever the assignment operator of the contained
