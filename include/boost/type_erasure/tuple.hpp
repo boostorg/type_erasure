@@ -54,7 +54,7 @@ const any<Concept, TN>& get(const tuple<Concept, T...>& arg);
 }
 }
 
-#elif !defined(BOOST_NO_VARIADIC_TEMPLATES) && !defined(BOOST_NO_RVALUE_REFERENCES)
+#elif !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES) && !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
 
 #include <boost/mpl/int.hpp>
 #include <boost/mpl/bool.hpp>

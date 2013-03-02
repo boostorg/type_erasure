@@ -67,7 +67,7 @@ struct callable
     static R apply(F& f, T... arg);
 };
 
-#elif !defined(BOOST_NO_VARIADIC_TEMPLATES) && !defined(BOOST_NO_RVALUE_REFERENCES)
+#elif !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES) && !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
 
 template<class R, class... T, class F>
 struct callable<R(T...), F>
@@ -224,7 +224,7 @@ struct result_of_callable<This(T...)>
 #define BOOST_TYPE_ERASURE_REBIND(z, n, data)\
     typename ::boost::type_erasure::as_param<Base, BOOST_PP_CAT(T, n)>::type BOOST_PP_CAT(arg, n)
 
-#ifdef BOOST_NO_RVALUE_REFERENCES
+#ifdef BOOST_NO_CXX11_RVALUE_REFERENCES
 #define BOOST_TYPE_ERASURE_FORWARD(z, n, data) BOOST_PP_CAT(BOOST_PP_TUPLE_ELEM(2, 1, data), n)
 #define BOOST_TYPE_ERASURE_FORWARD_REBIND(z, n, data) BOOST_PP_CAT(arg, n)
 #else

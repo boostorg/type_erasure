@@ -57,7 +57,7 @@ struct qualified_placeholder<T&, typename T::_boost_type_erasure_is_any>
     >::type& type;
 };
 
-#ifndef BOOST_NO_RVALUE_REFERENCES
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
 
 template<class T>
 struct qualified_placeholder<T&&, typename T::_boost_type_erasure_is_any>
@@ -81,7 +81,7 @@ struct check_placeholder_arg_impl<P, P&> : ::boost::mpl::true_ {};
 template<class P>
 struct check_placeholder_arg_impl<P, const P&> : ::boost::mpl::true_ {};
 
-#ifndef BOOST_NO_RVALUE_REFERENCES
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
 
 template<class P>
 struct check_placeholder_arg_impl<P, P&&> : ::boost::mpl::true_ {};
@@ -97,7 +97,7 @@ struct check_placeholder_arg_impl<const P&, P&> : ::boost::mpl::true_ {};
 template<class P>
 struct check_placeholder_arg_impl<const P&, const P&> : ::boost::mpl::true_ {};
 
-#ifndef BOOST_NO_RVALUE_REFERENCES
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
 
 template<class P>
 struct check_placeholder_arg_impl<const P&, P&&> : ::boost::mpl::true_ {};

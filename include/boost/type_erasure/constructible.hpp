@@ -60,7 +60,7 @@ struct vtable_adapter;
 template<class Sig>
 struct constructible {};
 
-#elif !defined(BOOST_NO_VARIADIC_TEMPLATES)
+#elif !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
 template<class R, class... T>
 struct constructible<R(T...)>

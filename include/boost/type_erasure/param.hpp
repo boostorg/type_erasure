@@ -64,7 +64,7 @@ struct placeholder_conversion<const T&, T> : boost::mpl::true_ {};
 template<class T>
 struct placeholder_conversion<const T&, const T&> : boost::mpl::true_ {};
 
-#ifndef BOOST_NO_RVALUE_REFERENCES
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
 template<class T>
 struct placeholder_conversion<T&&, T> : boost::mpl::true_ {};
 template<class T>
@@ -156,7 +156,7 @@ public:
         )
       : _impl(a)
     {}
-#ifndef BOOST_NO_RVALUE_REFERENCES
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
     template<class U>
     param(any<Concept, U>&& a
 #ifndef BOOST_TYPE_ERASURE_DOXYGEN
@@ -225,7 +225,7 @@ public:
     }
 };
 
-#ifndef BOOST_NO_RVALUE_REFERENCES
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
 
 template<class Concept, class T>
 class param<Concept, T&&> : public param<Concept, const T&> {

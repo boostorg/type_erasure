@@ -126,7 +126,7 @@ convert_arg(const param<Concept, T>& arg, boost::mpl::true_)
     return ::boost::type_erasure::detail::access::data(arg);
 }
 
-#ifndef BOOST_NO_RVALUE_REFERENCES
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
 
 template<class T>
 T&& convert_arg(T&& arg, boost::mpl::false_) { return std::forward<T>(arg); }
@@ -216,7 +216,7 @@ struct call_result<
 
 }
 
-#if !defined(BOOST_NO_VARIADIC_TEMPLATES) && !defined(BOOST_NO_RVALUE_REFERENCES)
+#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES) && !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
 
 namespace detail {
 
@@ -391,7 +391,7 @@ call(
 
 #define N BOOST_PP_ITERATION()
 
-#ifndef BOOST_NO_RVALUE_REFERENCES
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
 
 #define BOOST_TYPE_ERASURE_CONVERT_ARG(z, n, data)                      \
     ::boost::type_erasure::detail::convert_arg(                         \
@@ -526,7 +526,7 @@ struct call_impl<R(BOOST_PP_ENUM_PARAMS(N, T)), void(BOOST_PP_ENUM_BINARY_PARAMS
 
 }
 
-#ifdef BOOST_NO_RVALUE_REFERENCES
+#ifdef BOOST_NO_CXX11_RVALUE_REFERENCES
 #define RREF &
 #define BOOST_TYPE_ERASURE_FORWARD_ARGS(N, X, x) BOOST_PP_ENUM_TRAILING_PARAMS(N, x)
 #else

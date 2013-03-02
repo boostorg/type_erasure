@@ -59,7 +59,7 @@ struct get_placeholders_in_argument<const T, Out>
     >::type type;
 };
 
-#if !defined(BOOST_NO_VARIADIC_TEMPLATES)
+#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
 template<class Out, class... T>
 struct get_placeholders_impl;

@@ -26,7 +26,7 @@ struct storage
 };
 
 
-#ifndef BOOST_NO_RVALUE_REFERENCES
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
 
 template<class T>
 T extract(T arg) { return std::forward<T>(arg); }
@@ -50,7 +50,7 @@ T extract(const storage& arg)
     return *static_cast<const typename ::boost::remove_reference<T>::type*>(arg.data);
 }
 
-#ifndef BOOST_NO_RVALUE_REFERENCES
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
 
 template<class T>
 T extract(storage&& arg)

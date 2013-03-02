@@ -33,7 +33,7 @@
 #include <boost/type_erasure/call.hpp>
 #include <boost/type_erasure/concept_interface.hpp>
 
-#if defined(BOOST_NO_VARIADIC_TEMPLATES) || defined(BOOST_TYPE_ERASURE_DOXYGEN)
+#if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES) || defined(BOOST_TYPE_ERASURE_DOXYGEN)
 
 namespace boost {
 namespace type_erasure {

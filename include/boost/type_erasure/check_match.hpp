@@ -90,7 +90,7 @@ bool check_match(const Op& f, U&&... args);
 
 #else
 
-#if !defined(BOOST_NO_VARIADIC_TEMPLATES) && !defined(BOOST_NO_RVALUE_REFERENCES)
+#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES) && !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
 
 namespace detail {
 
@@ -219,7 +219,7 @@ struct BOOST_PP_CAT(do_extract_concept, N)<
 
 }
 
-#ifdef BOOST_NO_RVALUE_REFERENCES
+#ifdef BOOST_NO_CXX11_RVALUE_REFERENCES
 #define RREF &
 #else
 #define RREF &&

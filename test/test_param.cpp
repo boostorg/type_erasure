@@ -146,7 +146,7 @@ void test_val() {
     param<copy_constructible<>, _self> c12 = a12();
 }
 
-#ifndef BOOST_NO_RVALUE_REFERENCES
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
 
 size<1>::type f4(param<copy_constructible<>, _self&&>);
 size<2>::type f4(...);

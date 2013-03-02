@@ -98,7 +98,7 @@ BOOST_AUTO_TEST_CASE(test_global_has_f1_overload_const) {
     BOOST_CHECK_EQUAL(x.f1(5), 15);
 }
 
-#ifndef BOOST_NO_RVALUE_REFERENCES
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
 
 BOOST_AUTO_TEST_CASE(test_global_has_f1_rv) {
     typedef ::boost::mpl::vector<

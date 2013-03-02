@@ -548,7 +548,7 @@ public:
         )
     {}
 
-#if !defined(BOOST_NO_VARIADIC_TEMPLATES)
+#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
     template<class R, class... A, class... U>
     const table_type& _boost_type_erasure_extract_table(
@@ -1466,7 +1466,7 @@ private:
     table_type table;
 };
 
-#ifndef BOOST_NO_RVALUE_REFERENCES
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
 
 template<class Concept, class T>
 class any<Concept, T&&> :

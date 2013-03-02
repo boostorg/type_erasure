@@ -146,7 +146,7 @@ struct maybe_adapt_to_vtable
     >::type type;
 };
 
-#if !defined(BOOST_NO_VARIADIC_TEMPLATES)
+#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
 template<class PrimitiveConcept, class Sig, class ConceptSig>
 struct vtable_adapter_impl;
@@ -214,7 +214,7 @@ struct get_vtable_signature<R(T...)>
 
 #define N BOOST_PP_ITERATION()
 
-#ifndef BOOST_NO_RVALUE_REFERENCES
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
 
 #define BOOST_TYPE_ERASURE_EXTRACT(z, n, data)                  \
     ::boost::type_erasure::detail::extract<                     \

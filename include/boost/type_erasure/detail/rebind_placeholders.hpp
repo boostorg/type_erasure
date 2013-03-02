@@ -103,7 +103,7 @@ struct rebind_placeholders_in_argument<
     >::type type;
 };
 
-#if !defined(BOOST_NO_VARIADIC_TEMPLATES)
+#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
 template<template<class...> class T, class... U, class Bindings>
 struct rebind_placeholders<T<U...>, Bindings>
