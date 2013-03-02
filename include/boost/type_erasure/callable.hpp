@@ -33,6 +33,18 @@
 namespace boost {
 namespace type_erasure {
 
+template<class Sig, class F = _self>
+struct callable;
+
+namespace detail {
+
+template<class Sig>
+struct result_of_callable;
+
+}
+
+#if defined(BOOST_TYPE_ERASURE_DOXYGEN)
+
 /**
  * The @ref callable concept allows an @ref any to hold function objects.
  * @c Sig is interpreted in the same way as for Boost.Function, except
@@ -46,16 +58,15 @@ namespace type_erasure {
  * support @c boost::result_of.
  */
 template<class Sig, class F = _self>
-struct callable {};
+struct callable
+{
+    /**
+     * @c R is the result type of @c Sig and @c T is the argument
+     * types of @c Sig.
+     */
+    static R apply(F& f, T... arg);
+};
 
-namespace detail {
-
-template<class Sig>
-struct result_of_callable;
-
-}
-
-#if defined(BOOST_TYPE_ERASURE_DOXYGEN)
 #elif !defined(BOOST_NO_VARIADIC_TEMPLATES) && !defined(BOOST_NO_RVALUE_REFERENCES)
 
 template<class R, class... T, class F>

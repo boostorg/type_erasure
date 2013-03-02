@@ -1,7 +1,7 @@
 [library Boost.TypeErasure
     [quickbook 1.5]
     [authors [Watanabe, Steven]]
-    [copyright 2011 Steven Watanabe]
+    [copyright 2011-2013 Steven Watanabe]
     [license
         Distributed under the Boost Software License, Version 1.0.
         (See accompanying file LICENSE_1_0.txt or copy at
@@ -307,6 +307,14 @@ to `_self` to match the default behavior of any.  These
 concepts assume normal semantics.  Thus, comparison
 operators always return bool, and references will be
 added to the arguments and results as appropriate.
+
+Except as otherwise noted, primitive concepts defined by
+the library can be specialized to provide concept maps.
+__copy_constructible, and the iterator concepts cannot
+be specialized because they are composites.  __constructible,
+__destructible, __typeid_, and __same_type cannot be
+specialized because they require special handling in
+the library.
 
 [table:special Special Members
     [[concept][notes]]

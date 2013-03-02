@@ -50,7 +50,12 @@ struct vtable_adapter;
  * @c Sig should be a function signature.  The return
  * type is the placeholder specifying the type to
  * be constructed.  The arguments are the argument
- * types of the constructor.
+ * types of the constructor.  The arguments of
+ * @c Sig may be placeholders.
+ *
+ * \note @ref constructible may not be specialized and
+ * may not be passed to \call as it depends on the
+ * implementation details of @ref any.
  */
 template<class Sig>
 struct constructible {};

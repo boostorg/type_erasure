@@ -60,6 +60,28 @@ struct iterator;
 
 #ifdef BOOST_TYPE_ERASURE_DOXYGEN
 
+/**
+ * The @ref iterator concept can be used for any iterator category.
+ *
+ * \tparam Traversal must be one of @c boost::incrementable_traversal_tag,
+ *         @c boost::single_pass_traversal_tag, @c boost::forward_traversal_tag,
+ *         @c boost::bidirectional_traversal_tag, and @c boost::random_access_traversal_tag.
+ * \tparam T The placeholder representing the iterator.
+ * \tparam Reference The reference type.  If it is boost::use_default, then
+ *         reference will be value_type&.
+ * \tparam DifferenceType The iterator's difference type.
+ *
+ * The value_type of the iterator is deduced.  To force it to be
+ * a specific type, use the @ref same_type concept.
+ *
+ * Example:
+ *
+ * \code
+ * mpl::vector<
+ *   iterator<boost::forward_traversal_tag>,
+ *   same_type<iterator<boost::forward_traversal_tag>::value_type, int> > int_it;
+ * \endcode
+ */
 template<
     class Traversal,
     class T = _self,
@@ -68,7 +90,7 @@ template<
 >
 struct iterator
 {
-    typedef ValueType value_type;
+    typedef detail::unspecified value_type;
     typedef Reference reference;
     typedef DifferenceType difference_type;
 };

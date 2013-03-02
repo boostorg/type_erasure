@@ -119,7 +119,7 @@ struct is_any<any<Concept, T> > : ::boost::mpl::true_ {};
 /**
  * The class template @ref any can store any object that
  * models a specific @c Concept.  It dispatches all
- * the function defined by the @c Concept to the contained type
+ * the functions defined by the @c Concept to the contained type
  * at runtime.
  *
  * \tparam Concept The concept that the type should model.

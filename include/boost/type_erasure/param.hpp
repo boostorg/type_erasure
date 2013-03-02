@@ -97,7 +97,7 @@ struct placeholder_conversion<T&&, T&&> : boost::mpl::true_ {};
  * and base placeholder when there exists a corresponding
  * standard conversion for the placeholder.
  * A conversion sequence from @ref any<C, P> to @ref param<C, P1> is
- * a better conversion sequence than @ref any<C, P> to @ref param<C, C2>
+ * a better conversion sequence than @ref any<C, P> to @ref param<C, P2>
  * iff the corresponding placeholder standard conversion
  * sequence from P to P1 is a better conversion sequence than
  * P to P2.

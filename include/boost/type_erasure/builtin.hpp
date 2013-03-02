@@ -29,6 +29,10 @@ namespace type_erasure {
  * \note The @ref destructible concept rarely needs to
  * be specified explicitly, because it is included in
  * the @ref copy_constructible concept.
+ *
+ * \note @ref destructible may not be specialized and
+ * may not be passed to \call as it depends on the
+ * implementation details of @ref any.
  */
 template<class T = _self>
 struct destructible
@@ -84,6 +88,13 @@ struct concept_interface<assignable<T, U>, Base, T> : Base
 /**
  * Enables runtime type information.  This is required
  * if you want to use \any_cast or \typeid_of.
+ *
+ * \note @ref typeid_ cannot be specialized because several
+ * library components including \any_cast would not work
+ * correctly if its behavior changed.  There is no need
+ * to specialize it anyway, since it works for all types.
+ * @ref typeid_ also cannot be passed to \call.  To access it,
+ * use \typeid_of.
  */
 template<class T = _self>
 struct typeid_

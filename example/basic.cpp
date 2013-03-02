@@ -31,12 +31,15 @@ void basic1() {
         In the rare case when we only want a single concept, it doesn't
         need to be wrapped in an MPL sequence.]
     */
-    any<mpl::vector<copy_constructible<>, typeid_<> > > x(10);
+    any<mpl::vector<copy_constructible<>, typeid_<>, relaxed_match> > x(10);
     int i = any_cast<int>(x); // i == 10
     /*`
         __copy_constructible is a builtin concept that allows us to
         copy and destroy the object.  __typeid_ provides run-time
-        type information so that we can use __any_cast.
+        type information so that we can use __any_cast.  __relaxed_match
+        enables various useful defaults.  Without __relaxed_match,
+        __any supports /exactly/ what you specify and nothing else.
+        In particular, it allows default construction and assignment of __any.
      */
     //]
 }
@@ -78,14 +81,15 @@ void append_many(any<has_push_back<void(int)>, _self&> container) {
 }
 
 /*`
-    There are a few things to note about this.  First,
-    we use the macro __BOOST_TYPE_ERASURE_MEMBER to
-    define a concept called `has_push_back` for a
-    unary member function called `push_back`.
-    When we use `has_push_back`, we have to
-    give it the signature of the function, `void(int)`.
-    This means that we expect to find a function
-    that looks like:
+    We use the macro __BOOST_TYPE_ERASURE_MEMBER 
+    to define a concept called `has_push_back`.
+    The second parameter is the name of the member
+    function and the last macro parameter indicates
+    the number of arguments which is `1` since `push_back`
+    is unary.  When we use `has_push_back`, we have to
+    tell it the signature of the function, `void(int)`.
+    This means that the type we store in the any
+    has to have a member that looks like:
 
     ``
     void push_back(int);
@@ -96,18 +100,19 @@ void append_many(any<has_push_back<void(int)>, _self&> container) {
     convertible to `long`), but not `std::list<std::string>`
     or `std::set<int>`.
 
-    Also, note the use of `_self&` as the second argument of
-    __any.  `_self` is a __placeholder.  By using `_self&`,
-    we indicate that the __any stores a reference
-    to another object instead of owning its own object.
+    Also, note that `append_many` has to operate directly
+    on its argument.  It cannot make a copy.  To handle this
+    we use `_self&` as the second argument of __any.  `_self`
+    is a __placeholder.  By using `_self&`, we indicate that
+    the __any stores a reference to an external object instead of
+    allocating its own object.
 */
 
 /*`
-    The concepts created by __BOOST_TYPE_ERASURE_MEMBER take
-    a __placeholder as an optional second parameter.  This
-    __placeholder defaults to `_self`.  If we wanted to use a
-    different placeholder or have a constant member function,
-    we'd have to specify it explicitly.
+    There's actually another __placeholder here.  The second
+    parameter of `has_push_back` defaults to `_self`.  If
+    we wanted to define a const member function, we would
+    have to change it to `const _self`, as shown below.
  */
 BOOST_TYPE_ERASURE_MEMBER((has_empty), empty, 0)
 bool is_empty(any<has_empty<bool(), const _self>, const _self&> x) {
@@ -135,8 +140,11 @@ struct swappable : mpl::vector<has_swap<void(T&, T&)> > {};
 
     [note We could define `swappable` to be a typedef of
     `has_swap<void(_self&, _self&)>`, but `_self` is not the only
-    __placeholder.  We could use `_a` instead as long as
-    we substitute it uniformly like `any<swappable<_a>, _a&>`]
+    __placeholder.  We can use another __placeholder instead.  The
+    library doesn't care what placeholder we use as long as we're consistent.
+    So, if we wanted to use `_a`, we'd have to write `any<swappable<_a>, _a&>`.
+    Neither `any<swappable<_self>, _a&>` nor `any<swappable<_a>, _self&>`
+    would work.]
 
     [warning Do not try to make one concept inherit directly from
     another.  The use of `mpl::vector` is necessary for the library
