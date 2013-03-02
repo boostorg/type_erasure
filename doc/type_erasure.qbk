@@ -413,6 +413,38 @@ letters were more appropriate than numbers.
 
 [endsect]
 
+[section:ref Why not use `boost::ref` for references?]
+
+Boost.Function allows you to use `boost::ref` to store
+a reference to a function object.  However, in the
+general case treating references and values in the
+same way causes inconsistent behavior that is difficult
+to reason about.  If Boost.TypeErasure handled references
+like this, then, when you copy an __any, you would have
+no idea whether the new object is a real copy or
+just a new reference to the same underlying object.
+Boost.Function can get away with it, because it doesn't
+expose any mutating operations on the stored function object.
+
+Another method that has been proposed is only to
+keep a reference the first time.
+
+  int i = 2;
+  any x = ref(i);
+  any y = x; // makes a copy
+
+Unfortunately, this doesn't handle all use cases,
+as there is no reliable way to return such a reference
+from a function.  In addition it adds overhead whether
+it's needed or not, as we would have to add a flag
+to any to keep track of whether or not it is storing
+a reference.  (The alternate method of storing this
+in the "`clone`" method in the vtable is impossibly complex
+to implement given the decoupled vtables that
+Boost.TypeErasure uses and it still adds overhead.).
+
+[endsect]
+
 [endsect]
 
 [section:future Future Work]
