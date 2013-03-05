@@ -60,7 +60,7 @@ struct vtable_adapter;
 template<class Sig>
 struct constructible {};
 
-#elif !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
+#elif !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES) && !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
 
 template<class R, class... T>
 struct constructible<R(T...)>
@@ -69,7 +69,7 @@ struct constructible<R(T...)>
     apply(T... arg)
     {
         ::boost::type_erasure::detail::storage result;
-        result.data = new R(arg...);
+        result.data = new R(::std::forward<T>(arg)...);
         return result;
     }
 };
@@ -136,6 +136,13 @@ struct get_null_vtable_entry<vtable_adapter<constructible<T(const T&)>, R(U...)>
         BOOST_PP_CAT(T, n)                          \
     >::type
 
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+#define BOOST_TYPE_ERASURE_FORWARD_I(z, n, data) ::std::forward<BOOST_PP_CAT(T, n)>(BOOST_PP_CAT(arg, n))
+#define BOOST_TYPE_ERASURE_FORWARD(n) BOOST_PP_ENUM(n, BOOST_TYPE_ERASURE_FORWARD_I, ~)
+#else
+#define BOOST_TYPE_ERASURE_FORWARD(n) BOOST_PP_ENUM_PARAMS(n, arg)
+#endif
+
 template<class R BOOST_PP_ENUM_TRAILING_PARAMS(N, class T)>
 struct constructible<R(BOOST_PP_ENUM_PARAMS(N, T))>
 {
@@ -143,7 +150,7 @@ struct constructible<R(BOOST_PP_ENUM_PARAMS(N, T))>
     apply(BOOST_PP_ENUM_BINARY_PARAMS(N, T, arg))
     {
         ::boost::type_erasure::detail::storage result;
-        result.data = new R(BOOST_PP_ENUM_PARAMS(N, arg));
+        result.data = new R(BOOST_TYPE_ERASURE_FORWARD(N));
         return result;
     }
 };
@@ -185,6 +192,9 @@ struct get_null_vtable_entry<vtable_adapter<constructible<T(const T&)>, R(BOOST_
 };
 
 }
+
+#undef BOOST_TYPE_ERASURE_FORWARD
+#undef BOOST_TYPE_ERASURE_FORWARD_I
 
 #undef BOOST_TYPE_ERASURE_ARG_DECL
 #undef N

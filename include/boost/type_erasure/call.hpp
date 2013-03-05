@@ -129,6 +129,20 @@ convert_arg(const param<Concept, T>& arg, boost::mpl::true_)
 #ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
 
 template<class Concept, class T>
+const ::boost::type_erasure::detail::storage&
+convert_arg(any_base<any<Concept, const T&> >&& arg, boost::mpl::true_)
+{
+    return ::boost::type_erasure::detail::access::data(arg);
+}
+
+template<class Concept, class T>
+::boost::type_erasure::detail::storage&
+convert_arg(any_base<any<Concept, T&> >&& arg, boost::mpl::true_)
+{
+    return ::boost::type_erasure::detail::access::data(arg);
+}
+
+template<class Concept, class T>
 ::boost::type_erasure::detail::storage&&
 convert_arg(any_base<any<Concept, T> >&& arg, boost::mpl::true_)
 {
@@ -144,6 +158,27 @@ convert_arg(any_base<any<Concept, T&&> >& arg, boost::mpl::true_)
 
 template<class Concept, class T>
 ::boost::type_erasure::detail::storage&&
+convert_arg(const any_base<any<Concept, T&&> >& arg, boost::mpl::true_)
+{
+    return ::boost::type_erasure::detail::access::data(arg);
+}
+
+template<class Concept, class T>
+const ::boost::type_erasure::detail::storage&
+convert_arg(param<Concept, const T&>&& arg, boost::mpl::true_)
+{
+    return ::boost::type_erasure::detail::access::data(arg);
+}
+
+template<class Concept, class T>
+::boost::type_erasure::detail::storage&
+convert_arg(param<Concept, T&>&& arg, boost::mpl::true_)
+{
+    return ::boost::type_erasure::detail::access::data(arg);
+}
+
+template<class Concept, class T>
+::boost::type_erasure::detail::storage&&
 convert_arg(param<Concept, T>&& arg, boost::mpl::true_)
 {
     return ::boost::type_erasure::detail::access::data(std::move(arg));
@@ -152,6 +187,13 @@ convert_arg(param<Concept, T>&& arg, boost::mpl::true_)
 template<class Concept, class T>
 ::boost::type_erasure::detail::storage&&
 convert_arg(param<Concept, T&&>& arg, boost::mpl::true_)
+{
+    return ::boost::type_erasure::detail::access::data(arg);
+}
+
+template<class Concept, class T>
+::boost::type_erasure::detail::storage&&
+convert_arg(const param<Concept, T&&>& arg, boost::mpl::true_)
 {
     return ::boost::type_erasure::detail::access::data(arg);
 }

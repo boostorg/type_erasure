@@ -52,9 +52,9 @@ struct qualified_placeholder<T&, typename T::_boost_type_erasure_is_any>
         unref
     >::type add_const;
     typedef typename ::boost::mpl::if_< ::boost::is_reference<placeholder>,
-        unref,
-        add_const
-    >::type& type;
+        placeholder,
+        add_const&
+    >::type type;
 };
 
 #ifndef BOOST_NO_CXX11_RVALUE_REFERENCES

@@ -142,6 +142,13 @@ public:
       : table(table_arg),
         data(data_arg)
     {}
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+    /** INTERNAL ONLY */
+    any(::boost::type_erasure::detail::storage&& data_arg, const table_type& table_arg)
+      : table(table_arg),
+        data(data_arg)
+    {}
+#endif
     /**
      * Constructs a null @ref any.
      *
@@ -154,6 +161,33 @@ public:
         BOOST_MPL_ASSERT((::boost::type_erasure::is_relaxed<Concept>));
         data.data = 0;
     }
+
+#if defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
+
+    template<class U>
+    any(const U& data_arg)
+      : table((
+            BOOST_TYPE_ERASURE_INSTANTIATE1(Concept, T, U),
+            ::boost::type_erasure::make_binding<
+                ::boost::mpl::map< ::boost::mpl::pair<T, U> >
+            >()
+        )),
+        data(data_arg)
+    {}
+    template<class U, class Map>
+    any(const U& data_arg, const static_binding<Map>& binding_arg)
+      : table((
+            BOOST_TYPE_ERASURE_INSTANTIATE(Concept, Map),
+            binding_arg
+        )),
+        data(data_arg)
+    {
+        BOOST_MPL_ASSERT((::boost::is_same<
+            typename ::boost::mpl::at<Map, T>::type, U>));
+    }
+
+#else
+
     /**
      * Constructs an @ref any to hold a copy of @c data.
      * The @c Concept will be instantiated with the
@@ -169,14 +203,14 @@ public:
      *         constructor of @c U throws.
      */
     template<class U>
-    any(const U& data_arg)
+    any(U&& data_arg)
       : table((
-            BOOST_TYPE_ERASURE_INSTANTIATE1(Concept, T, U),
+            BOOST_TYPE_ERASURE_INSTANTIATE1(Concept, T, typename ::boost::remove_cv<typename ::boost::remove_reference<U>::type>::type),
             ::boost::type_erasure::make_binding<
-                ::boost::mpl::map< ::boost::mpl::pair<T, U> >
+                ::boost::mpl::map< ::boost::mpl::pair<T, typename ::boost::remove_cv<typename ::boost::remove_reference<U>::type>::type> >
             >()
         )),
-        data(data_arg)
+        data(std::forward<U>(data_arg))
     {}
     /**
      * Constructs an @ref any to hold a copy of @c data
@@ -196,16 +230,19 @@ public:
      *         constructor of @c U throws.
      */
     template<class U, class Map>
-    any(const U& data_arg, const static_binding<Map>& binding_arg)
+    any(U&& data_arg, const static_binding<Map>& binding_arg)
       : table((
             BOOST_TYPE_ERASURE_INSTANTIATE(Concept, Map),
             binding_arg
         )),
-        data(data_arg)
+        data(std::forward<U>(data_arg))
     {
         BOOST_MPL_ASSERT((::boost::is_same<
-            typename ::boost::mpl::at<Map, T>::type, U>));
+            typename ::boost::mpl::at<Map, T>::type, typename ::boost::remove_cv<typename ::boost::remove_reference<U>::type>::type>));
     }
+
+#endif
+
     // Handle array/function-to-pointer decay
     /** INTERNAL ONLY */
     template<class U>
@@ -383,6 +420,54 @@ public:
     {}
 
 #else
+#ifndef BOOST_NO_RVALUE_REFERENCES
+    any(any&& other)
+      : table(::boost::type_erasure::detail::access::table(other)),
+        data(::boost::type_erasure::call(
+            ::boost::type_erasure::detail::make(
+                false? this->_boost_type_erasure_deduce_constructor(std::move(other)) : 0
+            ), std::move(other))
+        )
+    {}
+    template<class Concept2, class Tag2>
+    any(any<Concept2, Tag2>& other)
+      : table(
+            ::boost::type_erasure::detail::access::table(other),
+            ::boost::mpl::map<
+                ::boost::mpl::pair<
+                    T,
+                    typename ::boost::remove_const<
+                        typename ::boost::remove_reference<Tag2>::type
+                    >::type
+                >
+            >()
+        ),
+        data(::boost::type_erasure::call(
+            ::boost::type_erasure::detail::make(
+                false? other._boost_type_erasure_deduce_constructor(other) : 0
+            ), other)
+        )
+    {}
+    template<class Concept2, class Tag2>
+    any(any<Concept2, Tag2>&& other)
+      : table(
+            ::boost::type_erasure::detail::access::table(other),
+            ::boost::mpl::map<
+                ::boost::mpl::pair<
+                    T,
+                    typename ::boost::remove_const<
+                        typename ::boost::remove_reference<Tag2>::type
+                    >::type
+                >
+            >()
+        ),
+        data(::boost::type_erasure::call(
+            ::boost::type_erasure::detail::make(
+                false? other._boost_type_erasure_deduce_constructor(std::move(other)) : 0
+            ), std::move(other))
+        )
+    {}
+#endif
     // construction from a reference
     any(const any<Concept, T&>& other)
       : table(::boost::type_erasure::detail::access::table(other)),
@@ -400,6 +485,16 @@ public:
             ), other)
         )
     {}
+#ifndef BOOST_NO_RVALUE_REFERENCES
+    any(any<Concept, T&>&& other)
+      : table(::boost::type_erasure::detail::access::table(other)),
+        data(::boost::type_erasure::call(
+            ::boost::type_erasure::detail::make(
+                false? this->_boost_type_erasure_deduce_constructor(other) : 0
+            ), other)
+        )
+    {}
+#endif
     any(const any<Concept, const T&>& other)
       : table(::boost::type_erasure::detail::access::table(other)),
         data(::boost::type_erasure::call(
@@ -416,16 +511,18 @@ public:
             ), other)
         )
     {}
+#ifndef BOOST_NO_RVALUE_REFERENCES
+    any(any<Concept, const T&>&& other)
+      : table(::boost::type_erasure::detail::access::table(other)),
+        data(::boost::type_erasure::call(
+            ::boost::type_erasure::detail::make(
+                false? this->_boost_type_erasure_deduce_constructor(other) : 0
+            ), other)
+        )
+    {}
+#endif
 
     // disambiguating overloads
-    template<class U, class Map>
-    any(U& data_arg, static_binding<Map>& binding_arg)
-      : table((
-            BOOST_TYPE_ERASURE_INSTANTIATE(Concept, Map),
-            binding_arg
-        )),
-        data(data_arg)
-    {}
     template<class U, class Map>
     any(U* data_arg, static_binding<Map>& binding_arg)
       : table((
@@ -433,7 +530,22 @@ public:
             binding_arg
         )),
         data(data_arg)
-    {}
+    {
+        BOOST_MPL_ASSERT((::boost::is_same<
+            typename ::boost::mpl::at<Map, T>::type, U*>));
+    }
+#ifdef BOOST_NO_CXX11_RVALUE_REFERENCES
+    template<class U, class Map>
+    any(U& data_arg, static_binding<Map>& binding_arg)
+      : table((
+            BOOST_TYPE_ERASURE_INSTANTIATE(Concept, Map),
+            binding_arg
+        )),
+        data(data_arg)
+    {
+        BOOST_MPL_ASSERT((::boost::is_same<
+            typename ::boost::mpl::at<Map, T>::type, U>));
+    }
     template<class U, class Map>
     any(const U& data_arg, static_binding<Map>& binding_arg)
       : table((
@@ -441,7 +553,10 @@ public:
             binding_arg
         )),
         data(data_arg)
-    {}
+    {
+        BOOST_MPL_ASSERT((::boost::is_same<
+            typename ::boost::mpl::at<Map, T>::type, U>));
+    }
     template<class U, class Map>
     any(U& data_arg, const static_binding<Map>& binding_arg)
       : table((
@@ -449,7 +564,46 @@ public:
             binding_arg
         )),
         data(data_arg)
-    {}
+    {
+        BOOST_MPL_ASSERT((::boost::is_same<
+            typename ::boost::mpl::at<Map, T>::type, U>));
+    }
+#endif
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+    template<class U, class Map>
+    any(U* data_arg, static_binding<Map>&& binding_arg)
+      : table((
+            BOOST_TYPE_ERASURE_INSTANTIATE(Concept, Map),
+            binding_arg
+        )),
+        data(data_arg)
+    {
+        BOOST_MPL_ASSERT((::boost::is_same<
+            typename ::boost::mpl::at<Map, T>::type, U*>));
+    }
+    template<class U, class Map>
+    any(U&& data_arg, static_binding<Map>& binding_arg)
+      : table((
+            BOOST_TYPE_ERASURE_INSTANTIATE(Concept, Map),
+            binding_arg
+        )),
+        data(data_arg)
+    {
+        BOOST_MPL_ASSERT((::boost::is_same<
+            typename ::boost::mpl::at<Map, T>::type, typename ::boost::remove_cv<typename ::boost::remove_reference<U>::type>::type>));
+    }
+    template<class U, class Map>
+    any(U&& data_arg, static_binding<Map>&& binding_arg)
+      : table((
+            BOOST_TYPE_ERASURE_INSTANTIATE(Concept, Map),
+            binding_arg
+        )),
+        data(data_arg)
+    {
+        BOOST_MPL_ASSERT((::boost::is_same<
+            typename ::boost::mpl::at<Map, T>::type, typename ::boost::remove_cv<typename ::boost::remove_reference<U>::type>::type>));
+    }
+#endif
     template<class Concept2, class Tag2, class Map>
     any(any<Concept2, Tag2>& other, static_binding<Map>& binding_arg)
       : table(::boost::type_erasure::detail::access::table(other), binding_arg),
@@ -517,6 +671,119 @@ public:
         )
     {}
 
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+    template<class Concept2, class Tag2, class Map>
+    any(any<Concept2, Tag2>& other, static_binding<Map>&& binding_arg)
+      : table(::boost::type_erasure::detail::access::table(other), binding_arg),
+        data(::boost::type_erasure::call(
+            constructible<
+                typename ::boost::remove_const<
+                    typename boost::remove_reference<Tag2>::type
+                >::type(const typename boost::remove_reference<Tag2>::type&)
+            >(), other)
+        )
+    {}
+    template<class Concept2, class Tag2, class Map>
+    any(const any<Concept2, Tag2>& other, static_binding<Map>&& binding_arg)
+      : table(::boost::type_erasure::detail::access::table(other), binding_arg),
+        data(::boost::type_erasure::call(
+            constructible<
+                typename ::boost::remove_const<
+                    typename boost::remove_reference<Tag2>::type
+                >::type(const typename boost::remove_reference<Tag2>::type&)
+            >(), other)
+        )
+    {}
+    template<class Concept2, class Tag2, class Map>
+    any(any<Concept2, Tag2>&& other, static_binding<Map>&& binding_arg)
+      : table(::boost::type_erasure::detail::access::table(other), binding_arg),
+        data(::boost::type_erasure::call(
+            constructible<
+                typename ::boost::remove_const<
+                    typename boost::remove_reference<Tag2>::type
+                >::type(const typename boost::remove_reference<Tag2>::type&)
+            >(), std::move(other))
+        )
+    {}
+    template<class Concept2, class Tag2, class Map>
+    any(any<Concept2, Tag2>&& other, static_binding<Map>& binding_arg)
+      : table(::boost::type_erasure::detail::access::table(other), binding_arg),
+        data(::boost::type_erasure::call(
+            constructible<
+                typename ::boost::remove_const<
+                    typename boost::remove_reference<Tag2>::type
+                >::type(const typename boost::remove_reference<Tag2>::type&)
+            >(), std::move(other))
+        )
+    {}
+    template<class Concept2, class Tag2, class Map>
+    any(any<Concept2, Tag2>&& other, const static_binding<Map>& binding_arg)
+      : table(::boost::type_erasure::detail::access::table(other), binding_arg),
+        data(::boost::type_erasure::call(
+            constructible<
+                typename ::boost::remove_const<
+                    typename boost::remove_reference<Tag2>::type
+                >::type(const typename boost::remove_reference<Tag2>::type&)
+            >(), std::move(other))
+        )
+    {}
+    template<class Concept2, class Tag2>
+    any(any<Concept2, Tag2>& other, binding<Concept>&& binding_arg)
+      : table(binding_arg),
+        data(::boost::type_erasure::call(
+            constructible<
+                typename ::boost::remove_const<
+                    typename boost::remove_reference<Tag2>::type
+                >::type(const typename boost::remove_reference<Tag2>::type&)
+            >(), other)
+        )
+    {}
+    template<class Concept2, class Tag2>
+    any(const any<Concept2, Tag2>& other, binding<Concept>&& binding_arg)
+      : table(binding_arg),
+        data(::boost::type_erasure::call(
+            constructible<
+                typename ::boost::remove_const<
+                    typename boost::remove_reference<Tag2>::type
+                >::type(const typename boost::remove_reference<Tag2>::type&)
+            >(), other)
+        )
+    {}
+    template<class Concept2, class Tag2>
+    any(any<Concept2, Tag2>&& other, binding<Concept>&& binding_arg)
+      : table(binding_arg),
+        data(::boost::type_erasure::call(
+            constructible<
+                typename ::boost::remove_const<
+                    typename boost::remove_reference<Tag2>::type
+                >::type(const typename boost::remove_reference<Tag2>::type&)
+            >(), std::move(other))
+        )
+    {}
+    template<class Concept2, class Tag2>
+    any(any<Concept2, Tag2>&& other, binding<Concept>& binding_arg)
+      : table(binding_arg),
+        data(::boost::type_erasure::call(
+            constructible<
+                typename ::boost::remove_const<
+                    typename boost::remove_reference<Tag2>::type
+                >::type(const typename boost::remove_reference<Tag2>::type&)
+            >(), std::move(other))
+        )
+    {}
+    template<class Concept2, class Tag2>
+    any(any<Concept2, Tag2>&& other, const binding<Concept>& binding_arg)
+      : table(binding_arg),
+        data(::boost::type_erasure::call(
+            constructible<
+                typename ::boost::remove_const<
+                    typename boost::remove_reference<Tag2>::type
+                >::type(const typename boost::remove_reference<Tag2>::type&)
+            >(), std::move(other))
+        )
+    {}
+#endif
+
     // One argument is a special case.  The argument must be an any
     // and the constructor must be explicit.
     template<class Tag2>
@@ -538,6 +805,18 @@ public:
         )
     {}
 
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+    template<class Tag2>
+    explicit any(any<Concept, Tag2>&& other)
+      : table(::boost::type_erasure::detail::access::table(other)),
+        data(::boost::type_erasure::call(
+            ::boost::type_erasure::detail::make(
+                false? this->_boost_type_erasure_deduce_constructor(std::move(other)) : 0
+            ), std::move(other))
+        )
+    {}
+#endif
+
     explicit any(const binding<Concept>& binding_arg)
       : table(binding_arg),
         data(
@@ -547,92 +826,96 @@ public:
             )
         )
     {}
+    explicit any(binding<Concept>& binding_arg)
+      : table(binding_arg),
+        data(
+            ::boost::type_erasure::call(
+                binding_arg,
+                ::boost::type_erasure::constructible<T()>()
+            )
+        )
+    {}
+
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+
+    explicit any(binding<Concept>&& binding_arg)
+      : table(binding_arg),
+        data(
+            ::boost::type_erasure::call(
+                binding_arg,
+                ::boost::type_erasure::constructible<T()>()
+            )
+        )
+    {}
+
+#endif
 
 #if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
     template<class R, class... A, class... U>
     const table_type& _boost_type_erasure_extract_table(
         ::boost::type_erasure::constructible<R(A...)>*,
-        U&... u)
+        U&&... u)
     {
         return *::boost::type_erasure::detail::extract_table(static_cast<void(*)(A...)>(0), u...);
     }
 
     template<class U0, class U1, class... U>
-    any(const U0& u0, const U1& u1, const U&... u)
+    any(U0&& u0, U1&& u1, U&&... u)
       : table(
             _boost_type_erasure_extract_table(
-                false? this->_boost_type_erasure_deduce_constructor(u0, u1, u...) : 0,
-                u0, u1, u...
+                false? this->_boost_type_erasure_deduce_constructor(std::forward<U0>(u0), std::forward<U1>(u1), std::forward<U>(u)...) : 0,
+                std::forward<U0>(u0), std::forward<U1>(u1), std::forward<U>(u)...
             )
         ),
         data(
             ::boost::type_erasure::call(
                 ::boost::type_erasure::detail::make(
-                    false? this->_boost_type_erasure_deduce_constructor(u0, u1, u...) : 0
+                    false? this->_boost_type_erasure_deduce_constructor(std::forward<U0>(u0), std::forward<U1>(u1), std::forward<U>(u)...) : 0
                 ),
-                u0, u1, u...
-            )
-        )
-    {}
-
-    template<class U0, class U1, class... U>
-    any(U0& u0, U1& u1, U&... u)
-      : table(
-            _boost_type_erasure_extract_table(
-                false? this->_boost_type_erasure_deduce_constructor(u0, u1, u...) : 0,
-                u0, u1, u...
-            )
-        ),
-        data(
-            ::boost::type_erasure::call(
-                ::boost::type_erasure::detail::make(
-                    false? this->_boost_type_erasure_deduce_constructor(u0, u1, u...) : 0
-                ),
-                u0, u1, u...
+                std::forward<U0>(u0), std::forward<U1>(u1), std::forward<U>(u)...
             )
         )
     {}
 
     template<class U0, class... U>
-    any(const binding<Concept>& binding_arg, const U0& u0, const U&... u)
+    any(const binding<Concept>& binding_arg, U0&& u0, U&&... u)
       : table(binding_arg),
         data(
             ::boost::type_erasure::call(
                 binding_arg,
                 ::boost::type_erasure::detail::make(
-                    false? this->_boost_type_erasure_deduce_constructor(u0, u...) : 0
+                    false? this->_boost_type_erasure_deduce_constructor(std::forward<U0>(u0), std::forward<U>(u)...) : 0
                 ),
-                u0, u...
-            )
-        )
-    {}
-
-    template<class U0, class... U>
-    any(const binding<Concept>& binding_arg, U0& u0, U&... u)
-      : table(binding_arg),
-        data(
-            ::boost::type_erasure::call(
-                binding_arg,
-                ::boost::type_erasure::detail::make(
-                    false? this->_boost_type_erasure_deduce_constructor(u0, u...) : 0
-                ),
-                u0, u...
+                std::forward<U0>(u0), std::forward<U>(u)...
             )
         )
     {}
     
     // disambiguate
     template<class U0, class... U>
-    any(binding<Concept>& binding_arg, U0& u0, U&... u)
+    any(binding<Concept>& binding_arg, U0&& u0, U&&... u)
       : table(binding_arg),
         data(
             ::boost::type_erasure::call(
                 binding_arg,
                 ::boost::type_erasure::detail::make(
-                    false? this->_boost_type_erasure_deduce_constructor(u0, u...) : 0
+                    false? this->_boost_type_erasure_deduce_constructor(std::forward<U0>(u0), std::forward<U>(u)...) : 0
                 ),
-                u0, u...
+                std::forward<U0>(u0), std::forward<U>(u)...
+            )
+        )
+    {}
+    template<class U0, class... U>
+    any(binding<Concept>&& binding_arg, U0&& u0, U&&... u)
+      : table(binding_arg),
+        data(
+            ::boost::type_erasure::call(
+                binding_arg,
+                ::boost::type_erasure::detail::make(
+                    false? this->_boost_type_erasure_deduce_constructor(std::forward<U0>(u0), std::forward<U>(u)...) : 0
+                ),
+                std::forward<U0>(u0), std::forward<U>(u)...
             )
         )
     {}
@@ -1350,6 +1633,19 @@ public:
       : data(::boost::type_erasure::detail::access::data(other)),
         table(::boost::type_erasure::detail::access::table(other))
     {}
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+    /**
+     * Constructs an @ref any from another @ref any.
+     *
+     * \param other The object to bind the reference to.
+     *
+     * \throws Nothing.
+     */
+    any(const any<Concept, T&&>& other)
+      : data(::boost::type_erasure::detail::access::data(other)),
+        table(::boost::type_erasure::detail::access::table(other))
+    {}
+#endif
     /**
      * Constructs an @ref any from another @ref any.
      *
@@ -1553,6 +1849,10 @@ public:
       : data(other.data),
         table(std::move(other.table))
     {}
+    any(const any& other)
+      : data(other.data),
+        table(other.table)
+    {}
 #endif
     /**
      * Constructs an @ref any from another @ref any.
@@ -1648,7 +1948,7 @@ public:
      * \throws std::bad_alloc
      */
     template<class Concept2, class Tag2, class Map>
-    any(any<Concept2, Tag2&&>&& other, const static_binding<Map>& binding_arg
+    any(const any<Concept2, Tag2&&>& other, const static_binding<Map>& binding_arg
 #ifndef BOOST_TYPE_ERASURE_DOXYGEN
         , typename ::boost::disable_if< ::boost::is_const<Tag2> >::type* = 0
 #endif
@@ -1696,7 +1996,7 @@ public:
      * \throws Nothing.
      */
     template<class Concept2, class Tag2>
-    any(const any<Concept2, Tag2&&>&& other, const binding<Concept>& binding_arg
+    any(const any<Concept2, Tag2&&>& other, const binding<Concept>& binding_arg
 #ifndef BOOST_TYPE_ERASURE_DOXYGEN
         , typename ::boost::disable_if<
             ::boost::is_const<Tag2>
@@ -1720,7 +2020,7 @@ public:
      * \throws Nothing.
      */
     template<class Concept2, class Tag2>
-    any(any<Concept2, Tag2>& other, const binding<Concept>& binding_arg
+    any(any<Concept2, Tag2>&& other, const binding<Concept>& binding_arg
 #ifndef BOOST_TYPE_ERASURE_DOXYGEN
         , typename ::boost::disable_if<
             ::boost::is_const<typename ::boost::remove_reference<Tag2>::type>
