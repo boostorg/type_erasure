@@ -174,7 +174,7 @@ struct maybe_adapt_to_vtable
     >::type type;
 };
 
-#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
+#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES) && !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
 
 template<class PrimitiveConcept, class Sig, class ConceptSig>
 struct vtable_adapter_impl;
@@ -200,6 +200,20 @@ struct vtable_adapter_impl<PrimitiveConcept, ::boost::type_erasure::detail::stor
         typename ::boost::remove_reference<R2>::type* p =
             ::boost::addressof(
                 PrimitiveConcept::apply(::boost::type_erasure::detail::extract<U>(std::forward<T>(arg))...));
+        result.data = const_cast<void*>(static_cast<const void*>(p));
+        return result;
+    }
+};
+
+template<class PrimitiveConcept, class... T, class R2, class... U>
+struct vtable_adapter_impl<PrimitiveConcept, ::boost::type_erasure::detail::storage&&(T...), R2(U...)>
+{
+    typedef ::boost::type_erasure::detail::storage (*type)(T...);
+    static ::boost::type_erasure::detail::storage value(T... arg)
+    {
+        ::boost::type_erasure::detail::storage result;
+        R2 tmp = PrimitiveConcept::apply(::boost::type_erasure::detail::extract<U>(std::forward<T>(arg))...);
+        typename ::boost::remove_reference<R2>::type* p = ::boost::addressof(tmp);
         result.data = const_cast<void*>(static_cast<const void*>(p));
         return result;
     }
@@ -301,6 +315,32 @@ struct vtable_adapter<PrimitiveConcept, ::boost::type_erasure::detail::storage&(
         return result;
     }
 };
+
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+
+template<class PrimitiveConcept
+    BOOST_PP_ENUM_TRAILING_PARAMS(N, class T)>
+struct vtable_adapter<PrimitiveConcept, ::boost::type_erasure::detail::storage&&(BOOST_PP_ENUM_PARAMS(N, T))>
+{
+    typedef ::boost::type_erasure::detail::storage (*type)(BOOST_PP_ENUM_PARAMS(N, T));
+    static ::boost::type_erasure::detail::storage value(BOOST_PP_ENUM_BINARY_PARAMS(N, T, arg))
+    {
+        typedef typename ::boost::function_traits<
+            typename ::boost::type_erasure::detail::get_signature<
+                PrimitiveConcept
+            >::type
+        > traits;
+        ::boost::type_erasure::detail::storage result;
+        typename traits::result_type tmp =
+            PrimitiveConcept::apply(BOOST_PP_ENUM(N, BOOST_TYPE_ERASURE_EXTRACT, ~));
+        typename ::boost::remove_reference<typename traits::result_type>::type* p =
+            ::boost::addressof(tmp);
+        result.data = const_cast<void*>(static_cast<const void*>(p));
+        return result;
+    }
+};
+
+#endif
 
 template<class R BOOST_PP_ENUM_TRAILING_PARAMS(N, class T)>
 struct get_vtable_signature<R(BOOST_PP_ENUM_PARAMS(N, T))>

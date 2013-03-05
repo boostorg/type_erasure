@@ -376,6 +376,70 @@ BOOST_AUTO_TEST_CASE(test_overload_return_const)
     BOOST_MPL_ASSERT((boost::is_same<boost::result_of<const any<test_concept>(any<test_concept, _a>)>::type, int>));
 }
 
+struct model_ret_ref
+{
+    model_ret_ref& operator()() { return *this; }
+};
+
+BOOST_AUTO_TEST_CASE(test_ref_any_result)
+{
+    typedef ::boost::mpl::vector<
+        common<>,
+        callable<_self&()>
+    > test_concept;
+    
+    any<test_concept> x1 = model_ret_ref();
+    any<test_concept, _self&> x2(x1());
+    BOOST_CHECK_EQUAL(any_cast<model_ret_ref*>(&x1), any_cast<model_ret_ref*>(&x2));
+}
+
+int f_ret_ref_val;
+int& f_ret_ref() { return f_ret_ref_val; }
+
+BOOST_AUTO_TEST_CASE(test_ref_int_result)
+{
+    typedef ::boost::mpl::vector<
+        common<>,
+        callable<int&()>
+    > test_concept;
+    
+    any<test_concept> x1 = f_ret_ref;
+    int& result = x1();
+    BOOST_CHECK_EQUAL(&result, &f_ret_ref_val);
+}
+
+struct model_ret_cref
+{
+    const model_ret_cref& operator()() { return *this; }
+};
+
+BOOST_AUTO_TEST_CASE(test_cref_any_result)
+{
+    typedef ::boost::mpl::vector<
+        common<>,
+        callable<const _self&()>
+    > test_concept;
+    
+    any<test_concept> x1 = model_ret_ref();
+    any<test_concept, const _self&> x2(x1());
+    BOOST_CHECK_EQUAL(any_cast<const model_ret_cref*>(&x1), any_cast<const model_ret_cref*>(&x2));
+}
+
+int f_ret_cref_val;
+const int& f_ret_cref() { return f_ret_cref_val; }
+
+BOOST_AUTO_TEST_CASE(test_cref_int_result)
+{
+    typedef ::boost::mpl::vector<
+        common<>,
+        callable<const int&()>
+    > test_concept;
+    
+    any<test_concept> x1 = f_ret_cref;
+    const int& result = x1();
+    BOOST_CHECK_EQUAL(&result, &f_ret_cref_val);
+}
+
 #ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
 
 int f_rv_value = 0;
@@ -435,6 +499,38 @@ BOOST_AUTO_TEST_CASE(test_const_rvalue_any)
     f_rv_value = 1;
     x1(std::move(get<1>(t1)));
     BOOST_CHECK_EQUAL(f_rv_value, 4);
+}
+
+struct model_ret_rref
+{
+    model_ret_rref&& operator()() { return std::move(*this); }
+};
+
+BOOST_AUTO_TEST_CASE(test_rvalue_any_result)
+{
+    typedef ::boost::mpl::vector<
+        common<>,
+        callable<_self&&()>
+    > test_concept;
+    
+    any<test_concept> x1 = model_ret_rref();
+    any<test_concept, _self&&> x2(x1());
+    BOOST_CHECK_EQUAL(any_cast<model_ret_rref*>(&x1), any_cast<model_ret_rref*>(&x2));
+}
+
+int f_ret_rv_val;
+int&& f_ret_rv() { return std::move(f_ret_rv_val); }
+
+BOOST_AUTO_TEST_CASE(test_rvalue_int_result)
+{
+    typedef ::boost::mpl::vector<
+        common<>,
+        callable<int&&()>
+    > test_concept;
+    
+    any<test_concept> x1 = f_ret_rv;
+    int&& result = x1();
+    BOOST_CHECK_EQUAL(&result, &f_ret_rv_val);
 }
 
 #endif
