@@ -96,6 +96,25 @@ struct maybe_const_this_param
     >::type type;
 };
 
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+
+template<class Placeholder, class Base>
+struct maybe_const_this_param<Placeholder&&, Base>
+{
+    typedef typename ::boost::type_erasure::derived<Base>::type plain_type;
+    typedef typename ::boost::remove_reference<Placeholder>::type plain_placeholder;
+    typedef typename ::boost::type_erasure::placeholder_of<plain_type>::type self_placeholder;
+    typedef typename ::boost::mpl::if_< ::boost::is_lvalue_reference<self_placeholder>,
+        ::boost::type_erasure::detail::uncallable<plain_type>,
+        typename ::boost::mpl::if_< ::boost::is_rvalue_reference<self_placeholder>,
+            const plain_type&,
+            plain_type&&
+        >::type
+    >::type type;
+};
+
+#endif
+
 }
 }
 }

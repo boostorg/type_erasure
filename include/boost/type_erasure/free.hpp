@@ -12,6 +12,7 @@
 #define BOOST_TYPE_ERASURE_FREE_HPP_INCLUDED
 
 #include <boost/preprocessor/repetition/enum.hpp>
+#include <boost/preprocessor/repetition/enum_trailing.hpp>
 #include <boost/preprocessor/repetition/enum_params.hpp>
 #include <boost/preprocessor/repetition/enum_shifted_params.hpp>
 #include <boost/preprocessor/repetition/enum_params_with_a_default.hpp>
@@ -33,7 +34,7 @@
 #include <boost/type_erasure/call.hpp>
 #include <boost/type_erasure/concept_interface.hpp>
 
-#if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES) || defined(BOOST_TYPE_ERASURE_DOXYGEN)
+#if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES) || defined(BOOST_NO_CXX11_RVALUE_REFERENCES) || defined(BOOST_TYPE_ERASURE_DOXYGEN)
 
 namespace boost {
 namespace type_erasure {
@@ -77,6 +78,26 @@ struct first_placeholder_index :
         ::boost::type_erasure::as_param<Base, BOOST_PP_CAT(T, n)>           \
     >::type BOOST_PP_CAT(t, n)
 
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+
+/** INTERNAL ONLY */
+#define BOOST_TYPE_ERASURE_FREE_FORWARD_I(z, n, data) ::std::forward<BOOST_PP_CAT(T, n)>(BOOST_PP_CAT(t, n))
+/** INTERNAL ONLY */
+#define BOOST_TYPE_ERASURE_FREE_FORWARD(n) BOOST_PP_ENUM(n, BOOST_TYPE_ERASURE_FREE_FORWARD_I, ~)
+/** INTERNAL ONLY */
+#define BOOST_TYPE_ERASURE_FREE_FORWARD_PARAM_I(z, n, data) \
+    ::std::forward<typename ::boost::mpl::eval_if_c<(_boost_type_erasure_free_p_idx::value == n), \
+        ::boost::type_erasure::detail::maybe_const_this_param<BOOST_PP_CAT(T, n), Base>,    \
+        ::boost::type_erasure::as_param<Base, BOOST_PP_CAT(T, n)>           \
+    >::type>(BOOST_PP_CAT(t, n))
+
+#else
+
+#define BOOST_TYPE_ERASURE_FREE_FORWARD(n) BOOST_PP_ENUM_PARAMS(n, t)
+#define BOOST_TYPE_ERASURE_FREE_FORWARD_PARAM_I(z, n, data) BOOST_PP_CAT(t, n)
+
+#endif
+
 /** INTERNAL ONLY */
 #define BOOST_TYPE_ERASURE_FREE_II(qual_name, concept_name, function_name, N)  \
     BOOST_TYPE_ERASURE_OPEN_NAMESPACE(qual_name)                        \
@@ -87,13 +108,13 @@ struct first_placeholder_index :
     template<class R BOOST_PP_ENUM_TRAILING_PARAMS(N, class T)>         \
     struct concept_name<R(BOOST_PP_ENUM_PARAMS(N, T))> {                \
         static R apply(BOOST_PP_ENUM_BINARY_PARAMS(N, T, t))            \
-        { return function_name(BOOST_PP_ENUM_PARAMS(N, t)); }           \
+        { return function_name(BOOST_TYPE_ERASURE_FREE_FORWARD(N)); }   \
     };                                                                  \
                                                                         \
     template<BOOST_PP_ENUM_PARAMS(N, class T)>                          \
     struct concept_name<void(BOOST_PP_ENUM_PARAMS(N, T))> {             \
         static void apply(BOOST_PP_ENUM_BINARY_PARAMS(N, T, t))         \
-        { function_name(BOOST_PP_ENUM_PARAMS(N, t)); }                  \
+        { function_name(BOOST_TYPE_ERASURE_FREE_FORWARD(N)); }          \
     };                                                                  \
                                                                         \
     BOOST_TYPE_ERASURE_CLOSE_NAMESPACE(qual_name)                       \
@@ -116,7 +137,7 @@ struct first_placeholder_index :
         {                                                               \
             return ::boost::type_erasure::call(                         \
                 BOOST_TYPE_ERASURE_FREE_QUALIFIED_ID(qual_name, N)()    \
-                BOOST_PP_ENUM_TRAILING_PARAMS(N, t));                   \
+                BOOST_PP_ENUM_TRAILING(N, BOOST_TYPE_ERASURE_FREE_FORWARD_PARAM_I, ~)); \
         }                                                               \
     };                                                                  \
                                                                         \
@@ -197,13 +218,13 @@ struct make_index_list<0> {
     template<class R, class... T>                                       \
     struct concept_name<R(T...)> {                                      \
         static R apply(T... t)                                          \
-        { return function_name(t...); }                                 \
+        { return function_name(std::forward<T>(t)...); }                \
     };                                                                  \
                                                                         \
     template<class... T>                                                \
     struct concept_name<void(T...)> {                                   \
         static void apply(T... t)                                       \
-        { function_name(t...); }                                        \
+        { function_name(std::forward<T>(t)...); }                       \
     };                                                                  \
                                                                         \
     BOOST_TYPE_ERASURE_CLOSE_NAMESPACE(qual_name)                       \
@@ -229,7 +250,10 @@ struct make_index_list<0> {
        {                                                                \
             return ::boost::type_erasure::call(                         \
                 BOOST_TYPE_ERASURE_QUALIFIED_NAME(qual_name)<R(T...)>(),\
-                t...);                                                  \
+                std::forward<typename ::boost::mpl::eval_if_c<(_boost_type_erasure_free_p_idx::value == I), \
+                    ::boost::type_erasure::detail::maybe_const_this_param<T, Base>, \
+                    ::boost::type_erasure::as_param<Base, T>            \
+                >::type>(t)...);                                        \
         }                                                               \
     };                                                                  \
                                                                         \

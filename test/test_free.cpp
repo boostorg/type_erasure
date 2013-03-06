@@ -97,3 +97,16 @@ BOOST_AUTO_TEST_CASE(test_global_has_f1_overload_const) {
     BOOST_CHECK_EQUAL(f1(x), 10);
     BOOST_CHECK_EQUAL(f1(x, 5), 15);
 }
+
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+
+BOOST_AUTO_TEST_CASE(test_global_has_f1_rv) {
+    typedef ::boost::mpl::vector<
+        global_has_f1_2<int(_self&&, int&&)>,
+        copy_constructible<> > concept_type;
+    model_const m(10);
+    any<concept_type> x(m);
+    BOOST_CHECK_EQUAL(f1(std::move(x), 5), 15);
+}
+
+#endif
