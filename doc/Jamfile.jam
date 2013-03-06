@@ -31,9 +31,12 @@ doxygen reference
     <doxygen:param>EXPAND_ONLY_PREDEF=YES
     <doxygen:param>"ALIASES= \\
         CopyConstructible=\"<a href=\\\"$(BOOST_ROOT)/doc/html/CopyConstructible.html\\\">CopyConstructible</a>\" \\
+        Concept=\"@xmlonly<link linkend=\\\"boost_typeerasure.conceptdef\\\">Concept</link>@endxmlonly\" \\
         call=\"@xmlonly<functionname alt=\\\"boost::type_erasure::call\\\">call</functionname>@endxmlonly\" \\
         any_cast=\"@xmlonly<functionname alt=\\\"boost::type_erasure::any_cast\\\">any_cast</functionname>@endxmlonly\" \\
         typeid_of=\"@xmlonly<functionname alt=\\\"boost::type_erasure::typeid_of\\\">typeid_of</functionname>@endxmlonly\" \\
+        binding_of=\"@xmlonly<functionname alt=\\\"boost::type_erasure::binding_of\\\">binding_of</functionname>@endxmlonly\" \\
+        is_empty=\"@xmlonly<functionname alt=\\\"boost::type_erasure::is_empty\\\">is_empty</functionname>@endxmlonly\" \\
         require_match=\"@xmlonly<functionname alt=\\\"boost::type_erasure::require_match\\\">require_match</functionname>@endxmlonly\" "
     <doxygen:param>"PREDEFINED= \\
         \"BOOST_TYPE_ERASURE_DOXYGEN=1\" \\

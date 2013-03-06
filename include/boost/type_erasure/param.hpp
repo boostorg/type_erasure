@@ -258,7 +258,7 @@ public:
  * \brief Metafunction that creates a @ref param.
  *
  * If @c T is a (cv/reference qualifed) placeholder,
- * returns @ref param<@ref concept_of "concept_of"&lt;Any&gt;::type, T>,
+ * returns @ref param<@ref concept_of "concept_of<Any>::type", T>,
  * otherwise, returns T.  This metafunction is intended
  * to be used for function arguments in specializations of
  * @ref concept_interface.

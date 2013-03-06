@@ -118,12 +118,14 @@ struct is_any<any<Concept, T> > : ::boost::mpl::true_ {};
 
 /**
  * The class template @ref any can store any object that
- * models a specific @c Concept.  It dispatches all
- * the functions defined by the @c Concept to the contained type
+ * models a specific \Concept.  It dispatches all
+ * the functions defined by the \Concept to the contained type
  * at runtime.
  *
- * \tparam Concept The concept that the type should model.
+ * \tparam Concept The \Concept that the stored type should model.
  * \tparam T A @ref placeholder specifying which type this is.
+ *
+ * \see concept_of, placeholder_of, \any_cast, \is_empty, \binding_of, \typeid_of
  */
 template<class Concept, class T = _self>
 class any :
@@ -150,11 +152,23 @@ public:
     {}
 #endif
     /**
-     * Constructs a null @ref any.
+     * Constructs an empty @ref any.
+     *
+     * Except as otherwise noted, all operations on an
+     * empty @ref any result in a @ref bad_function_call exception.
+     * The copy-constructor of an empty @ref any creates another
+     * null @ref any.  The destructor of an empty @ref any is a no-op.
+     * Comparison operators treat all empty @ref any "anys" as equal.
+     * \typeid_of applied to an empty @ref any returns @c typeid(void).
+     *
+     * An @ref any which does not include @ref relaxed in its
+     * \Concept can never be null.
      *
      * \pre @ref relaxed must be in @c Concept.
      *
      * \throws Nothing.
+     *
+     * @see \is_empty
      */
     any()
     {
@@ -193,7 +207,7 @@ public:
      * The @c Concept will be instantiated with the
      * placeholder @c T bound to U.
      *
-     * \param data The object to construct the @ref any from.
+     * \param data The object to store in the @ref any.
      *
      * \pre @c U is a model of @c Concept.
      * \pre @c U must be \CopyConstructible.
@@ -201,6 +215,9 @@ public:
      *
      * \throws std::bad_alloc or whatever that the copy
      *         constructor of @c U throws.
+     *
+     * \note This constructor never matches if the argument is
+     *       an @ref any, @ref binding, or @ref static_binding.
      */
     template<class U>
     any(U&& data_arg)
@@ -216,8 +233,8 @@ public:
      * Constructs an @ref any to hold a copy of @c data
      * with explicitly specified placeholder bindings.
      *
-     * \param data The object to construct the @ref any from.
-     * \param binding Specifies the actual types that
+     * \param data The object to store in the @ref any.
+     * \param binding Specifies the types that
      *        all the placeholders should bind to.
      *
      * \pre @c U is a model of @c Concept.
@@ -228,6 +245,8 @@ public:
      *
      * \throws std::bad_alloc or whatever that the copy
      *         constructor of @c U throws.
+     *
+     * \note This constructor never matches if the argument is an @ref any.
      */
     template<class U, class Map>
     any(U&& data_arg, const static_binding<Map>& binding_arg)
@@ -272,8 +291,8 @@ public:
      *
      * \param other The object to make a copy of.
      *
-     * \pre @c Concept must contain @ref constructible<T(const T&)>.
-     *     (This is included in @ref copy_constructible<T>)
+     * \pre @c Concept must contain @ref constructible "constructible<T(const T&)>".
+     *     (This is included in @ref copy_constructible "copy_constructible<T>")
      *
      * \throws std::bad_alloc or whatever that the copy
      *         constructor of the contained type throws.
@@ -361,6 +380,9 @@ public:
      *
      * \throws std::bad_alloc or whatever that the copy
      *         constructor of the contained type throws.
+     *
+     * \warning This constructor is potentially dangerous, as it cannot
+     *          check at compile time whether the arguments match.
      */
     template<class Concept2, class Tag2>
     any(const any<Concept2, Tag2>& other, const binding<Concept>& binding_arg)
@@ -382,7 +404,8 @@ public:
      *
      * \param arg The arguments to be passed to the underlying constructor.
      *
-     * \pre @c Concept must contain a matching instance of @ref constructible.
+     * \pre @c Concept must contain an instance of @ref constructible which
+     *      can be called with these arguments.
      * \pre At least one of the arguments must by an @ref any with the
      *      same @c Concept as this.
      * \pre The bindings of all the arguments that are @ref any's, must
@@ -390,6 +413,9 @@ public:
      *
      * \throws std::bad_alloc or whatever that the
      *         constructor of the contained type throws.
+     *
+     * \note This constructor is never chosen if any other constructor
+     *       can be called instead.
      */
     template<class... U>
     explicit any(U&&... arg);
@@ -972,7 +998,7 @@ public:
         return *this;
     }
     /**
-     * \pre @c Concept includes @c destructible<T>.
+     * \pre @c Concept includes @ref destructible "destructible<T>".
      */
     ~any()
     {

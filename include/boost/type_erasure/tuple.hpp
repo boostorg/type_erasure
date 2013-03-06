@@ -23,9 +23,10 @@ namespace type_erasure {
 
 /**
  * @ref tuple is a Boost.Fusion Random Access Sequence containing
- * @ref any "anys". Concept is interpreted in the same way as for
- * @ref any.  The remaining arguments must be (possibly const
- * and/or reference qualified) placeholders.
+ * @ref any "anys". @c Concept specifies the \Concept for each
+ * of the elements.  The remaining arguments must be (possibly const
+ * and/or reference qualified) placeholders, which are the
+ * @ref placeholder "placeholders" of the elements.
  */
 template<class Concept, class... T>
 class tuple
@@ -33,7 +34,7 @@ class tuple
 public:
     /**
      * Constructs a tuple.  Each element of @c args will
-     * be used to initialize the corresponding member.
+     * be used to initialize the corresponding @ref any member.
      * The @ref binding for the tuple elements is determined
      * by mapping the placeholders in @c T to the corresponding
      * types in @c U.

@@ -212,13 +212,20 @@ assume that a few using directives are in place.
 
 [section:conceptdef Concept Definitions]
 
+A Concept defines a set of constraints on the types that
+are stored in an __any.
+
 There are three kinds of concepts.
 
 # The library defines a number of [link boost_typeerasure.predef predefined concepts].
+  Most of these are equivalent to user-defined concepts, but a few
+  require special handling.
+# Users can define their own primitive concepts as described below.
+  The macros __BOOST_TYPE_ERASURE_MEMBER and __BOOST_TYPE_ERASURE_FREE
+  define concepts of this form.
 # Any MPL Forward Sequence whose elements are
   concepts is also a concept.  This allows concepts
   to be composed easily.
-# Users can define their own primitive concepts.
 
 Each primitive concept defines a single function.
 A primitive concept must be a specialization of a
@@ -238,6 +245,8 @@ considered.
 
 Any other placeholders are ignored.
 
+A concept is instantiated by constructing an
+__any from a raw value or by constructing a __binding.
 When a concept is instantiated with a specific
 set of type bindings, each placeholder is bound
 to a cv-unqualified non-reference type.  After
