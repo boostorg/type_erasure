@@ -446,13 +446,21 @@ public:
     {}
 
 #else
-#ifndef BOOST_NO_RVALUE_REFERENCES
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
     any(any&& other)
       : table(::boost::type_erasure::detail::access::table(other)),
         data(::boost::type_erasure::call(
             ::boost::type_erasure::detail::make(
                 false? this->_boost_type_erasure_deduce_constructor(std::move(other)) : 0
             ), std::move(other))
+        )
+    {}
+    any(any& other)
+      : table(::boost::type_erasure::detail::access::table(other)),
+        data(::boost::type_erasure::call(
+            ::boost::type_erasure::detail::make(
+                false? this->_boost_type_erasure_deduce_constructor(other) : 0
+            ), other)
         )
     {}
     template<class Concept2, class Tag2>

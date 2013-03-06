@@ -637,6 +637,20 @@ BOOST_AUTO_TEST_CASE(test_copy)
     BOOST_CHECK_EQUAL(any_cast<int>(x), 4);
     any<test_concept> y(x);
     BOOST_CHECK_EQUAL(any_cast<int>(y), 4);
+    any<test_concept> z(as_rvalue(x));
+    BOOST_CHECK_EQUAL(any_cast<int>(z), 4);
+    any<test_concept> w(as_const(x));
+    BOOST_CHECK_EQUAL(any_cast<int>(w), 4);
+}
+
+BOOST_AUTO_TEST_CASE(test_copy_implicit)
+{
+    typedef ::boost::mpl::vector<common<>, common<_a> > test_concept;
+    any<test_concept> x(4, make_binding< ::boost::mpl::map< ::boost::mpl::pair<_self, int>, ::boost::mpl::pair<_a, int> > >());
+    BOOST_CHECK_EQUAL(any_cast<int>(x), 4);
+
+    any<test_concept> y = x;
+    BOOST_CHECK_EQUAL(any_cast<int>(y), 4);
     any<test_concept> z = as_rvalue(x);
     BOOST_CHECK_EQUAL(any_cast<int>(z), 4);
     any<test_concept> w = as_const(x);
