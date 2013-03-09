@@ -498,8 +498,8 @@ guarantee that any of them will ever be implemented.
 
 [section:acknowledgements Acknowledgements]
 
-The name `any` was taken from Alexander Nasonov's
-DynamicAny library.
+The name `any` and an early ancestor of my placeholder
+system were taken from Alexander Nasonov's DynamicAny library.
 
 Thanks to review manager, Lorenzo Caminiti
 and all who participated in the formal review:
@@ -522,5 +522,16 @@ and all who participated in the formal review:
 * Andrey Semashev
 * Dave Abrahams
 * Thomas Jordan
+
+[endsect]
+
+[section:related Related Work]
+
+There are a number of similar libraries in existence.  I'm aware
+of at least three.
+
+* [@http://www.coderage.com/interfaces/ Boost.Interfaces] by Jonathan Turkanis
+* [@http://stlab.adobe.com/group__poly__related.html Adobe Poly]
+* [@http://cpp-experiment.sourceforge.net/boost/libs/dynamic_any/doc/ Boost.dynamic_any] by Alexander Nasonov
 
 [endsect]
