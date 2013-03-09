@@ -233,6 +233,11 @@ __any arguments.
 [printf]
 [endsect]
 
+[section:multifunction Boost.Function with multiple signatures]
+[import ../example/multifunction.cpp]
+[multifunction]
+[endsect]
+
 [endsect]
 
 [section:conceptdef Concept Definitions]
