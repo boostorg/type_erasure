@@ -256,7 +256,10 @@ Each primitive concept defines a single function.
 A primitive concept must be a specialization of a
 class template, with a static member function
 called `apply`, which will be executed when the
-function is dispatched by __call.
+function is dispatched by __call.  The template
+can only take template type parameters.  non-type
+template parameters and template template parameters
+are not allowed.
 
 The template parameters of the concept
 may involve placeholders.  The following are
@@ -329,6 +332,13 @@ must hold.
   template<class T>
   struct foo4<boost::mpl::vector<T> > {
     static void apply(const T&);
+  };
+
+  // Wrong.  Template template parameters are not allowed.
+  template<template<class> class T>
+  struct foo5
+  {
+      static void apply(T<int>&);
   };
 
 [endsect]
