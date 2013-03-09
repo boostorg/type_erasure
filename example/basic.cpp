@@ -123,33 +123,30 @@ bool is_empty(any<has_empty<bool(), const _self>, const _self&> x) {
     For free functions, we can use the macro __BOOST_TYPE_ERASURE_FREE.
 */
 
-BOOST_TYPE_ERASURE_FREE((has_swap), swap, 2);
-template<class T = _self>
-struct swappable : mpl::vector<has_swap<void(T&, T&)> > {};
+BOOST_TYPE_ERASURE_FREE((has_getline), getline, 2)
+std::vector<std::string> read_lines(any<has_getline<bool(_self&, std::string&)>, _self&> stream)
+{
+    std::vector<std::string> result;
+    std::string tmp;
+    while(getline(stream, tmp))
+        result.push_back(tmp);
+    return result;
+}
 
 /*`
-    The use of `has_swap` is essentially similar to `has_push_back`.
-    We have to pass it the function signature.  In this case, however,
-    the signature has one extra twist.  We use the __placeholder `_self`
-    to indicate which arguments of `swap` should be __any's.
-    
-    Now, swap should always have the same signature.  It should
-    always look like `has_swap<void(_self&, _self&)>`, since `swap`
-    takes two arguments of the same type by reference.  Thus,
-    we define `swappable<>` as a convenient short-cut.
+    The use of `has_getline` is very similar to `has_push_back` above.
+    The difference is that the placeholder `_self` is passed in
+    the function signature instead of as a separate argument.
 
-    [note We could define `swappable` to be a typedef of
-    `has_swap<void(_self&, _self&)>`, but `_self` is not the only
-    __placeholder.  We can use another __placeholder instead.  The
-    library doesn't care what placeholder we use as long as we're consistent.
-    So, if we wanted to use `_a`, we'd have to write `any<swappable<_a>, _a&>`.
-    Neither `any<swappable<_self>, _a&>` nor `any<swappable<_a>, _self&>`
-    would work.]
-
-    [warning Do not try to make one concept inherit directly from
-    another.  The use of `mpl::vector` is necessary for the library
-    to understand the relationship between the two concepts.]
+    The __placeholder doesn't have to be the first argument.
+    We could just as easily make it the second argument.
 */
+
+
+void read_line(any<has_getline<bool(std::istream&, _self&)>, _self&> str)
+{
+    getline(std::cin, str);
+}
 
 //]
 

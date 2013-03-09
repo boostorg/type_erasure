@@ -17,11 +17,7 @@ using namespace boost::type_erasure;
 
 //[compose1
 /*`
-    The use of `mpl::vector` for concept inheritence
-    can be generalized to define a concept that
-    is composed of multiple other concepts.  The
-    MPL sequence can contain as many concepts as
-    we need.
+    Multiple concepts can be composed using an MPL sequence.
 */
 template<class T = _self>
 struct arithmetic :

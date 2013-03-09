@@ -141,20 +141,18 @@ assume that a few using directives are in place.
 [endsect]
 
 [section:basic Basic Usage]
-
 [import ../example/basic.cpp]
 [basic]
+[endsect]
 
 [section Composing Concepts]
 [import ../example/compose.cpp]
 [compose]
 [endsect]
 
-[section Conversions]
-[import ../example/convert.cpp]
-[convert]
-[endsect]
-
+[section:multi Functions with Multiple Arguments]
+[import ../example/multi.cpp]
+[multi]
 [endsect]
 
 [section:concept Concepts in Depth]
@@ -169,21 +167,6 @@ assume that a few using directives are in place.
 [overload]
 [endsect]
 
-[section:references Using References]
-[import ../example/references.cpp]
-[references]
-[endsect]
-
-[section:multi Functions with Multiple Arguments]
-[import ../example/multi.cpp]
-[multi]
-[endsect]
-
-[section:construction Construction]
-[import ../example/construction.cpp]
-[construction]
-[endsect]
-
 [section:concept_map Concept Maps]
 [import ../example/concept_map.cpp]
 [concept_map]
@@ -192,6 +175,48 @@ assume that a few using directives are in place.
 [section:overload Associated Types]
 [import ../example/associated.cpp]
 [associated]
+[endsect]
+
+[endsect]
+
+[section:any Using Any]
+
+[section:construction Construction]
+[import ../example/construction.cpp]
+[construction]
+[endsect]
+
+[section Conversions]
+[import ../example/convert.cpp]
+[convert]
+[endsect]
+
+[section:references References]
+[import ../example/references.cpp]
+[references]
+[endsect]
+
+[section:limit Syntax Limitations]
+
+In most cases using an any has the same
+syntax as using the underlying object.
+However, there are a few cases where
+this is not possible to implement.
+An __any reference is proxy and cannot
+be used in contexts where a real
+reference is required.  In particular,
+__forward_iterator does not create
+a conforming ForwardIterator (unless
+the value_type is fixed.)  Another
+difference is that all operations
+which do not take at least one __any
+argument have to be passed the type
+information explicitly.  Static member
+functions and constructors can fall in
+this category.  All this means that generic
+algorithms might not work when applied to
+__any arguments.
+
 [endsect]
 
 [endsect]

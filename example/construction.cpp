@@ -34,29 +34,6 @@ void construction1() {
         constructible<_a(const _b&, const _c&)>
     > construct;
 
-    std::vector<double> vec;
-    int i = 10;
-    double d = 2.5;
-    tuple<construct, _a&, _b, _c> t(vec, i, d);
-    any<construct, _a> v(get<1>(t), get<2>(t));
-    // v holds std::vector<double>(10, 2.5);
-    //]
-}
-
-void construction2() {
-    typedef mpl::vector<
-        copy_constructible<_a>,
-        copy_constructible<_b>,
-        copy_constructible<_c>,
-        constructible<_a(const _b&, const _c&)>
-    > construct;
-    //[construction2
-    /*`
-        This requires us to create a vector to deduce
-        its type, even though the object is never used.
-        Instead, we can explicitly specify the types
-        that the placeholders should be bound to.
-    */
     typedef mpl::map<
         mpl::pair<_a, std::vector<double> >,
         mpl::pair<_b, std::size_t>,
@@ -66,6 +43,7 @@ void construction2() {
     any<construct, _b> size(std::size_t(10), make_binding<types>());
     any<construct, _c> val(2.5, make_binding<types>());
     any<construct, _a> v(size, val);
+    // v holds std::vector<double>(10, 2.5);
     //]
 }
 
@@ -85,7 +63,7 @@ void construction3() {
     > construct;
 
     any<construct> x(std::string("Test"));
-    any<construct> y(binding_of(x));
+    any<construct> y(binding_of(x)); // y == ""
     //]
 }
 
@@ -110,7 +88,6 @@ void construction4() {
 //` (For the source of the examples in this section see
 //` [@boost:/libs/type_erasure/example/construction.cpp construction.cpp])
 //` [construction1]
-//` [construction2]
 //` [construction3]
 //` [construction4]
 //]
