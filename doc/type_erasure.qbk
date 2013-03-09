@@ -228,7 +228,7 @@ __any arguments.
 [print_sequence]
 [endsect]
 
-[section:print_sequence A type-safe printf]
+[section:printf A type-safe printf]
 [import ../example/printf.cpp]
 [printf]
 [endsect]
