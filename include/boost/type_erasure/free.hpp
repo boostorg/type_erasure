@@ -55,7 +55,7 @@ template<BOOST_PP_ENUM_PARAMS_WITH_A_DEFAULT(BOOST_TYPE_ERASURE_MAX_ARITY, class
 struct first_placeholder_index :
     ::boost::mpl::eval_if<is_placeholder<T0>,
         ::boost::mpl::int_<0>,
-        ::boost::mpl::next<first_placeholder<BOOST_PP_ENUM_SHIFTED_PARAMS(BOOST_TYPE_ERASURE_MAX_ARITY, T)> >
+        ::boost::mpl::next<first_placeholder_index<BOOST_PP_ENUM_SHIFTED_PARAMS(BOOST_TYPE_ERASURE_MAX_ARITY, T)> >
     >::type
 {};
 
@@ -175,7 +175,7 @@ template<class T0, class... T>
 struct first_placeholder_index<T0, T...> :
     ::boost::mpl::eval_if<is_placeholder<T0>,
         ::boost::mpl::int_<0>,
-        ::boost::mpl::next<first_placeholder<T...> >
+        ::boost::mpl::next<first_placeholder_index<T...> >
     >::type
 {};
 
