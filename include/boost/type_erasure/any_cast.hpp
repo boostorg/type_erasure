@@ -98,6 +98,16 @@ bool check_any_cast(const any<Concept, Tag>& arg)
  * a null pointer.  Casting to @c void* always succeeds
  * and returns the address of stored object.
  *
+ * \code
+ * any<mpl::vector<typeid_<>, copy_constructible<> > > x(1);
+ * any_cast<int>(x);      // returns 1
+ * any_cast<int&>(x);     // returns a reference to the contents of x
+ * any_cast<double>(x);   // throws bad_any_cast
+ * any_cast<int*>(&x);    // returns a pointer to the contents of x
+ * any_cast<void*>(&x);   // returns a pointer to the contents of x
+ * any_cast<double*>(&x); // returns NULL
+ * \endcode
+ *
  * \pre if @c arg is a pointer, @c T must be a pointer type.
  * \pre @c Concept must contain @ref typeid_<tt>&lt;Tag&gt;</tt>.
  *
