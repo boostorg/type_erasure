@@ -14,6 +14,7 @@
 #include <boost/config.hpp>
 #include <boost/type_traits/remove_reference.hpp>
 #include <boost/type_traits/remove_cv.hpp>
+#include <utility>
 
 #ifdef BOOST_MSVC
 #pragma warning(push)
