@@ -55,8 +55,14 @@ struct dynamic_vtable : dynamic_binding_impl<P>... {
     template<class F>
     typename F::type lookup(F*) const {
         key_type key;
-        key.push_back(&typeid(F));
-        ::boost::mpl::for_each<typename ::boost::type_erasure::detail::get_placeholders<F, ::boost::mpl::set0<> >::type>(append_to_key<dynamic_vtable>{this, &key});
+        typedef typename ::boost::type_erasure::detail::get_placeholders<F, ::boost::mpl::set0<> >::type placeholders;
+        typedef typename ::boost::mpl::fold<
+            placeholders,
+            ::boost::mpl::map0<>,
+            ::boost::type_erasure::detail::counting_map_appender
+        >::type placeholder_map;
+        key.push_back(&typeid(typename ::boost::type_erasure::detail::rebind_placeholders<F, placeholder_map>::type));
+        ::boost::mpl::for_each<placeholders>(append_to_key<dynamic_vtable>{this, &key});
         return reinterpret_cast<typename F::type>(lookup_function_impl(key));
     }
     template<class Bindings>
