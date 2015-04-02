@@ -203,6 +203,17 @@ struct vtable_adapter_impl<PrimitiveConcept, R(T...), R2(U...)>
 };
 
 template<class PrimitiveConcept, class... T, class R2, class... U>
+struct vtable_adapter_impl<PrimitiveConcept, ::boost::type_erasure::detail::storage(T...), R2(U...)>
+{
+    typedef ::boost::type_erasure::detail::storage (*type)(T...);
+    static ::boost::type_erasure::detail::storage value(T... arg)
+    {
+        return ::boost::type_erasure::detail::storage(
+            PrimitiveConcept::apply(::boost::type_erasure::detail::extract<U>(std::forward<T>(arg))...));
+    }
+};
+
+template<class PrimitiveConcept, class... T, class R2, class... U>
 struct vtable_adapter_impl<PrimitiveConcept, ::boost::type_erasure::detail::storage&(T...), R2(U...)>
 {
     typedef ::boost::type_erasure::detail::storage (*type)(T...);
