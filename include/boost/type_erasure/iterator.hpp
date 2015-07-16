@@ -24,9 +24,9 @@
 
 namespace boost {
 
-struct use_default;
-
 namespace type_erasure {
+
+struct use_default;
 
 namespace detail {
 
@@ -52,7 +52,7 @@ struct iterator_value_type
 template<
     class Traversal,
     class T = _self,
-    class Reference = ::boost::use_default,
+    class Reference = ::boost::type_erasure::use_default,
     class DifferenceType = ::std::ptrdiff_t,
     class ValueType = typename deduced<iterator_value_type<T> >::type
 >
@@ -67,7 +67,7 @@ struct iterator;
  *         @c boost::single_pass_traversal_tag, @c boost::forward_traversal_tag,
  *         @c boost::bidirectional_traversal_tag, and @c boost::random_access_traversal_tag.
  * \tparam T The placeholder representing the iterator.
- * \tparam Reference The reference type.  If it is boost::use_default, then
+ * \tparam Reference The reference type.  If it is boost::type_erasure::use_default, then
  *         reference will be value_type&.
  * \tparam DifferenceType The iterator's difference type.
  *
@@ -85,7 +85,7 @@ struct iterator;
 template<
     class Traversal,
     class T = _self,
-    class Reference = boost::use_default,
+    class Reference = boost::type_erasure::use_default,
     class DifferenceType = std::ptrdiff_t
 >
 struct iterator
@@ -97,7 +97,7 @@ struct iterator
 
 template<
     class T = _self,
-    class Reference = boost::use_default,
+    class Reference = boost::type_erasure::use_default,
     class DifferenceType = std::ptrdiff_t
 >
 struct forward_iterator :
@@ -106,7 +106,7 @@ struct forward_iterator :
 
 template<
     class T = _self,
-    class Reference = boost::use_default,
+    class Reference = boost::type_erasure::use_default,
     class DifferenceType = std::ptrdiff_t
 >
 struct bidirectional_iterator :
@@ -115,7 +115,7 @@ struct bidirectional_iterator :
 
 template<
     class T = _self,
-    class Reference = boost::use_default,
+    class Reference = boost::type_erasure::use_default,
     class DifferenceType = std::ptrdiff_t
 >
 struct random_access_iterator :
@@ -134,7 +134,7 @@ struct iterator_reference
 
 /** INTERNAL ONLY */
 template<class ValueType>
-struct iterator_reference< ::boost::use_default, ValueType>
+struct iterator_reference< ::boost::type_erasure::use_default, ValueType>
 {
     typedef ValueType& type;
 };
@@ -206,7 +206,7 @@ struct iterator< ::boost::random_access_traversal_tag, T, Reference, DifferenceT
 
 template<
     class T = _self,
-    class Reference = ::boost::use_default,
+    class Reference = ::boost::type_erasure::use_default,
     class DifferenceType = ::std::ptrdiff_t,
     class ValueType = typename deduced<iterator_value_type<T> >::type
 >
@@ -216,7 +216,7 @@ struct forward_iterator :
 
 template<
     class T = _self,
-    class Reference = ::boost::use_default,
+    class Reference = ::boost::type_erasure::use_default,
     class DifferenceType = ::std::ptrdiff_t,
     class ValueType = typename deduced<iterator_value_type<T> >::type
 >
@@ -226,7 +226,7 @@ struct bidirectional_iterator :
 
 template<
     class T = _self,
-    class Reference = ::boost::use_default,
+    class Reference = ::boost::type_erasure::use_default,
     class DifferenceType = ::std::ptrdiff_t,
     class ValueType = typename deduced<iterator_value_type<T> >::type
 >

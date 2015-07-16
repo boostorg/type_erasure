@@ -16,11 +16,10 @@
 #include <boost/type_erasure/placeholder.hpp>
 
 namespace boost {
+namespace type_erasure {
 
 /** INTERNAL ONLY */
 struct use_default;
-
-namespace type_erasure {
 
 /** A metafunction that indicates whether a type is a @ref placeholder. */
 template<class T>
@@ -28,7 +27,7 @@ struct is_placeholder : ::boost::is_base_and_derived<placeholder, T> {};
 
 /** INTERNAL ONLY */
 template<>
-struct is_placeholder< ::boost::use_default> : ::boost::mpl::false_ {};
+struct is_placeholder< ::boost::type_erasure::use_default> : ::boost::mpl::false_ {};
 
 }
 }
