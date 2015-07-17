@@ -37,7 +37,7 @@ struct fixture
     }
 };
 
-BOOST_GLOBAL_FIXTURE(fixture)
+BOOST_GLOBAL_FIXTURE(fixture);
 
 BOOST_AUTO_TEST_CASE(test_identical)
 {
