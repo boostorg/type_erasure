@@ -24,7 +24,13 @@ using ::boost::type_erasure::detail::value_type;
 typedef ::std::map<key_type, void(*)()> map_type;
 typedef ::boost::shared_mutex mutex_type;
 
-typedef ::std::pair<map_type, mutex_type> data_type;
+// std::pair can have problems on older implementations
+// when it tries to use the copy constructor of the mutex.
+struct data_type
+{
+    map_type first;
+    mutex_type second;
+};
 
 data_type * get_data() {
     static data_type result;
