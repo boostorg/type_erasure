@@ -153,7 +153,7 @@ struct vtable_storage<>
     template<class Bindings, class Src>
     void convert_from(const Src& src) {}
 
-    bool operator==(const vtable_storage& other) const
+    bool operator==(const vtable_storage&) const
     { return true; }
 };
 
