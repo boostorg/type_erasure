@@ -102,6 +102,10 @@ std::vector<T> make_vector(T t0, T t1) {
     return result;
 }
 
+#ifdef BOOST_MSVC
+#pragma warning(disable:4521) // multiple copy constructors specified
+#endif
+
 struct test_class
 {
 

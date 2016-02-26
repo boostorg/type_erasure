@@ -41,7 +41,7 @@ struct get_null_vtable_entry;
 template<class C, class Sig>
 struct vtable_adapter;
 
-};
+}
 
 #ifdef BOOST_TYPE_ERASURE_DOXYGEN
 

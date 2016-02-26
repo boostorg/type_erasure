@@ -26,7 +26,7 @@ struct model {
 int f1(model& m) { return m.val; }
 int f1(model& m, int i) { return m.val + i; }
 
-BOOST_TYPE_ERASURE_FREE((global_has_f1_1), f1, 1);
+BOOST_TYPE_ERASURE_FREE((global_has_f1_1), f1, 1)
 
 BOOST_AUTO_TEST_CASE(test_global_has_f1_1) {
     typedef ::boost::mpl::vector<
@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE(test_global_has_f1_1) {
     BOOST_CHECK_EQUAL(f1(x), 10);
 }
 
-BOOST_TYPE_ERASURE_FREE((ns1)(ns2)(ns_has_f1_1), f1, 1);
+BOOST_TYPE_ERASURE_FREE((ns1)(ns2)(ns_has_f1_1), f1, 1)
 
 BOOST_AUTO_TEST_CASE(test_ns_has_f1_1) {
     typedef ::boost::mpl::vector<
@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE(test_global_has_f1_1_void) {
     f1(x);
 }
 
-BOOST_TYPE_ERASURE_FREE((global_has_f1_2), f1, 2);
+BOOST_TYPE_ERASURE_FREE((global_has_f1_2), f1, 2)
 
 BOOST_AUTO_TEST_CASE(test_global_has_f1_overload) {
     typedef ::boost::mpl::vector<

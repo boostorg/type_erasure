@@ -95,7 +95,7 @@ bool check_match(const Op& f, U&&... args);
 namespace detail {
 
 template<class Concept>
-bool check_table(const ::boost::type_erasure::binding<Concept>* t, void(*)())
+bool check_table(const ::boost::type_erasure::binding<Concept>* /*t*/, void(*)())
 {
     return true;
 }

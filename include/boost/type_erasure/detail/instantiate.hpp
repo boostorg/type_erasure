@@ -72,6 +72,7 @@ struct make_instantiate_concept {
 struct BOOST_PP_CAT(instantiate_concept, N) {
     template<class Concept, class Map>
     static void apply(Concept *, Map *) {
+#if N > 0
         typedef typename ::boost::type_erasure::detail::normalize_concept<
             Concept>::type normalized;
         typedef typename ::boost::type_erasure::detail::get_placeholder_normalization_map<
@@ -88,6 +89,7 @@ struct BOOST_PP_CAT(instantiate_concept, N) {
                 >::type
             >
         >::type concept_sequence;
+#endif
         BOOST_PP_REPEAT(N, BOOST_TYPE_ERASURE_INSTANTIATE_IMPL, concept_sequence)
     }
 };
