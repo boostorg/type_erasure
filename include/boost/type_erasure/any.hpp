@@ -871,7 +871,6 @@ public:
     {}
 
 #ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
-
     explicit any(binding<Concept>&& binding_arg)
       : table(binding_arg),
         data(
@@ -881,7 +880,40 @@ public:
             )
         )
     {}
+#endif
 
+    template<class Map>
+    explicit any(const static_binding<Map>& binding_arg)
+      : table(binding_arg),
+        data(
+            ::boost::type_erasure::call(
+                ::boost::type_erasure::binding<Concept>(binding_arg),
+                ::boost::type_erasure::constructible<T()>()
+            )
+        )
+    {}
+    template<class Map>
+    explicit any(static_binding<Map>& binding_arg)
+      : table(binding_arg),
+        data(
+            ::boost::type_erasure::call(
+                ::boost::type_erasure::binding<Concept>(binding_arg),
+                ::boost::type_erasure::constructible<T()>()
+            )
+        )
+    {}
+
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+    template<class Map>
+    explicit any(static_binding<Map>&& binding_arg)
+      : table(binding_arg),
+        data(
+            ::boost::type_erasure::call(
+                ::boost::type_erasure::binding<Concept>(binding_arg),
+                ::boost::type_erasure::constructible<T()>()
+            )
+        )
+    {}
 #endif
 
 #if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
@@ -946,6 +978,48 @@ public:
         data(
             ::boost::type_erasure::call(
                 binding_arg,
+                ::boost::type_erasure::detail::make(
+                    false? this->_boost_type_erasure_deduce_constructor(std::forward<U0>(u0), std::forward<U>(u)...) : 0
+                ),
+                std::forward<U0>(u0), std::forward<U>(u)...
+            )
+        )
+    {}
+
+    template<class Map, class U0, class... U>
+    any(const static_binding<Map>& binding_arg, U0&& u0, U&&... u)
+      : table(binding_arg),
+        data(
+            ::boost::type_erasure::call(
+                ::boost::type_erasure::binding<Concept>(binding_arg),
+                ::boost::type_erasure::detail::make(
+                    false? this->_boost_type_erasure_deduce_constructor(std::forward<U0>(u0), std::forward<U>(u)...) : 0
+                ),
+                std::forward<U0>(u0), std::forward<U>(u)...
+            )
+        )
+    {}
+
+    // disambiguate
+    template<class Map, class U0, class... U>
+    any(static_binding<Map>& binding_arg, U0&& u0, U&&... u)
+      : table(binding_arg),
+        data(
+            ::boost::type_erasure::call(
+                ::boost::type_erasure::binding<Concept>(binding_arg),
+                ::boost::type_erasure::detail::make(
+                    false? this->_boost_type_erasure_deduce_constructor(std::forward<U0>(u0), std::forward<U>(u)...) : 0
+                ),
+                std::forward<U0>(u0), std::forward<U>(u)...
+            )
+        )
+    {}
+    template<class Map, class U0, class... U>
+    any(static_binding<Map>&& binding_arg, U0&& u0, U&&... u)
+      : table(binding_arg),
+        data(
+            ::boost::type_erasure::call(
+                ::boost::type_erasure::binding<Concept>(binding_arg),
                 ::boost::type_erasure::detail::make(
                     false? this->_boost_type_erasure_deduce_constructor(std::forward<U0>(u0), std::forward<U>(u)...) : 0
                 ),

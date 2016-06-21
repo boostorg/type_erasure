@@ -38,3 +38,14 @@ BOOST_AUTO_TEST_CASE(test_binding_of)
         >());
     BOOST_CHECK(b == expected);
 }
+
+BOOST_AUTO_TEST_CASE(test_construction_with_binding_of)
+{
+    typedef ::boost::mpl::vector<
+        common<>,
+        constructible<_self()>,
+        relaxed
+    > test_concept;
+    any<test_concept> x(2);
+    BOOST_CHECK_NO_THROW(any<test_concept> y(binding_of(x)));
+}
