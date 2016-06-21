@@ -56,7 +56,7 @@ struct maybe_extract_concept
     >::type type;
 };
 
-#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
+#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES) && !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
 
 template<class Args, class... U>
 struct extract_concept;
