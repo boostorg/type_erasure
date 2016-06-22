@@ -100,6 +100,14 @@ bool check_table(const ::boost::type_erasure::binding<Concept>* /*t*/, void(*)()
     return true;
 }
 
+template<class Concept, class R>
+bool check_table(
+    const ::boost::type_erasure::binding<Concept>* t,
+    R(*)())
+{
+    return check_table(t, static_cast<void(*)()>(0));
+}
+
 template<class Concept, class R, class T0, class... T, class U0, class... U>
 bool check_table(
     const ::boost::type_erasure::binding<Concept>* t,
