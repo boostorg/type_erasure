@@ -923,7 +923,7 @@ public:
         ::boost::type_erasure::constructible<R(A...)>*,
         U&&... u)
     {
-        return *::boost::type_erasure::detail::extract_table(static_cast<void(*)(A...)>(0), u...);
+        return *::boost::type_erasure::detail::extract_table(static_cast<R(*)(A...)>(0), u...);
     }
 
     template<class U0, class U1, class... U>

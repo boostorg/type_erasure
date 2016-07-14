@@ -37,7 +37,7 @@
     >
     const table_type& _boost_type_erasure_extract_table(
         ::boost::type_erasure::constructible<R(BOOST_PP_ENUM_PARAMS(N, A))>*
-        BOOST_PP_ENUM_TRAILING_BINARY_PARAMS(N, U, &u))
+        BOOST_PP_ENUM_TRAILING_BINARY_PARAMS(N, U, &&u))
     {
         return *::boost::type_erasure::detail::BOOST_PP_CAT(extract_table, N)(
             (R(*)(BOOST_PP_ENUM_PARAMS(N, A)))0,
