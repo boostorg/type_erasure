@@ -16,6 +16,12 @@
 #include <boost/type_erasure/placeholder.hpp>
 #include <boost/type_erasure/constructible.hpp>
 #include <boost/type_erasure/rebind_any.hpp>
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+#   include <boost/static_assert.hpp>
+#   include <boost/type_traits/is_const.hpp>
+#   include <boost/type_traits/is_reference.hpp>
+#   include <utility>  // std::move
+#endif
 #include <typeinfo>
 
 namespace boost {
@@ -84,6 +90,38 @@ struct concept_interface<assignable<T, U>, Base, T> : Base
         return 0;
     }
 };
+
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+
+/**
+ * Enables move-assignment of @ref any types.
+ *
+ * \note Template parameter U must be an unqualified
+ * type, neither a reference nor a const type.
+ */
+template<class T = _self, class U = T>
+struct move_assignable
+{
+    BOOST_STATIC_ASSERT_MSG(
+            !::boost::is_reference<U>::value && !::boost::is_const<U>::value,
+            "Template parameter U must be unqualified. "
+            "(It may neither be a const nor a reference type.)");
+    static void apply(T& dst, U&& src) { dst = std::move(src); }
+};
+
+/** INTERNAL ONLY */
+template<class T, class U, class Base>
+struct concept_interface<move_assignable<T, U>, Base, T> : Base
+{
+    using Base::_boost_type_erasure_deduce_move_assign;
+    move_assignable<T, U>* _boost_type_erasure_deduce_move_assign(
+        typename ::boost::type_erasure::rebind_any<Base, U&&>::type)
+    {
+        return 0;
+    }
+};
+
+#endif
 
 /**
  * Enables runtime type information.  This is required

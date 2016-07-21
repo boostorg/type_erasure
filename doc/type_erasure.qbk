@@ -20,6 +20,7 @@
 [def __destructible [classref boost::type_erasure::destructible destructible]]
 [def __copy_constructible [classref boost::type_erasure::copy_constructible copy_constructible]]
 [def __assignable [classref boost::type_erasure::assignable assignable]]
+[def __move_assignable [classref boost::type_erasure::move_assignable move_assignable]]
 [def __typeid_ [classref boost::type_erasure::typeid_ typeid_]]
 [def __relaxed [classref boost::type_erasure::relaxed relaxed]]
 [def __binding [classref boost::type_erasure::binding binding]]
@@ -371,6 +372,7 @@ the library.
     [[__copy_constructible`<T>`][-]]
     [[__destructible`<T>`][-]]
     [[__assignable`<T, U = T>`][-]]
+    [[__move_assignable`<T, U = T>`][`U` should be an unqualified type]]
     [[__typeid_`<T>`][-]]
 ]
 [table:unary Unary Operators

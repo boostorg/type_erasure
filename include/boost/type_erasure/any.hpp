@@ -12,6 +12,9 @@
 #define BOOST_TYPE_ERASURE_ANY_HPP_INCLUDED
 
 #include <algorithm>
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+#   include <utility>  // std::forward, std::move
+#endif
 #include <boost/config.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/utility/addressof.hpp>
@@ -56,6 +59,11 @@ struct destructible;
 template<class T, class U>
 struct assignable;
 
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+template<class T, class U>
+struct move_assignable;
+#endif
+
 namespace detail {
 
 template<class Derived, class Concept, class T>
@@ -90,6 +98,22 @@ no check_overload(const void*);
 
 struct fallback {};
 
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+
+template<class T>
+fallback make_fallback(T&&, boost::mpl::false_)
+{
+    return fallback();
+}
+
+template<class T>
+T&& make_fallback(T&& arg, boost::mpl::true_)
+{
+    return std::forward<T>(arg);
+}
+
+#else
+
 template<class T>
 fallback make_fallback(const T&, boost::mpl::false_)
 {
@@ -101,6 +125,8 @@ const T& make_fallback(const T& arg, boost::mpl::true_)
 {
     return arg;
 }
+
+#endif
 
 template<class T>
 struct is_any : ::boost::mpl::false_ {};
@@ -958,7 +984,7 @@ public:
         )
     {}
     
-    // disambiguate
+    // disambiguating overloads
     template<class U0, class... U>
     any(binding<Concept>& binding_arg, U0&& u0, U&&... u)
       : table(binding_arg),
@@ -1000,7 +1026,7 @@ public:
         )
     {}
 
-    // disambiguate
+    // disambiguating overloads
     template<class Map, class U0, class... U>
     any(static_binding<Map>& binding_arg, U0&& u0, U&&... u)
       : table(binding_arg),
@@ -1079,6 +1105,69 @@ public:
         _boost_type_erasure_resolve_assign(other);
         return *this;
     }
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+    /**
+     * Assigns to an @ref any.
+     *
+     * If an appropriate overload of @ref move_assignable is not available
+     * tries @ref assignable. If also no appropriate overload of
+     * @ref assignable is available
+     * and @ref relaxed is in @c Concept, falls back on
+     * constructing from @c other.
+     *
+     * \throws Whatever the assignment operator of the contained
+     *         type throws.  When falling back on construction,
+     *         throws @c std::bad_alloc or whatever the move (or copy)
+     *         constructor of the contained type throws.  In
+     *         this case move assignment provides the strong exception
+     *         guarantee.  When calling the (move) assignment operator
+     *         of the contained type, the exception guarantee is
+     *         whatever the contained type provides.
+     */
+    any& operator=(any&& other)
+    {
+        _boost_type_erasure_resolve_assign(std::move(other));
+        return *this;
+    }
+    /**
+     * Assigns to an @ref any.
+     *
+     * If an appropriate overload of @ref move_assignable is not available
+     * tries @ref assignable. If also no appropriate overload of
+     * @ref assignable is available
+     * and @ref relaxed is in @c Concept, falls back on
+     * constructing from @c other.
+     *
+     * \throws Whatever the assignment operator of the contained
+     *         type throws.  When falling back on construction,
+     *         throws @c std::bad_alloc or whatever the move (or copy)
+     *         constructor of the contained type throws.  In
+     *         this case move assignment provides the strong exception
+     *         guarantee.  When calling a (move) assignment operator
+     *         of the contained type, the exception guarantee is
+     *         whatever the contained type provides.
+     */
+    template<class U>
+    any& operator=(U&& other)
+    {
+        _boost_type_erasure_resolve_assign(std::move(other));
+        return *this;
+    }
+#ifndef BOOST_TYPE_ERASURE_DOXYGEN
+    // disambiguating overloads
+    any& operator=(any& other)
+    {
+        _boost_type_erasure_resolve_assign(const_cast<const any&>(other));
+        return *this;
+    }
+    template<class U>
+    any& operator=(U& other)
+    {
+        _boost_type_erasure_resolve_assign(const_cast<const U&>(other));
+        return *this;
+    }
+#endif
+#endif
     /**
      * \pre @c Concept includes @ref destructible "destructible<T>".
      */
@@ -1100,6 +1189,114 @@ private:
         ::std::swap(data, other.data);
         ::std::swap(table, other.table);
     }
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+    /** INTERNAL ONLY */
+    template<class Other>
+    void _boost_type_erasure_resolve_assign(Other&& other)
+    {
+        _boost_type_erasure_assign_impl(
+            std::move(other),
+            false? this->_boost_type_erasure_deduce_move_assign(
+                ::boost::type_erasure::detail::make_fallback(
+                    std::move(other),
+                    ::boost::mpl::bool_<
+                        sizeof(
+                            ::boost::type_erasure::detail::check_overload(
+                                ::boost::declval<any&>().
+                                    _boost_type_erasure_deduce_move_assign(std::move(other))
+                            )
+                        ) == sizeof(::boost::type_erasure::detail::yes)
+                    >()
+                )
+            ) : 0,
+            false? this->_boost_type_erasure_deduce_assign(
+                ::boost::type_erasure::detail::make_fallback(
+                    std::move(other),
+                    ::boost::mpl::bool_<
+                        sizeof(
+                            ::boost::type_erasure::detail::check_overload(
+                                ::boost::declval<any&>().
+                                    _boost_type_erasure_deduce_assign(std::move(other))
+                            )
+                        ) == sizeof(::boost::type_erasure::detail::yes)
+                    >()
+                )
+            ) : 0,
+            ::boost::type_erasure::is_relaxed<Concept>()
+        );
+    }
+    /** INTERNAL ONLY */
+    template<class Other, class U>
+    void _boost_type_erasure_assign_impl(
+        Other&& other,
+        const move_assignable<T, U>*,
+        void*,
+        ::boost::mpl::false_)
+    {
+        ::boost::type_erasure::call(move_assignable<T, U>(), *this, std::move(other));
+    }
+    /** INTERNAL ONLY */
+    template<class Other, class U>
+    void _boost_type_erasure_assign_impl(
+        Other&& other,
+        void*,
+        const assignable<T, U>*,
+        ::boost::mpl::false_)
+    {
+        ::boost::type_erasure::call(assignable<T, U>(), *this, std::move(other));
+    }
+    /** INTERNAL ONLY */
+    template<class Other, class U, class V>
+    void _boost_type_erasure_assign_impl(
+        Other&& other,
+        const move_assignable<T, U>*,
+        const assignable<T, V>*,
+        ::boost::mpl::false_)
+    {
+        ::boost::type_erasure::call(move_assignable<T, U>(), *this, std::move(other));
+    }
+    /** INTERNAL ONLY */
+    template<class Other, class U>
+    void _boost_type_erasure_assign_impl(
+        Other&& other,
+        const move_assignable<T, U>*,
+        void*,
+        ::boost::mpl::true_)
+    {
+        ::boost::type_erasure::call(move_assignable<T, U>(), *this, std::move(other));
+    }
+    /** INTERNAL ONLY */
+    template<class Other, class U>
+    void _boost_type_erasure_assign_impl(
+        Other&& other,
+        void*,
+        const assignable<T, U>*,
+        ::boost::mpl::true_)
+    {
+        ::boost::type_erasure::call(assignable<T, U>(), *this, std::move(other));
+    }
+    /** INTERNAL ONLY */
+    template<class Other, class U, class V>
+    void _boost_type_erasure_assign_impl(
+        Other&& other,
+        const move_assignable<T, U>*,
+        const assignable<T, V>*,
+        ::boost::mpl::true_)
+    {
+        ::boost::type_erasure::call(move_assignable<T, U>(), *this, std::move(other));
+    }
+    /** INTERNAL ONLY */
+    template<class Other>
+    void _boost_type_erasure_assign_impl(
+        Other&& other,
+        const void*,
+        const void*,
+        ::boost::mpl::true_)
+    {
+        any temp(std::move(other));
+        _boost_type_erasure_swap(temp);
+    }
+#endif
     /** INTERNAL ONLY */
     template<class Other>
     void _boost_type_erasure_resolve_assign(const Other& other)
@@ -1150,6 +1347,207 @@ private:
         any temp(other);
         _boost_type_erasure_swap(temp);
     }
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+    /** INTERNAL ONLY */
+    template<class Concept2, class Tag2>
+    void _boost_type_erasure_resolve_assign(any<Concept2, Tag2>&& other)
+    {
+        _boost_type_erasure_assign_impl(
+            std::move(other),
+            false? this->_boost_type_erasure_deduce_move_assign(
+                ::boost::type_erasure::detail::make_fallback(
+                    std::move(other),
+                    ::boost::mpl::bool_<
+                        sizeof(
+                            ::boost::type_erasure::detail::check_overload(
+                                ::boost::declval<any&>().
+                                    _boost_type_erasure_deduce_move_assign(std::move(other))
+                            )
+                        ) == sizeof(::boost::type_erasure::detail::yes)
+                    >()
+                )
+            ) : 0,
+            false? this->_boost_type_erasure_deduce_assign(
+                ::boost::type_erasure::detail::make_fallback(
+                    std::move(other),
+                    ::boost::mpl::bool_<
+                        sizeof(
+                            ::boost::type_erasure::detail::check_overload(
+                                ::boost::declval<any&>().
+                                    _boost_type_erasure_deduce_assign(std::move(other))
+                            )
+                        ) == sizeof(::boost::type_erasure::detail::yes)
+                    >()
+                )
+            ) : 0,
+            false? this->_boost_type_erasure_deduce_constructor(
+                ::boost::type_erasure::detail::make_fallback(
+                    std::move(other),
+                    ::boost::mpl::bool_<
+                        sizeof(
+                            ::boost::type_erasure::detail::check_overload(
+                                ::boost::declval<any&>().
+                                    _boost_type_erasure_deduce_constructor(std::move(other))
+                            )
+                        ) == sizeof(::boost::type_erasure::detail::yes)
+                    >()
+                )
+            ) : 0,
+            ::boost::type_erasure::is_relaxed<Concept>()
+        );
+    }
+    /** INTERNAL ONLY */
+    template<class Other, class U>
+    void _boost_type_erasure_assign_impl(
+        Other&& other,
+        const move_assignable<T, U>*,
+        const void*,
+        const void*,
+        ::boost::mpl::false_)
+    {
+        ::boost::type_erasure::call(move_assignable<T, U>(), *this, std::move(other));
+    }
+    /** INTERNAL ONLY */
+    template<class Other, class U>
+    void _boost_type_erasure_assign_impl(
+        Other&& other,
+        const void*,
+        const assignable<T, U>*,
+        const void*,
+        ::boost::mpl::false_)
+    {
+        ::boost::type_erasure::call(assignable<T, U>(), *this, std::move(other));
+    }
+    /** INTERNAL ONLY */
+    template<class Other, class U, class V>
+    void _boost_type_erasure_assign_impl(
+        Other&& other,
+        const move_assignable<T, U>*,
+        const assignable<T, V>*,
+        const void*,
+        ::boost::mpl::false_)
+    {
+        ::boost::type_erasure::call(move_assignable<T, U>(), *this, std::move(other));
+    }
+    /** INTERNAL ONLY */
+    template<class Other, class U>
+    void _boost_type_erasure_assign_impl(
+        Other&& other,
+        const move_assignable<T, U>*,
+        const void*,
+        const void*,
+        ::boost::mpl::true_)
+    {
+        ::boost::type_erasure::call(move_assignable<T, U>(), *this, std::move(other));
+    }
+    /** INTERNAL ONLY */
+    template<class Other, class U>
+    void _boost_type_erasure_assign_impl(
+        Other&& other,
+        const void*,
+        const assignable<T, U>*,
+        const void*,
+        ::boost::mpl::true_)
+    {
+        ::boost::type_erasure::call(assignable<T, U>(), *this, std::move(other));
+    }
+    /** INTERNAL ONLY */
+    template<class Other, class U, class V>
+    void _boost_type_erasure_assign_impl(
+        Other&& other,
+        const move_assignable<T, U>*,
+        const assignable<T, V>*,
+        const void*,
+        ::boost::mpl::true_)
+    {
+        if(::boost::type_erasure::check_match(move_assignable<T, U>(), *this, other))  // const reference to other is enough!
+        {
+            ::boost::type_erasure::unchecked_call(move_assignable<T, U>(), *this, std::move(other));
+        }
+        else if(::boost::type_erasure::check_match(assignable<T, V>(), *this, other))  // const reference to other is enough!
+        {
+            ::boost::type_erasure::unchecked_call(assignable<T, V>(), *this, std::move(other));
+        }
+        else
+        {
+            // No match. => 'call' will throw a 'bad_function_call'.
+            ::boost::type_erasure::call(move_assignable<T, U>(), *this, std::move(other));
+        }
+    }
+    /** INTERNAL ONLY */
+    template<class Other, class Sig>
+    void _boost_type_erasure_assign_impl(
+        Other&& other,
+        const void*,
+        const void*,
+        const constructible<Sig>*,
+        ::boost::mpl::true_)
+    {
+        any temp(std::move(other));
+        _boost_type_erasure_swap(temp);
+    }
+    /** INTERNAL ONLY */
+    template<class Other, class U, class Sig>
+    void _boost_type_erasure_assign_impl(
+        Other&& other,
+        const move_assignable<T, U>*,
+        const void*,
+        const constructible<Sig>*,
+        ::boost::mpl::true_)
+    {
+        if(::boost::type_erasure::check_match(move_assignable<T, U>(), *this, other))  // const reference to other is enough!
+        {
+            ::boost::type_erasure::unchecked_call(move_assignable<T, U>(), *this, std::move(other));
+        }
+        else
+        {
+            any temp(std::move(other));
+            _boost_type_erasure_swap(temp);
+        }
+    }
+    /** INTERNAL ONLY */
+    template<class Other, class U, class Sig>
+    void _boost_type_erasure_assign_impl(
+        Other&& other,
+        const void*,
+        const assignable<T, U>*,
+        const constructible<Sig>*,
+        ::boost::mpl::true_)
+    {
+        if(::boost::type_erasure::check_match(assignable<T, U>(), *this, other))  // const reference to other is enough!
+        {
+            ::boost::type_erasure::unchecked_call(assignable<T, U>(), *this, std::move(other));
+        }
+        else
+        {
+            any temp(std::move(other));
+            _boost_type_erasure_swap(temp);
+        }
+    }
+    /** INTERNAL ONLY */
+    template<class Other, class U, class V, class Sig>
+    void _boost_type_erasure_assign_impl(
+        Other&& other,
+        const move_assignable<T, U>*,
+        const assignable<T, V>*,
+        const constructible<Sig>*,
+        ::boost::mpl::true_)
+    {
+        if(::boost::type_erasure::check_match(move_assignable<T, U>(), *this, other))  // const reference to other is enough!
+        {
+            ::boost::type_erasure::unchecked_call(move_assignable<T, U>(), *this, std::move(other));
+        }
+        else if(::boost::type_erasure::check_match(assignable<T, V>(), *this, other))  // const reference to other is enough!
+        {
+            ::boost::type_erasure::unchecked_call(assignable<T, V>(), *this, std::move(other));
+        }
+        else
+        {
+            any temp(std::move(other));
+            _boost_type_erasure_swap(temp);
+        }
+    }
+#endif
     /** INTERNAL ONLY */
     template<class Concept2, class Tag2>
     void _boost_type_erasure_resolve_assign(const any<Concept2, Tag2>& other)
