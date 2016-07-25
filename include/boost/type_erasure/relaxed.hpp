@@ -51,13 +51,14 @@ struct is_relaxed_impl :
  * In detail, @ref relaxed enables the following:
  * - A raw value can be assigned to an @ref any.  This will replace
  *   the value stored by the @ref any.  (But note that if @ref assignable
- *   (or @ref move_assignable) is present, it takes priority.)
+ *   is present, it takes priority.)
  * - copy assignment of @ref any uses the copy constructor if it can't
  *   use @ref assignable (either because @ref assignable is missing,
  *   or because the stored types do not match).
- * - move assignment of @ref any tries to use @ref move_assignable and
- *   if it can't (either because @ref move_assignable is missing, or
- *   because the stored types do not match) tries @ref assignable instead.
+ * - move assignment of @ref any tries to use
+ *   @ref assignable "move-assignable" and if it can't (either because
+ *   @ref assignable "move-assignable" is missing, or because the stored
+ *   types do not match) tries @ref assignable "copy-assignable" instead.
  *   If this also fails (for same reasons) it uses the move constructor
  *   (or copy constructor, if no move constructor is available).
  * - default construction of @ref any is allowed and creates a null any.

@@ -28,12 +28,17 @@ struct common : ::boost::mpl::vector<
 > {};
 
 #ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+
 template<class T = _self>
 struct movable_common : ::boost::mpl::vector<
     destructible<T>,
     constructible<T(T&&)>,
     typeid_<T>
 > {};
+
+template<class T = _self, class U = T>
+using move_assignable = ::boost::type_erasure::assignable<T, U&&>;
+
 #endif
 
 BOOST_AUTO_TEST_CASE(test_basic)
@@ -298,8 +303,8 @@ BOOST_AUTO_TEST_CASE(test_copy_constructable_move_and_copy_assignable_basic)
 {
     typedef ::boost::mpl::vector<
         common<>,
-        assignable<_self, _self>,
-        move_assignable<_self, _self>
+        assignable<>,
+        move_assignable<>
     > test_concept;
     typedef copy_and_move<int> test_type;
     test_type source_x(1);
@@ -337,8 +342,8 @@ BOOST_AUTO_TEST_CASE(test_copy_constructable_move_and_copy_assignable_basic_rela
 {
     typedef ::boost::mpl::vector<
         common<>,
-        assignable<_self, _self>,
-        move_assignable<_self, _self>,
+        assignable<>,
+        move_assignable<>,
         relaxed
     > test_concept;
     typedef copy_and_move<int> test_type;

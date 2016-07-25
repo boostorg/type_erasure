@@ -59,11 +59,6 @@ struct destructible;
 template<class T, class U>
 struct assignable;
 
-#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
-template<class T, class U>
-struct move_assignable;
-#endif
-
 namespace detail {
 
 template<class Derived, class Concept, class T>
@@ -1229,11 +1224,11 @@ private:
     template<class Other, class U>
     void _boost_type_erasure_assign_impl(
         Other&& other,
-        const move_assignable<T, U>*,
+        const assignable<T, U>*,
         void*,
         ::boost::mpl::false_)
     {
-        ::boost::type_erasure::call(move_assignable<T, U>(), *this, std::move(other));
+        ::boost::type_erasure::call(assignable<T, U>(), *this, std::move(other));
     }
     /** INTERNAL ONLY */
     template<class Other, class U>
@@ -1249,21 +1244,21 @@ private:
     template<class Other, class U, class V>
     void _boost_type_erasure_assign_impl(
         Other&& other,
-        const move_assignable<T, U>*,
+        const assignable<T, U>*,
         const assignable<T, V>*,
         ::boost::mpl::false_)
     {
-        ::boost::type_erasure::call(move_assignable<T, U>(), *this, std::move(other));
+        ::boost::type_erasure::call(assignable<T, U>(), *this, std::move(other));
     }
     /** INTERNAL ONLY */
     template<class Other, class U>
     void _boost_type_erasure_assign_impl(
         Other&& other,
-        const move_assignable<T, U>*,
+        const assignable<T, U>*,
         void*,
         ::boost::mpl::true_)
     {
-        ::boost::type_erasure::call(move_assignable<T, U>(), *this, std::move(other));
+        ::boost::type_erasure::call(assignable<T, U>(), *this, std::move(other));
     }
     /** INTERNAL ONLY */
     template<class Other, class U>
@@ -1279,11 +1274,11 @@ private:
     template<class Other, class U, class V>
     void _boost_type_erasure_assign_impl(
         Other&& other,
-        const move_assignable<T, U>*,
+        const assignable<T, U>*,
         const assignable<T, V>*,
         ::boost::mpl::true_)
     {
-        ::boost::type_erasure::call(move_assignable<T, U>(), *this, std::move(other));
+        ::boost::type_erasure::call(assignable<T, U>(), *this, std::move(other));
     }
     /** INTERNAL ONLY */
     template<class Other>
@@ -1400,12 +1395,12 @@ private:
     template<class Other, class U>
     void _boost_type_erasure_assign_impl(
         Other&& other,
-        const move_assignable<T, U>*,
+        const assignable<T, U>*,
         const void*,
         const void*,
         ::boost::mpl::false_)
     {
-        ::boost::type_erasure::call(move_assignable<T, U>(), *this, std::move(other));
+        ::boost::type_erasure::call(assignable<T, U>(), *this, std::move(other));
     }
     /** INTERNAL ONLY */
     template<class Other, class U>
@@ -1422,23 +1417,23 @@ private:
     template<class Other, class U, class V>
     void _boost_type_erasure_assign_impl(
         Other&& other,
-        const move_assignable<T, U>*,
+        const assignable<T, U>*,
         const assignable<T, V>*,
         const void*,
         ::boost::mpl::false_)
     {
-        ::boost::type_erasure::call(move_assignable<T, U>(), *this, std::move(other));
+        ::boost::type_erasure::call(assignable<T, U>(), *this, std::move(other));
     }
     /** INTERNAL ONLY */
     template<class Other, class U>
     void _boost_type_erasure_assign_impl(
         Other&& other,
-        const move_assignable<T, U>*,
+        const assignable<T, U>*,
         const void*,
         const void*,
         ::boost::mpl::true_)
     {
-        ::boost::type_erasure::call(move_assignable<T, U>(), *this, std::move(other));
+        ::boost::type_erasure::call(assignable<T, U>(), *this, std::move(other));
     }
     /** INTERNAL ONLY */
     template<class Other, class U>
@@ -1455,14 +1450,14 @@ private:
     template<class Other, class U, class V>
     void _boost_type_erasure_assign_impl(
         Other&& other,
-        const move_assignable<T, U>*,
+        const assignable<T, U>*,
         const assignable<T, V>*,
         const void*,
         ::boost::mpl::true_)
     {
-        if(::boost::type_erasure::check_match(move_assignable<T, U>(), *this, other))  // const reference to other is enough!
+        if(::boost::type_erasure::check_match(assignable<T, U>(), *this, other))  // const reference to other is enough!
         {
-            ::boost::type_erasure::unchecked_call(move_assignable<T, U>(), *this, std::move(other));
+            ::boost::type_erasure::unchecked_call(assignable<T, U>(), *this, std::move(other));
         }
         else if(::boost::type_erasure::check_match(assignable<T, V>(), *this, other))  // const reference to other is enough!
         {
@@ -1471,7 +1466,7 @@ private:
         else
         {
             // No match. => 'call' will throw a 'bad_function_call'.
-            ::boost::type_erasure::call(move_assignable<T, U>(), *this, std::move(other));
+            ::boost::type_erasure::call(assignable<T, U>(), *this, std::move(other));
         }
     }
     /** INTERNAL ONLY */
@@ -1490,14 +1485,14 @@ private:
     template<class Other, class U, class Sig>
     void _boost_type_erasure_assign_impl(
         Other&& other,
-        const move_assignable<T, U>*,
+        const assignable<T, U>*,
         const void*,
         const constructible<Sig>*,
         ::boost::mpl::true_)
     {
-        if(::boost::type_erasure::check_match(move_assignable<T, U>(), *this, other))  // const reference to other is enough!
+        if(::boost::type_erasure::check_match(assignable<T, U>(), *this, other))  // const reference to other is enough!
         {
-            ::boost::type_erasure::unchecked_call(move_assignable<T, U>(), *this, std::move(other));
+            ::boost::type_erasure::unchecked_call(assignable<T, U>(), *this, std::move(other));
         }
         else
         {
@@ -1528,14 +1523,14 @@ private:
     template<class Other, class U, class V, class Sig>
     void _boost_type_erasure_assign_impl(
         Other&& other,
-        const move_assignable<T, U>*,
+        const assignable<T, U>*,
         const assignable<T, V>*,
         const constructible<Sig>*,
         ::boost::mpl::true_)
     {
-        if(::boost::type_erasure::check_match(move_assignable<T, U>(), *this, other))  // const reference to other is enough!
+        if(::boost::type_erasure::check_match(assignable<T, U>(), *this, other))  // const reference to other is enough!
         {
-            ::boost::type_erasure::unchecked_call(move_assignable<T, U>(), *this, std::move(other));
+            ::boost::type_erasure::unchecked_call(assignable<T, U>(), *this, std::move(other));
         }
         else if(::boost::type_erasure::check_match(assignable<T, V>(), *this, other))  // const reference to other is enough!
         {
