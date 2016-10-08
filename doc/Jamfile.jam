@@ -63,3 +63,13 @@ boostbook standalone
     <dependency>reference
     <xsl:param>boost.root=../../../..
 ;
+
+###############################################################################
+alias boostdoc
+    : type_erasure
+    :
+    : <dependency>reference
+    : ;
+explicit boostdoc ;
+alias boostrelease ;
+explicit boostrelease ;
