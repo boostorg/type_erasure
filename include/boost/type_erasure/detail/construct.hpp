@@ -37,7 +37,7 @@
     >
     const table_type& _boost_type_erasure_extract_table(
         ::boost::type_erasure::constructible<R(BOOST_PP_ENUM_PARAMS(N, A))>*
-        BOOST_PP_ENUM_TRAILING_BINARY_PARAMS(N, U, &u))
+        BOOST_PP_ENUM_TRAILING_BINARY_PARAMS(N, U, &&u))
     {
         return *::boost::type_erasure::detail::BOOST_PP_CAT(extract_table, N)(
             (R(*)(BOOST_PP_ENUM_PARAMS(N, A)))0,
@@ -99,6 +99,53 @@
         data(
             ::boost::type_erasure::call(
                 binding_arg,
+                ::boost::type_erasure::detail::make(
+                    false? this->_boost_type_erasure_deduce_constructor(BOOST_TYPE_ERASURE_FORWARD(N)) : 0
+                )
+                BOOST_PP_COMMA_IF(N)
+                BOOST_TYPE_ERASURE_FORWARD(N)
+            )
+        )
+    {}
+
+    template<class Map, BOOST_PP_ENUM_PARAMS(N, class U)>
+    any(const static_binding<Map>& binding_arg BOOST_PP_ENUM_TRAILING_BINARY_PARAMS(N, U, &&u))
+      : table(binding_arg),
+        data(
+            ::boost::type_erasure::call(
+                ::boost::type_erasure::binding<Concept>(binding_arg),
+                ::boost::type_erasure::detail::make(
+                    false? this->_boost_type_erasure_deduce_constructor(BOOST_TYPE_ERASURE_FORWARD(N)) : 0
+                )
+                BOOST_PP_COMMA_IF(N)
+                BOOST_TYPE_ERASURE_FORWARD(N)
+            )
+        )
+    {}
+
+    // disambiguate
+    template<class Map, BOOST_PP_ENUM_PARAMS(N, class U)>
+    any(static_binding<Map>& binding_arg BOOST_PP_ENUM_TRAILING_BINARY_PARAMS(N, U, &&u))
+      : table(binding_arg),
+        data(
+            ::boost::type_erasure::call(
+                ::boost::type_erasure::binding<Concept>(binding_arg),
+                ::boost::type_erasure::detail::make(
+                    false? this->_boost_type_erasure_deduce_constructor(BOOST_TYPE_ERASURE_FORWARD(N)) : 0
+                )
+                BOOST_PP_COMMA_IF(N)
+                BOOST_TYPE_ERASURE_FORWARD(N)
+            )
+        )
+    {}
+
+    // disambiguate
+    template<class Map, BOOST_PP_ENUM_PARAMS(N, class U)>
+    any(static_binding<Map>&& binding_arg BOOST_PP_ENUM_TRAILING_BINARY_PARAMS(N, U, &&u))
+      : table(binding_arg),
+        data(
+            ::boost::type_erasure::call(
+                ::boost::type_erasure::binding<Concept>(binding_arg),
                 ::boost::type_erasure::detail::make(
                     false? this->_boost_type_erasure_deduce_constructor(BOOST_TYPE_ERASURE_FORWARD(N)) : 0
                 )
@@ -196,6 +243,49 @@
         data(
             ::boost::type_erasure::call(
                 binding_arg,
+                ::boost::type_erasure::detail::make(
+                    false? this->_boost_type_erasure_deduce_constructor(BOOST_PP_ENUM_PARAMS(N, u)) : 0
+                )
+                BOOST_PP_ENUM_TRAILING_PARAMS(N, u)
+            )
+        )
+    {}
+
+    template<class Map, BOOST_PP_ENUM_PARAMS(N, class U)>
+    any(const static_binding<Map>& binding_arg BOOST_PP_ENUM_TRAILING_BINARY_PARAMS(N, const U, &u))
+      : table(binding_arg),
+        data(
+            ::boost::type_erasure::call(
+                ::boost::type_erasure::binding<Concept>(binding_arg),
+                ::boost::type_erasure::detail::make(
+                    false? this->_boost_type_erasure_deduce_constructor(BOOST_PP_ENUM_PARAMS(N, u)) : 0
+                )
+                BOOST_PP_ENUM_TRAILING_PARAMS(N, u)
+            )
+        )
+    {}
+
+    template<class Map, BOOST_PP_ENUM_PARAMS(N, class U)>
+    any(const static_binding<Map>& binding_arg BOOST_PP_ENUM_TRAILING_BINARY_PARAMS(N, U, &u))
+      : table(binding_arg),
+        data(
+            ::boost::type_erasure::call(
+                ::boost::type_erasure::binding<Concept>(binding_arg),
+                ::boost::type_erasure::detail::make(
+                    false? this->_boost_type_erasure_deduce_constructor(BOOST_PP_ENUM_PARAMS(N, u)) : 0
+                )
+                BOOST_PP_ENUM_TRAILING_PARAMS(N, u)
+            )
+        )
+    {}
+
+    // disambiguate
+    template<class Map, BOOST_PP_ENUM_PARAMS(N, class U)>
+    any(static_binding<Map>& binding_arg BOOST_PP_ENUM_TRAILING_BINARY_PARAMS(N, U, &u))
+      : table(binding_arg),
+        data(
+            ::boost::type_erasure::call(
+                ::boost::type_erasure::binding<Concept>(binding_arg),
                 ::boost::type_erasure::detail::make(
                     false? this->_boost_type_erasure_deduce_constructor(BOOST_PP_ENUM_PARAMS(N, u)) : 0
                 )

@@ -36,6 +36,7 @@ class any;
  * \code
  * rebind_any<any<Concept>, _a>::type -> any<Concept, _a>
  * rebind_any<any<Concept>, _b&>::type -> any<Concept, _b&>
+ * rebind_any<any<Concept>, _c&&>::type -> any<Concept, _c&&>
  * rebind_any<any<Concept>, int>::type -> int
  * \endcode
  *

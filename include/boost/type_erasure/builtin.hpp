@@ -16,6 +16,11 @@
 #include <boost/type_erasure/placeholder.hpp>
 #include <boost/type_erasure/constructible.hpp>
 #include <boost/type_erasure/rebind_any.hpp>
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+#   include <boost/utility/enable_if.hpp>
+#   include <boost/type_traits/is_rvalue_reference.hpp>
+#   include <utility>  // std::move
+#endif
 #include <typeinfo>
 
 namespace boost {
@@ -65,13 +70,66 @@ struct copy_constructible :
 {};
 
 /**
- * Enables assignment of @ref any types.
+ * Enables (copy-)assignment of @ref any types.
  */
 template<class T = _self, class U = T>
 struct assignable
 {
     static void apply(T& dst, const U& src) { dst = src; }
 };
+
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+
+/**
+ * Enables (move-)assignment of @ref any types.
+ */
+template<class T, class U>
+struct assignable<T, U&&>
+{
+    static void apply(T& dst, U&& src) { dst = std::move(src); }
+};
+
+/** INTERNAL ONLY */
+template<class T, class U>
+struct assignable<T, const U&>
+{
+    static void apply(T& dst, const U& src) { dst = src; }
+};
+
+/** INTERNAL ONLY */
+template<class T, class U>
+struct assignable<T, U&>
+{
+    static void apply(T& dst, const U& src) { dst = src; }
+};
+
+/** INTERNAL ONLY */
+template<class T, class U, class Base>
+struct concept_interface<assignable<T, U>, Base, T,
+        typename ::boost::enable_if_c< ::boost::is_rvalue_reference<U>::value>::type> : Base
+{
+    using Base::_boost_type_erasure_deduce_move_assign;
+    assignable<T, U>* _boost_type_erasure_deduce_move_assign(
+        typename ::boost::type_erasure::rebind_any<Base, U>::type)
+    {
+        return 0;
+    }
+};
+
+/** INTERNAL ONLY */
+template<class T, class U, class Base>
+struct concept_interface<assignable<T, U>, Base, T,
+        typename ::boost::disable_if_c< ::boost::is_rvalue_reference<U>::value>::type> : Base
+{
+    using Base::_boost_type_erasure_deduce_assign;
+    assignable<T, U>* _boost_type_erasure_deduce_assign(
+        typename ::boost::type_erasure::rebind_any<Base, const U&>::type)
+    {
+        return 0;
+    }
+};
+
+#else
 
 /** INTERNAL ONLY */
 template<class T, class U, class Base>
@@ -84,6 +142,8 @@ struct concept_interface<assignable<T, U>, Base, T> : Base
         return 0;
     }
 };
+
+#endif
 
 /**
  * Enables runtime type information.  This is required

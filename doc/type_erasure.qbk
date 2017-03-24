@@ -371,6 +371,7 @@ the library.
     [[__copy_constructible`<T>`][-]]
     [[__destructible`<T>`][-]]
     [[__assignable`<T, U = T>`][-]]
+    [[__move_assignable`<T, U = T>`][`U` should be an unqualified type]]
     [[__typeid_`<T>`][-]]
 ]
 [table:unary Unary Operators
