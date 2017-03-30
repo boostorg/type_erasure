@@ -390,7 +390,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_construct1, extra, maybe_relaxed)
 
     // Test same any type
 
-#ifndef BOOST_NO_FUNCTION_REFERENCE_QUALIFIERS
+#ifndef BOOST_NO_CXX11_REF_QUALIFIERS
     // ambiguous with the copy constructor in C++03
     TEST_CONSTRUCT(_a(_a&), (any<C, _a>&), (lvalue | id_copy));
     TEST_CONSTRUCT(_a(_a&), (binding<C>, any<C, _a>&), (lvalue | id_copy));
@@ -411,7 +411,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_construct1, extra, maybe_relaxed)
     TEST_CONSTRUCT(_a(const _a&), (const binding<C>&, any<C, _a>&), (const_lvalue | id_copy));
     TEST_CONSTRUCT(_a(const _a&), (const binding<C>&, const any<C, _a>&), (const_lvalue | id_copy));
     
-#ifndef BOOST_NO_FUNCTION_REFERENCE_QUALIFIERS
+#ifndef BOOST_NO_CXX11_REF_QUALIFIERS
 
 #ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
     TEST_CONSTRUCT(_a(_a&&), (any<C, _a>), (rvalue | id_copy));
@@ -454,7 +454,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_construct1, extra, maybe_relaxed)
     TEST_CONSTRUCT(_a(_b), (const binding<C>&, any<C, _b>&), (rvalue | id_int));
     TEST_CONSTRUCT(_a(_b), (const binding<C>&, const any<C, _b>&), (rvalue | id_int));
     
-#ifndef BOOST_NO_FUNCTION_REFERENCE_QUALIFIERS
+#ifndef BOOST_NO_CXX11_REF_QUALIFIERS
 
 #ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
     TEST_CONSTRUCT(_a(_b&&), (any<C, _b>), (rvalue | id_int));

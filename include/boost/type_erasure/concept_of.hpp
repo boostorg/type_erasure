@@ -14,11 +14,15 @@
 namespace boost {
 namespace type_erasure {
 
+#ifndef BOOST_TYPE_ERASURE_DOXYGEN
+
 template<class Concept, class T>
 class any;
 
 template<class Concept, class T>
 class param;
+
+#endif
 
 /**
  * A metafunction returning the concept corresponding
