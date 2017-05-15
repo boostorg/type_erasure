@@ -29,7 +29,7 @@ namespace boost {
 namespace type_erasure {
 namespace detail {
 
-#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES) && !defined(BOOST_NO_CXX11_CONSTEXPR) && !defined(BOOST_NO_CXX11_DEFAULTED_FUNCTIONS)
+#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES) && !defined(BOOST_NO_CXX11_CONSTEXPR) && !defined(BOOST_NO_CXX11_DEFAULTED_FUNCTIONS)  && !BOOST_WORKAROUND(BOOST_MSVC, <= 1900)
 
 template<class P>
 struct dynamic_binding_impl {
