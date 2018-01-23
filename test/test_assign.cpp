@@ -2365,12 +2365,6 @@ BOOST_AUTO_TEST_CASE(test_move_assignable_with_conversion)
     double double6 = 6.5;
     x = std::move(double6);  // truncates value
     BOOST_CHECK_EQUAL(any_cast<const test_type1&>(x).value, 6);
-    // copy-assigning double is assigning a raw_value.
-    double double7 = 7.5;
-    x = double7;
-#if !BOOST_WORKAROUND(BOOST_GCC, < 40900)
-    BOOST_CHECK_EQUAL(any_cast<const double&>(x), 7.5);
-#endif
 
     // assigning raw values is supported because "relaxed" is in concept.
     test_type3 source_z(8.5);
@@ -2382,12 +2376,6 @@ BOOST_AUTO_TEST_CASE(test_move_assignable_with_conversion)
     double double9 = 9.5;
     x = std::move(double9);  // truncates value
     BOOST_CHECK_EQUAL(any_cast<const test_type3&>(x).value, 9.0);
-    // copy-assigning double is assigning a raw_value.
-    double double10 = 10.5;
-    x = double10;
-#if !BOOST_WORKAROUND(BOOST_GCC, < 40900)
-    BOOST_CHECK_EQUAL(any_cast<const double&>(x), 10.5);
-#endif
 }
 
 #endif
