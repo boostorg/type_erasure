@@ -75,16 +75,6 @@ struct placeholder_conversion<T&&, T&&> : boost::mpl::true_ {};
 
 }
 
-#ifdef __clang__
-#if !__has_feature(cxx_reference_qualified_functions)
-/** INTERNAL ONLY */
-#define BOOST_NO_FUNCTION_REFERENCE_QUALIFIERS
-#endif
-#else
-/** INTERNAL ONLY */
-#define BOOST_NO_FUNCTION_REFERENCE_QUALIFIERS
-#endif
-
 /**
  * \brief A wrapper to help with overload resolution for functions
  * operating on an @ref any.
@@ -172,13 +162,19 @@ public:
     {}
 #endif
 
+    /** INTERNAL ONLY */
+    param(const ::boost::type_erasure::detail::storage& data,
+          const ::boost::type_erasure::binding<Concept>& table)
+      : _impl(data, table)
+    {}
+
     /** Returns the stored @ref any. */
     any<Concept, T> get() const { return _impl; }
 private:
     any<Concept, T> _impl;
 };
 
-#ifndef BOOST_NO_FUNCTION_REFERENCE_QUALIFIERS
+#if !defined(BOOST_NO_CXX11_REF_QUALIFIERS) && !defined(BOOST_TYPE_ERASURE_DOXYGEN)
 
 template<class Concept, class T>
 class param<Concept, const T&> {
@@ -257,7 +253,7 @@ public:
 /**
  * \brief Metafunction that creates a @ref param.
  *
- * If @c T is a (cv/reference qualifed) placeholder,
+ * If @c T is a (cv/reference qualified) placeholder,
  * returns @ref param<@ref concept_of "concept_of<Any>::type", T>,
  * otherwise, returns T.  This metafunction is intended
  * to be used for function arguments in specializations of

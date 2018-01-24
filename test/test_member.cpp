@@ -18,7 +18,7 @@
 
 using namespace boost::type_erasure;
 
-BOOST_TYPE_ERASURE_MEMBER((ns)(ns2)(has_fun), fun, 0);
+BOOST_TYPE_ERASURE_MEMBER((ns)(ns2)(has_fun), fun, 0)
 
 struct model {
     explicit model(int v) : val(v) {}
@@ -27,7 +27,7 @@ struct model {
     int val;
 };
 
-BOOST_TYPE_ERASURE_MEMBER((global_has_f1_0), f1, 0);
+BOOST_TYPE_ERASURE_MEMBER((global_has_f1_0), f1, 0)
 
 BOOST_AUTO_TEST_CASE(test_global_has_f1_0) {
     typedef ::boost::mpl::vector<
@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE(test_global_has_f1_0) {
     BOOST_CHECK_EQUAL(x.f1(), 10);
 }
 
-BOOST_TYPE_ERASURE_MEMBER((ns1)(ns2)(ns_has_f1_0), f1, 0);
+BOOST_TYPE_ERASURE_MEMBER((ns1)(ns2)(ns_has_f1_0), f1, 0)
 
 BOOST_AUTO_TEST_CASE(test_ns_has_f1_0) {
     typedef ::boost::mpl::vector<
@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE(test_global_has_f1_0_void) {
     x.f1();
 }
 
-BOOST_TYPE_ERASURE_MEMBER((global_has_f1_1), f1, 1);
+BOOST_TYPE_ERASURE_MEMBER((global_has_f1_1), f1, 1)
 
 BOOST_AUTO_TEST_CASE(test_global_has_f1_overload) {
     typedef ::boost::mpl::vector<

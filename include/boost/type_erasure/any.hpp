@@ -12,6 +12,9 @@
 #define BOOST_TYPE_ERASURE_ANY_HPP_INCLUDED
 
 #include <algorithm>
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+#   include <utility>  // std::forward, std::move
+#endif
 #include <boost/config.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/utility/addressof.hpp>
@@ -47,6 +50,8 @@
 namespace boost {
 namespace type_erasure {
 
+#ifndef BOOST_TYPE_ERASURE_DOXYGEN
+
 template<class Sig>
 struct constructible;
 
@@ -55,6 +60,8 @@ struct destructible;
 
 template<class T, class U>
 struct assignable;
+
+#endif
 
 namespace detail {
 
@@ -90,6 +97,22 @@ no check_overload(const void*);
 
 struct fallback {};
 
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+
+template<class T>
+fallback make_fallback(T&&, boost::mpl::false_)
+{
+    return fallback();
+}
+
+template<class T>
+T&& make_fallback(T&& arg, boost::mpl::true_)
+{
+    return std::forward<T>(arg);
+}
+
+#else
+
 template<class T>
 fallback make_fallback(const T&, boost::mpl::false_)
 {
@@ -102,11 +125,27 @@ const T& make_fallback(const T& arg, boost::mpl::true_)
     return arg;
 }
 
+#endif
+
 template<class T>
 struct is_any : ::boost::mpl::false_ {};
 
 template<class Concept, class T>
 struct is_any<any<Concept, T> > : ::boost::mpl::true_ {};
+
+template<class T>
+struct is_rvalue_for_any : 
+    ::boost::mpl::not_<
+        ::boost::is_lvalue_reference<T>
+    >
+{};
+
+template<class C, class P>
+struct is_rvalue_for_any<any<C, P> > :
+    ::boost::mpl::not_<
+        ::boost::is_lvalue_reference<P>
+    >
+{};
 
 }
 
@@ -114,6 +153,7 @@ struct is_any<any<Concept, T> > : ::boost::mpl::true_ {};
 #pragma warning(push)
 #pragma warning(disable:4355)
 #pragma warning(disable:4521)
+#pragma warning(disable:4522) // multiple assignment operators specified
 #endif
 
 /**
@@ -884,7 +924,7 @@ public:
 
 #endif
 
-#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
+#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES) && !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
 
     template<class R, class... A, class... U>
     const table_type& _boost_type_erasure_extract_table(
@@ -926,7 +966,7 @@ public:
         )
     {}
     
-    // disambiguate
+    // disambiguating overloads
     template<class U0, class... U>
     any(binding<Concept>& binding_arg, U0&& u0, U&&... u)
       : table(binding_arg),
@@ -961,50 +1001,65 @@ public:
 #endif
 
 #endif
-
-    /**
-     * Assigns to an @ref any.
-     *
-     * If an appropriate overload of @ref assignable is not available
-     * and @ref relaxed is in @c Concept, falls back on
-     * constructing from @c other.
-     *
-     * \throws Whatever the assignment operator of the contained
-     *         type throws.  When falling back on construction,
-     *         throws @c std::bad_alloc or whatever the copy
-     *         constructor of the contained type throws.  In
-     *         this case assignment provides the strong exception
-     *         guarantee.  When calling the assignment operator
-     *         of the contained type, the exception guarantee is
-     *         whatever the contained type provides.
-     */
+    
+    /** INTERNAL ONLY */
     any& operator=(const any& other)
     {
         _boost_type_erasure_resolve_assign(other);
         return *this;
     }
-    /**
-     * Assigns to an @ref any.
-     *
-     * If an appropriate overload of @ref assignable is not available
-     * and @ref relaxed is in @c Concept, falls back on
-     * constructing from @c other.
-     *
-     * \throws Whatever the assignment operator of the contained
-     *         type throws.  When falling back on construction,
-     *         throws @c std::bad_alloc or whatever the copy
-     *         constructor of the contained type throws.  In
-     *         this case assignment provides the strong exception
-     *         guarantee.  When calling an assignment operator
-     *         of the contained type, the exception guarantee is
-     *         whatever the contained type provides.
-     */
+    /** INTERNAL ONLY */
+    any& operator=(any& other)
+    {
+        _boost_type_erasure_resolve_assign(other);
+        return *this;
+    }
+#ifdef BOOST_NO_CXX11_RVALUE_REFERENCES
+    template<class U>
+    any& operator=(U& other)
+    {
+        _boost_type_erasure_resolve_assign(other);
+        return *this;
+    }
     template<class U>
     any& operator=(const U& other)
     {
         _boost_type_erasure_resolve_assign(other);
         return *this;
     }
+#else
+    /** INTERNAL ONLY */
+    any& operator=(any&& other)
+    {
+        _boost_type_erasure_resolve_assign(std::move(other));
+        return *this;
+    }
+    /**
+     * Assigns to an @ref any.
+     *
+     * If an appropriate overload of @ref assignable is not available
+     * and @ref relaxed is in @c Concept, falls back on
+     * constructing from @c other.
+     *
+     * \note If @c U is an @ref any, then this can decide dynamically
+     *       whether to use construction based on the type stored in other.
+     *
+     * \throws Whatever the assignment operator of the contained
+     *         type throws.  When falling back on construction,
+     *         throws @c std::bad_alloc or whatever the move (or copy)
+     *         constructor of the contained type throws.  In
+     *         this case move assignment provides the strong exception
+     *         guarantee.  When calling a (move) assignment operator
+     *         of the contained type, the exception guarantee is
+     *         whatever the contained type provides.
+     */
+    template<class U>
+    any& operator=(U&& other)
+    {
+        _boost_type_erasure_resolve_assign(std::forward<U>(other));
+        return *this;
+    }
+#endif
     /**
      * \pre @c Concept includes @ref destructible "destructible<T>".
      */
@@ -1013,7 +1068,7 @@ public:
         table.template find<destructible<T> >()(data);
     }
 
-#ifndef BOOST_NO_FUNCTION_REFERENCE_QUALIFIERS
+#ifndef BOOST_NO_CXX11_REF_QUALIFIERS
     /** INTERNAL ONLY */
     operator param<Concept, T&>() & { return param<Concept, T&>(data, table); }
     /** INTERNAL ONLY */
@@ -1026,9 +1081,61 @@ private:
         ::std::swap(data, other.data);
         ::std::swap(table, other.table);
     }
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
     /** INTERNAL ONLY */
     template<class Other>
-    void _boost_type_erasure_resolve_assign(const Other& other)
+    void _boost_type_erasure_resolve_assign(Other&& other)
+    {
+        _boost_type_erasure_assign_impl(
+            std::forward<Other>(other),
+            false? this->_boost_type_erasure_deduce_assign(
+                ::boost::type_erasure::detail::make_fallback(
+                    std::forward<Other>(other),
+                    ::boost::mpl::bool_<
+                        sizeof(
+                            ::boost::type_erasure::detail::check_overload(
+                                ::boost::declval<any&>().
+                                    _boost_type_erasure_deduce_assign(std::forward<Other>(other))
+                            )
+                        ) == sizeof(::boost::type_erasure::detail::yes)
+                    >()
+                )
+            ) : 0,
+            ::boost::type_erasure::is_relaxed<Concept>()
+        );
+    }
+    /** INTERNAL ONLY */
+    template<class Other, class U>
+    void _boost_type_erasure_assign_impl(
+        Other&& other,
+        const assignable<T, U>*,
+        ::boost::mpl::false_)
+    {
+        ::boost::type_erasure::call(assignable<T, U>(), *this, std::forward<Other>(other));
+    }
+    /** INTERNAL ONLY */
+    template<class Other, class U>
+    void _boost_type_erasure_assign_impl(
+        Other&& other,
+        const assignable<T, U>*,
+        ::boost::mpl::true_)
+    {
+        ::boost::type_erasure::call(assignable<T, U>(), *this, std::forward<Other>(other));
+    }
+    /** INTERNAL ONLY */
+    template<class Other>
+    void _boost_type_erasure_assign_impl(
+        Other&& other,
+        const void*,
+        ::boost::mpl::true_)
+    {
+        any temp(std::forward<Other>(other));
+        _boost_type_erasure_swap(temp);
+    }
+#else
+    /** INTERNAL ONLY */
+    template<class Other>
+    void _boost_type_erasure_resolve_assign(Other& other)
     {
         _boost_type_erasure_assign_impl(
             other,
@@ -1051,7 +1158,7 @@ private:
     /** INTERNAL ONLY */
     template<class Other, class U>
     void _boost_type_erasure_assign_impl(
-        const Other& other,
+        Other& other,
         const assignable<T, U>*,
         ::boost::mpl::false_)
     {
@@ -1060,7 +1167,7 @@ private:
     /** INTERNAL ONLY */
     template<class Other, class U>
     void _boost_type_erasure_assign_impl(
-        const Other& other,
+        Other& other,
         const assignable<T, U>*,
         ::boost::mpl::true_)
     {
@@ -1069,16 +1176,121 @@ private:
     /** INTERNAL ONLY */
     template<class Other>
     void _boost_type_erasure_assign_impl(
-        const Other& other,
+        Other& other,
         const void*,
         ::boost::mpl::true_)
     {
         any temp(other);
         _boost_type_erasure_swap(temp);
     }
+#endif
     /** INTERNAL ONLY */
     template<class Concept2, class Tag2>
     void _boost_type_erasure_resolve_assign(const any<Concept2, Tag2>& other)
+    {
+        _boost_type_erasure_resolve_assign_any(other);
+    }
+    /** INTERNAL ONLY */
+    template<class Concept2, class Tag2>
+    void _boost_type_erasure_resolve_assign(any<Concept2, Tag2>& other)
+    {
+        _boost_type_erasure_resolve_assign_any(other);
+    }
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+    /** INTERNAL ONLY */
+    template<class Concept2, class Tag2>
+    void _boost_type_erasure_resolve_assign(any<Concept2, Tag2>&& other)
+    {
+        _boost_type_erasure_resolve_assign_any(std::move(other));
+    }
+    /** INTERNAL ONLY */
+    template<class Other>
+    void _boost_type_erasure_resolve_assign_any(Other&& other)
+    {
+        _boost_type_erasure_assign_impl(
+            std::forward<Other>(other),
+            false? this->_boost_type_erasure_deduce_assign(
+                ::boost::type_erasure::detail::make_fallback(
+                    std::forward<Other>(other),
+                    ::boost::mpl::bool_<
+                        sizeof(
+                            ::boost::type_erasure::detail::check_overload(
+                                ::boost::declval<any&>().
+                                    _boost_type_erasure_deduce_assign(std::forward<Other>(other))
+                            )
+                        ) == sizeof(::boost::type_erasure::detail::yes)
+                    >()
+                )
+            ) : 0,
+            false? this->_boost_type_erasure_deduce_constructor(
+                ::boost::type_erasure::detail::make_fallback(
+                    std::forward<Other>(other),
+                    ::boost::mpl::bool_<
+                        sizeof(
+                            ::boost::type_erasure::detail::check_overload(
+                                ::boost::declval<any&>().
+                                    _boost_type_erasure_deduce_constructor(std::forward<Other>(other))
+                            )
+                        ) == sizeof(::boost::type_erasure::detail::yes)
+                    >()
+                )
+            ) : 0,
+            ::boost::type_erasure::is_relaxed<Concept>()
+        );
+    }
+    /** INTERNAL ONLY */
+    template<class Other, class U>
+    void _boost_type_erasure_assign_impl(
+        Other&& other,
+        const assignable<T, U>*,
+        const void*,
+        ::boost::mpl::false_)
+    {
+        ::boost::type_erasure::call(assignable<T, U>(), *this, std::forward<Other>(other));
+    }
+    /** INTERNAL ONLY */
+    template<class Other, class U>
+    void _boost_type_erasure_assign_impl(
+        Other&& other,
+        const assignable<T, U>*,
+        const void*,
+        ::boost::mpl::true_)
+    {
+        ::boost::type_erasure::call(assignable<T, U>(), *this, std::forward<Other>(other));
+    }
+    /** INTERNAL ONLY */
+    template<class Other, class Sig>
+    void _boost_type_erasure_assign_impl(
+        Other&& other,
+        const void*,
+        const constructible<Sig>*,
+        ::boost::mpl::true_)
+    {
+        any temp(std::forward<Other>(other));
+        _boost_type_erasure_swap(temp);
+    }
+    /** INTERNAL ONLY */
+    template<class Other, class U, class Sig>
+    void _boost_type_erasure_assign_impl(
+        Other&& other,
+        const assignable<T, U>*,
+        const constructible<Sig>*,
+        ::boost::mpl::true_)
+    {
+        if(::boost::type_erasure::check_match(assignable<T, U>(), *this, other))  // const reference to other is enough!
+        {
+            ::boost::type_erasure::unchecked_call(assignable<T, U>(), *this, std::forward<Other>(other));
+        }
+        else
+        {
+            any temp(std::forward<Other>(other));
+            _boost_type_erasure_swap(temp);
+        }
+    }
+#else
+    /** INTERNAL ONLY */
+    template<class Other>
+    void _boost_type_erasure_resolve_assign_any(Other& other)
     {
         _boost_type_erasure_assign_impl(
             other,
@@ -1114,7 +1326,7 @@ private:
     /** INTERNAL ONLY */
     template<class Other, class U>
     void _boost_type_erasure_assign_impl(
-        const Other& other,
+        Other& other,
         const assignable<T, U>*,
         const void*,
         ::boost::mpl::false_)
@@ -1124,7 +1336,7 @@ private:
     /** INTERNAL ONLY */
     template<class Other, class U>
     void _boost_type_erasure_assign_impl(
-        const Other& other,
+        Other& other,
         const assignable<T, U>*,
         const void*,
         ::boost::mpl::true_)
@@ -1134,7 +1346,7 @@ private:
     /** INTERNAL ONLY */
     template<class Other, class Sig>
     void _boost_type_erasure_assign_impl(
-        const Other& other,
+        Other& other,
         const void*,
         const constructible<Sig>*,
         ::boost::mpl::true_)
@@ -1145,7 +1357,7 @@ private:
     /** INTERNAL ONLY */
     template<class Other, class U, class Sig>
     void _boost_type_erasure_assign_impl(
-        const Other& other,
+        Other& other,
         const assignable<T, U>*,
         const constructible<Sig>*,
         ::boost::mpl::true_)
@@ -1160,6 +1372,7 @@ private:
             _boost_type_erasure_swap(temp);
         }
     }
+#endif
     friend struct ::boost::type_erasure::detail::access;
     // The table has to be initialized first for exception
     // safety in some constructors.
@@ -1432,26 +1645,27 @@ public:
         table(binding_arg)
     {}
     
-    /**
-     * Assigns to an @ref any.
-     *
-     * If an appropriate overload of @ref assignable is not available
-     * and @ref relaxed is in @c Concept, falls back on
-     * constructing from @c other.
-     *
-     * \throws Whatever the assignment operator of the contained
-     *         type throws.  When falling back on construction,
-     *         throws @c std::bad_alloc.  In this case assignment
-     *         provides the strong exception guarantee.  When
-     *         calling the assignment operator of the contained type,
-     *         the exception guarantee is whatever the contained type provides.
-     */
+    /** INTERNAL ONLY */
     any& operator=(const any& other)
     {
         _boost_type_erasure_resolve_assign(other);
         return *this;
     }
     
+    /** INTERNAL ONLY */
+    any& operator=(any& other)
+    {
+        _boost_type_erasure_resolve_assign(other);
+        return *this;
+    }
+    
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+    /** INTERNAL ONLY */
+    any& operator=(any&& other)
+    {
+        _boost_type_erasure_resolve_assign(std::move(other));
+        return *this;
+    }
     /**
      * Assigns to an @ref any.
      *
@@ -1461,11 +1675,19 @@ public:
      *
      * \throws Whatever the assignment operator of the contained
      *         type throws.  When falling back on construction,
-     *         throws @c std::bad_alloc.  In this case assignment
+     *         can only throw @c std::bad_alloc if @c U is an @ref any
+     *         that uses a different @c Concept.  In this case assignment
      *         provides the strong exception guarantee.  When
      *         calling the assignment operator of the contained type,
      *         the exception guarantee is whatever the contained type provides.
      */
+    template<class U>
+    any& operator=(U&& other)
+    {
+        _boost_type_erasure_resolve_assign(std::forward<U>(other));
+        return *this;
+    }
+#else
     template<class U>
     any& operator=(U& other)
     {
@@ -1473,28 +1695,15 @@ public:
         return *this;
     }
     
-    /**
-     * Assigns to an @ref any.
-     *
-     * If an appropriate overload of @ref assignable is not available
-     * and @ref relaxed is in @c Concept, falls back on
-     * constructing from @c other.
-     *
-     * \throws Whatever the assignment operator of the contained
-     *         type throws.  When falling back on construction,
-     *         throws @c std::bad_alloc.  In this case assignment
-     *         provides the strong exception guarantee.  When
-     *         calling the assignment operator of the contained type,
-     *         the exception guarantee is whatever the contained type provides.
-     */
     template<class U>
     any& operator=(const U& other)
     {
         _boost_type_erasure_resolve_assign(other);
         return *this;
     }
+#endif
     
-#ifndef BOOST_NO_FUNCTION_REFERENCE_QUALIFIERS
+#ifndef BOOST_NO_CXX11_REF_QUALIFIERS
     /** INTERNAL ONLY */
     operator param<Concept, T&>() const { return param<Concept, T&>(data, table); }
 #endif
@@ -1506,6 +1715,71 @@ private:
         ::std::swap(data, other.data);
         ::std::swap(table, other.table);
     }
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+    /** INTERNAL ONLY */
+    template<class Other>
+    void _boost_type_erasure_resolve_assign(Other&& other)
+    {
+        _boost_type_erasure_assign_impl(
+            std::forward<Other>(other),
+            false? this->_boost_type_erasure_deduce_assign(
+                ::boost::type_erasure::detail::make_fallback(
+                    std::forward<Other>(other),
+                    ::boost::mpl::bool_<
+                    sizeof(
+                        ::boost::type_erasure::detail::check_overload(
+                            ::boost::declval<any&>().
+                            _boost_type_erasure_deduce_assign(std::forward<Other>(other))
+                        )
+                        ) == sizeof(::boost::type_erasure::detail::yes)
+                    >()
+                )
+            ) : 0,
+            ::boost::mpl::and_<
+                ::boost::type_erasure::is_relaxed<Concept>,
+                ::boost::is_convertible<Other, any>
+#if BOOST_WORKAROUND(BOOST_MSVC, BOOST_TESTED_AT(1900))
+              , ::boost::mpl::not_<
+                    ::boost::type_erasure::detail::is_rvalue_for_any<Other>
+                >
+#endif
+            >()
+        );
+    }
+    /** INTERNAL ONLY */
+    template<class Other, class U>
+    void _boost_type_erasure_assign_impl(
+        Other&& other,
+        const assignable<T, U>*,
+        ::boost::mpl::false_)
+    {
+        ::boost::type_erasure::call(assignable<T, U>(), *this, std::forward<Other>(other));
+    }
+    /** INTERNAL ONLY */
+    template<class Other, class U>
+    void _boost_type_erasure_assign_impl(
+        Other&& other,
+        const assignable<T, U>*,
+        ::boost::mpl::true_)
+    {
+        if(::boost::type_erasure::check_match(assignable<T, U>(), *this, other)) {
+            ::boost::type_erasure::unchecked_call(assignable<T, U>(), *this, std::forward<Other>(other));
+        } else {
+            any temp(std::forward<Other>(other));
+            _boost_type_erasure_swap(temp);
+        }
+    }
+    /** INTERNAL ONLY */
+    template<class Other>
+    void _boost_type_erasure_assign_impl(
+        Other&& other,
+        const void*,
+        ::boost::mpl::true_)
+    {
+        any temp(std::forward<Other>(other));
+        _boost_type_erasure_swap(temp);
+    }
+#else
     /** INTERNAL ONLY */
     template<class Other>
     void _boost_type_erasure_resolve_assign(Other& other)
@@ -1525,7 +1799,10 @@ private:
                     >()
                 )
             ) : 0,
-            ::boost::type_erasure::is_relaxed<Concept>()
+            ::boost::mpl::and_<
+                ::boost::type_erasure::is_relaxed<Concept>,
+                ::boost::is_convertible<Other&, any>
+            >()
         );
     }
     /** INTERNAL ONLY */
@@ -1561,6 +1838,7 @@ private:
         any temp(other);
         _boost_type_erasure_swap(temp);
     }
+#endif
 
     friend struct ::boost::type_erasure::detail::access;
     ::boost::type_erasure::detail::storage data;
@@ -1780,7 +2058,7 @@ public:
         return *this;
     }
     
-#ifndef BOOST_NO_FUNCTION_REFERENCE_QUALIFIERS
+#ifndef BOOST_NO_CXX11_REF_QUALIFIERS
     /** INTERNAL ONLY */
     operator param<Concept, const T&>() const { return param<Concept, const T&>(data, table); }
 #endif
@@ -2065,20 +2343,7 @@ public:
         table(binding_arg)
     {}
     
-    /**
-     * Assigns to an @ref any.
-     *
-     * If an appropriate overload of @ref assignable is not available
-     * and @ref relaxed is in @c Concept, falls back on
-     * constructing from @c other.
-     *
-     * \throws Whatever the assignment operator of the contained
-     *         type throws.  When falling back on construction,
-     *         throws @c std::bad_alloc.  In this case assignment
-     *         provides the strong exception guarantee.  When
-     *         calling the assignment operator of the contained type,
-     *         the exception guarantee is whatever the contained type provides.
-     */
+    /** INTERNAL ONLY */
     any& operator=(const any& other)
     {
         _boost_type_erasure_resolve_assign(other);
@@ -2094,40 +2359,20 @@ public:
      *
      * \throws Whatever the assignment operator of the contained
      *         type throws.  When falling back on construction,
-     *         throws @c std::bad_alloc.  In this case assignment
+     *         can only throw @c std::bad_alloc if @c U is an @ref any
+     *         that uses a different @c Concept.  In this case assignment
      *         provides the strong exception guarantee.  When
      *         calling the assignment operator of the contained type,
      *         the exception guarantee is whatever the contained type provides.
      */
     template<class U>
-    any& operator=(U& other)
+    any& operator=(U&& other)
     {
-        _boost_type_erasure_resolve_assign(other);
+        _boost_type_erasure_resolve_assign(std::forward<U>(other));
         return *this;
     }
     
-    /**
-     * Assigns to an @ref any.
-     *
-     * If an appropriate overload of @ref assignable is not available
-     * and @ref relaxed is in @c Concept, falls back on
-     * constructing from @c other.
-     *
-     * \throws Whatever the assignment operator of the contained
-     *         type throws.  When falling back on construction,
-     *         throws @c std::bad_alloc.  In this case assignment
-     *         provides the strong exception guarantee.  When
-     *         calling the assignment operator of the contained type,
-     *         the exception guarantee is whatever the contained type provides.
-     */
-    template<class U>
-    any& operator=(const U& other)
-    {
-        _boost_type_erasure_resolve_assign(other);
-        return *this;
-    }
-    
-#ifndef BOOST_NO_FUNCTION_REFERENCE_QUALIFIERS
+#ifndef BOOST_NO_CXX11_REF_QUALIFIERS
     /** INTERNAL ONLY */
     operator param<Concept, T&&>() const { return param<Concept, T&&>(data, table); }
 #endif
@@ -2141,57 +2386,68 @@ private:
     }
     /** INTERNAL ONLY */
     template<class Other>
-    void _boost_type_erasure_resolve_assign(Other& other)
+    void _boost_type_erasure_resolve_assign(Other&& other)
     {
         _boost_type_erasure_assign_impl(
-            other,
+            std::forward<Other>(other),
             false? this->_boost_type_erasure_deduce_assign(
                 ::boost::type_erasure::detail::make_fallback(
-                    other,
+                    std::forward<Other>(other),
                     ::boost::mpl::bool_<
-                        sizeof(
-                            ::boost::type_erasure::detail::check_overload(
-                                ::boost::declval<any&>().
-                                    _boost_type_erasure_deduce_assign(other)
-                            )
+                    sizeof(
+                        ::boost::type_erasure::detail::check_overload(
+                            ::boost::declval<any&>().
+                            _boost_type_erasure_deduce_assign(std::forward<Other>(other))
+                        )
                         ) == sizeof(::boost::type_erasure::detail::yes)
                     >()
                 )
             ) : 0,
-            ::boost::type_erasure::is_relaxed<Concept>()
+            ::boost::mpl::and_<
+                ::boost::type_erasure::is_relaxed<Concept>,
+                ::boost::is_convertible<Other, any>
+            >()
         );
     }
     /** INTERNAL ONLY */
     template<class Other, class U>
     void _boost_type_erasure_assign_impl(
-        Other& other,
+        Other&& other,
         const assignable<T, U>*,
         ::boost::mpl::false_)
     {
-        ::boost::type_erasure::call(assignable<T, U>(), *this, other);
+        ::boost::type_erasure::call(
+            assignable<T, U>(),
+            // lose rvalueness of this
+            ::boost::type_erasure::param<Concept, T&>(data, table),
+            std::forward<Other>(other));
     }
     /** INTERNAL ONLY */
     template<class Other, class U>
     void _boost_type_erasure_assign_impl(
-        Other& other,
+        Other&& other,
         const assignable<T, U>*,
         ::boost::mpl::true_)
     {
         if(::boost::type_erasure::check_match(assignable<T, U>(), *this, other)) {
-            ::boost::type_erasure::unchecked_call(assignable<T, U>(), *this, other);
+            ::boost::type_erasure::unchecked_call(
+                assignable<T, U>(),
+                // lose rvalueness of this
+                ::boost::type_erasure::param<Concept, T&>(data, table),
+                std::forward<Other>(other));
         } else {
-            any temp(other);
+            any temp(std::forward<Other>(other));
             _boost_type_erasure_swap(temp);
         }
     }
     /** INTERNAL ONLY */
     template<class Other>
     void _boost_type_erasure_assign_impl(
-        Other& other,
+        Other&& other,
         const void*,
         ::boost::mpl::true_)
     {
-        any temp(other);
+        any temp(std::forward<Other>(other));
         _boost_type_erasure_swap(temp);
     }
 
