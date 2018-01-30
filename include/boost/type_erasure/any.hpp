@@ -804,7 +804,7 @@ public:
      *
      * \param other The object to make a copy of.
      *
-     * \pre @c Concept must contain @ref constructible<T(const T&)>.
+     * \pre @c Concept must contain @ref constructible "constructible<T(const T&)>".
      * \pre @c Concept must not refer to any non-deduced placeholder besides @c T.
      * \pre After substituting @c T for @c Tag2, the requirements of
      *      @c Concept2 must be a superset of the requirements of
@@ -841,7 +841,7 @@ public:
      * \param binding Specifies the mapping between the placeholders
      *        used by the two concepts.
      *
-     * \pre @c Concept must contain @ref constructible<T(const T&)>.
+     * \pre @c Concept must contain @ref constructible "constructible<T(const T&)>".
      * \pre @c Map must be an MPL map with keys for all the non-deduced
      *      placeholders used by @c Concept and values for the corresponding
      *      placeholders in @c Concept2.
@@ -869,7 +869,7 @@ public:
      * \param other The object to make a copy of.
      * \param binding Specifies the bindings of placeholders to actual types.
      *
-     * \pre @c Concept must contain @ref constructible<T(const T&)>.
+     * \pre @c Concept must contain @ref constructible "constructible<T(const T&)>".
      * \pre The type stored in @c other must match the type expected by
      *      @c binding.
      *

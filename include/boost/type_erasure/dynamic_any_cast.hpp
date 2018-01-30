@@ -153,7 +153,7 @@ R dynamic_any_cast_impl(Any& arg, const static_binding<Map>& map)
  *
  * \throws bad_any_cast if the concepts used by R were
  *         not previously registered via a call to
- *         @ref register_binding.
+ *         \register_binding.
  *
  * Example:
  * \code

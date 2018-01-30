@@ -111,7 +111,7 @@ struct register_function {
 
 /**
  * Registers a model of a concept to allow downcasting @ref any
- * via @ref dynamic_any_cast.
+ * via \dynamic_any_cast.
  */
 template<class Concept, class Map>
 void register_binding(const static_binding<Map>&)
