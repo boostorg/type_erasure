@@ -42,11 +42,15 @@
 namespace boost {
 namespace type_erasure {
 
+#ifndef BOOST_TYPE_ERASURE_DOXYGEN
+
 template<class Concept, class Placeholder>
 class any;
 
 template<class Concept>
 class binding;
+
+#endif
 
 namespace detail {
 

@@ -24,6 +24,7 @@
 #include <boost/mpl/pair.hpp>
 #include <boost/mpl/map.hpp>
 #include <boost/mpl/fold.hpp>
+#include <boost/type_traits/decay.hpp>
 #include <boost/type_traits/remove_reference.hpp>
 #include <boost/type_traits/remove_const.hpp>
 #include <boost/type_traits/is_same.hpp>
@@ -46,6 +47,13 @@
 #include <boost/type_erasure/call.hpp>
 #include <boost/type_erasure/relaxed.hpp>
 #include <boost/type_erasure/param.hpp>
+
+#ifdef BOOST_MSVC
+#pragma warning(push)
+#pragma warning(disable:4355)
+#pragma warning(disable:4521)
+#pragma warning(disable:4522) // multiple assignment operators specified
+#endif
 
 namespace boost {
 namespace type_erasure {
@@ -133,6 +141,432 @@ struct is_any : ::boost::mpl::false_ {};
 template<class Concept, class T>
 struct is_any<any<Concept, T> > : ::boost::mpl::true_ {};
 
+#ifdef BOOST_TYPE_ERASURE_SFINAE_FRIENDLY_CONSTRUCTORS
+
+template<class Any, class... U>
+struct has_constructor :
+    ::boost::mpl::bool_<
+        sizeof(
+            ::boost::type_erasure::detail::check_overload(
+                ::boost::declval<Any&>().
+                    _boost_type_erasure_deduce_constructor(::boost::declval<U>()...)
+            )
+        ) == sizeof(::boost::type_erasure::detail::yes)
+    >
+{};
+
+template<class Any>
+using has_copy_constructor =
+    ::boost::type_erasure::is_subconcept<
+        ::boost::type_erasure::constructible<
+            typename ::boost::type_erasure::placeholder_of<Any>::type(typename ::boost::type_erasure::placeholder_of<Any>::type const&)
+        >,
+        typename ::boost::type_erasure::concept_of<Any>::type
+    >;
+
+template<class Any>
+using has_move_constructor =
+    ::boost::type_erasure::is_subconcept<
+        ::boost::type_erasure::constructible<
+            typename ::boost::type_erasure::placeholder_of<Any>::type(typename ::boost::type_erasure::placeholder_of<Any>::type &&)
+        >,
+        typename ::boost::type_erasure::concept_of<Any>::type
+    >;
+
+template<class Any>
+using has_mutable_copy_constructor =
+    ::boost::type_erasure::is_subconcept<
+        ::boost::type_erasure::constructible<
+            typename ::boost::type_erasure::placeholder_of<Any>::type(typename ::boost::type_erasure::placeholder_of<Any>::type &)
+        >,
+        typename ::boost::type_erasure::concept_of<Any>::type
+    >;
+
+struct empty {};
+
+template<class T>
+struct is_binding_arg : ::boost::mpl::false_ {};
+template<class T>
+struct is_binding_arg<binding<T> > : ::boost::mpl::true_ {};
+template<class T>
+struct is_binding_arg<binding<T>&&> : ::boost::mpl::true_ {};
+template<class T>
+struct is_binding_arg<binding<T>&> : ::boost::mpl::true_ {};
+template<class T>
+struct is_binding_arg<binding<T> const&> : ::boost::mpl::true_ {};
+
+template<class T>
+struct is_static_binding_arg : ::boost::mpl::false_ {};
+template<class T>
+struct is_static_binding_arg<static_binding<T> > : ::boost::mpl::true_ {};
+template<class T>
+struct is_static_binding_arg<static_binding<T>&&> : ::boost::mpl::true_ {};
+template<class T>
+struct is_static_binding_arg<static_binding<T>&> : ::boost::mpl::true_ {};
+template<class T>
+struct is_static_binding_arg<static_binding<T> const&> : ::boost::mpl::true_ {};
+
+template<class T>
+struct is_any_arg : ::boost::mpl::false_ {};
+template<class Concept, class T>
+struct is_any_arg<any<Concept, T> > : ::boost::mpl::true_ {};
+template<class Concept, class T>
+struct is_any_arg<any<Concept, T>&&> : ::boost::mpl::true_ {};
+template<class Concept, class T>
+struct is_any_arg<any<Concept, T>&> : ::boost::mpl::true_ {};
+template<class Concept, class T>
+struct is_any_arg<any<Concept, T> const&> : ::boost::mpl::true_ {};
+
+template<class T>
+struct safe_concept_of;
+template<class Concept, class T>
+struct safe_concept_of<any<Concept, T> > { typedef Concept type; };
+template<class Concept, class T>
+struct safe_concept_of<any<Concept, T>&&> { typedef Concept type; };
+template<class Concept, class T>
+struct safe_concept_of<any<Concept, T>&> { typedef Concept type; };
+template<class Concept, class T>
+struct safe_concept_of<any<Concept, T> const&> { typedef Concept type; };
+
+template<class T>
+struct safe_placeholder_of;
+template<class Concept, class T>
+struct safe_placeholder_of<any<Concept, T> > { typedef T type; };
+template<class Concept, class T>
+struct safe_placeholder_of<any<Concept, T>&&> { typedef T type; };
+template<class Concept, class T>
+struct safe_placeholder_of<any<Concept, T>&> { typedef T type; };
+template<class Concept, class T>
+struct safe_placeholder_of<any<Concept, T> const&> { typedef T type; };
+
+template<class T>
+using safe_placeholder_t = ::boost::remove_cv_t< ::boost::remove_reference_t<typename safe_placeholder_of<T>::type> >;
+
+}
+
+// Enables or deletes the copy/move constructors depending on the Concept.
+template<class Base, class Enable = void>
+struct any_constructor_control : Base
+{
+    using Base::Base;
+};
+
+template<class Base>
+struct any_constructor_control<
+    Base,
+    typename boost::enable_if_c<
+        !::boost::type_erasure::detail::has_copy_constructor<Base>::value &&
+        ::boost::type_erasure::detail::has_move_constructor<Base>::value &&
+        ::boost::type_erasure::detail::has_mutable_copy_constructor<Base>::value
+    >::type
+> : Base
+{
+    using Base::Base;
+    any_constructor_control() = default;
+    any_constructor_control(any_constructor_control&) = default;
+    any_constructor_control(any_constructor_control&&) = default;
+    any_constructor_control& operator=(any_constructor_control const& other) { static_cast<Base&>(*this) = static_cast<Base const&>(other); return *this; }
+    any_constructor_control& operator=(any_constructor_control & other) { static_cast<Base&>(*this) = static_cast<Base&>(other); return *this; }
+    any_constructor_control& operator=(any_constructor_control &&) = default;
+};
+
+template<class Base>
+struct any_constructor_control<
+    Base,
+    typename boost::enable_if_c<
+        !::boost::type_erasure::detail::has_copy_constructor<Base>::value &&
+        !::boost::type_erasure::detail::has_move_constructor<Base>::value &&
+        ::boost::type_erasure::detail::has_mutable_copy_constructor<Base>::value
+    >::type
+> : Base
+{
+    using Base::Base;
+    any_constructor_control() = default;
+    any_constructor_control(any_constructor_control&) = default;
+    any_constructor_control(any_constructor_control&&) = delete;
+    any_constructor_control& operator=(any_constructor_control const& other) { static_cast<Base&>(*this) = static_cast<Base const&>(other); return *this; }
+    any_constructor_control& operator=(any_constructor_control & other) { static_cast<Base&>(*this) = static_cast<Base&>(other); return *this; }
+    any_constructor_control& operator=(any_constructor_control &&) = default;
+};
+
+template<class Base>
+struct any_constructor_control<
+    Base,
+    typename boost::enable_if_c<
+        !::boost::type_erasure::detail::has_copy_constructor<Base>::value &&
+        ::boost::type_erasure::detail::has_move_constructor<Base>::value &&
+        !::boost::type_erasure::detail::has_mutable_copy_constructor<Base>::value
+    >::type
+> : Base
+{
+    using Base::Base;
+    any_constructor_control() = default;
+    any_constructor_control(any_constructor_control const&) = delete;
+    any_constructor_control(any_constructor_control&&) = default;
+    any_constructor_control& operator=(any_constructor_control const& other) { static_cast<Base&>(*this) = static_cast<Base const&>(other); return *this; }
+    any_constructor_control& operator=(any_constructor_control & other) { static_cast<Base&>(*this) = static_cast<Base&>(other); return *this; }
+    any_constructor_control& operator=(any_constructor_control &&) = default;
+};
+
+template<class Base>
+struct any_constructor_control<
+    Base,
+    typename boost::enable_if_c<
+        !::boost::type_erasure::detail::has_copy_constructor<Base>::value &&
+        !::boost::type_erasure::detail::has_move_constructor<Base>::value &&
+        !::boost::type_erasure::detail::has_mutable_copy_constructor<Base>::value
+    >::type
+> : Base
+{
+    using Base::Base;
+    any_constructor_control() = default;
+    any_constructor_control(any_constructor_control const&) = delete;
+    any_constructor_control(any_constructor_control&&) = delete;
+    any_constructor_control& operator=(any_constructor_control const& other) { static_cast<Base&>(*this) = static_cast<Base const&>(other); return *this; }
+    any_constructor_control& operator=(any_constructor_control & other) { static_cast<Base&>(*this) = static_cast<Base&>(other); return *this; }
+    any_constructor_control& operator=(any_constructor_control &&) = default;
+};
+
+template<class Base, class Concept, class T>
+struct any_constructor_impl : Base
+{
+    // Internal constructors
+    typedef ::boost::type_erasure::binding<Concept> _boost_type_erasure_table_type;
+    any_constructor_impl(const ::boost::type_erasure::detail::storage& data_arg, const _boost_type_erasure_table_type& table_arg)
+      : _boost_type_erasure_table(table_arg),
+        _boost_type_erasure_data(data_arg)
+    {}
+    any_constructor_impl(::boost::type_erasure::detail::storage&& data_arg, const _boost_type_erasure_table_type& table_arg)
+      : _boost_type_erasure_table(table_arg),
+        _boost_type_erasure_data(data_arg)
+    {}
+    // default constructor
+    any_constructor_impl()
+    {
+        BOOST_MPL_ASSERT((::boost::type_erasure::is_relaxed<Concept>));
+        _boost_type_erasure_data.data = 0;
+    }
+    // capturing constructor
+    template<class U,
+        typename ::boost::enable_if_c<
+            !::boost::type_erasure::detail::is_any_arg<U>::value &&
+            !::boost::type_erasure::detail::is_binding_arg<U>::value &&
+            !::boost::type_erasure::detail::is_static_binding_arg<U>::value
+        >::type* = nullptr
+    >
+    any_constructor_impl(U&& data_arg)
+      : _boost_type_erasure_table((
+            BOOST_TYPE_ERASURE_INSTANTIATE1(Concept, T, ::boost::decay_t<U>),
+            ::boost::type_erasure::make_binding<
+                ::boost::mpl::map< ::boost::mpl::pair<T, ::boost::decay_t<U> > >
+            >()
+        )),
+        _boost_type_erasure_data(std::forward<U>(data_arg))
+    {}
+    template<class U, class Map,
+        typename ::boost::enable_if_c<
+            !::boost::type_erasure::detail::is_any_arg<U>::value &&
+            !::boost::type_erasure::detail::is_binding_arg<U>::value &&
+            !::boost::type_erasure::detail::is_static_binding_arg<U>::value
+        >::type* = nullptr
+    >
+    any_constructor_impl(U&& data_arg, const static_binding<Map>& b)
+      : _boost_type_erasure_table((
+            BOOST_TYPE_ERASURE_INSTANTIATE(Concept, Map),
+            b
+        )),
+        _boost_type_erasure_data(std::forward<U>(data_arg))
+    {
+        BOOST_MPL_ASSERT((::boost::is_same<
+            typename ::boost::mpl::at<Map, T>::type, ::boost::decay_t<U> >));
+    }
+    // converting constructor
+    template<class U,
+        typename ::boost::enable_if_c<
+            ::boost::type_erasure::is_subconcept<
+                Concept, typename ::boost::type_erasure::detail::safe_concept_of<U>::type,
+                typename ::boost::mpl::if_c< ::boost::is_same<T, ::boost::type_erasure::detail::safe_placeholder_t<U> >::value,
+                    void,
+                    ::boost::mpl::map<
+                        ::boost::mpl::pair<T, ::boost::type_erasure::detail::safe_placeholder_t<U> >
+                    >
+                >::type
+            >::value
+        >::type* = nullptr
+    >
+    any_constructor_impl(U&& other)
+      : _boost_type_erasure_table(
+            ::boost::type_erasure::detail::access::table(other),
+            typename ::boost::mpl::if_c< ::boost::is_same<T, ::boost::type_erasure::detail::safe_placeholder_t<U> >::value,
+                ::boost::type_erasure::detail::substitution_map< ::boost::mpl::map0<> >,
+                ::boost::mpl::map<
+                    ::boost::mpl::pair<
+                        T,
+                        ::boost::type_erasure::detail::safe_placeholder_t<U>
+                    >
+                >
+            >::type()
+        ),
+        _boost_type_erasure_data(::boost::type_erasure::call(
+            ::boost::type_erasure::detail::make(
+                false? other._boost_type_erasure_deduce_constructor(std::forward<U>(other)) : 0
+            ), std::forward<U>(other))
+        )
+    {}
+    template<class U,
+        typename ::boost::enable_if_c<
+            ::boost::type_erasure::detail::is_any_arg<U>::value
+        >::type* = nullptr
+    >
+    any_constructor_impl(U&& other, const binding<Concept>& binding_arg)
+      : _boost_type_erasure_table(binding_arg),
+        _boost_type_erasure_data(::boost::type_erasure::call(
+            ::boost::type_erasure::detail::make(
+                false? other._boost_type_erasure_deduce_constructor(std::forward<U>(other)) : 0
+            ), std::forward<U>(other))
+        )
+    {}
+    template<class U, class Map,
+        typename ::boost::enable_if_c<
+            ::boost::type_erasure::is_subconcept<
+                Concept, typename ::boost::type_erasure::detail::safe_concept_of<U>::type,
+                Map
+            >::value
+        >::type* = nullptr
+    >
+    any_constructor_impl(U&& other, const static_binding<Map>& binding_arg)
+      : _boost_type_erasure_table(::boost::type_erasure::detail::access::table(other), binding_arg),
+        _boost_type_erasure_data(::boost::type_erasure::call(
+            ::boost::type_erasure::detail::make(
+                false? other._boost_type_erasure_deduce_constructor(std::forward<U>(other)) : 0
+            ), std::forward<U>(other))
+        )
+    {}
+    // copy and move constructors are a special case of the converting
+    // constructors, but must be defined separately to keep C++ happy.
+    any_constructor_impl(const any_constructor_impl& other)
+      : _boost_type_erasure_table(
+            ::boost::type_erasure::detail::access::table(other)
+        ),
+        _boost_type_erasure_data(::boost::type_erasure::call(
+            ::boost::type_erasure::detail::make(
+                false? other._boost_type_erasure_deduce_constructor(
+                    static_cast<typename Base::_boost_type_erasure_derived_type const&>(other)) : 0
+            ), other)
+        )
+    {}
+    any_constructor_impl(any_constructor_impl& other)
+      : _boost_type_erasure_table(
+            ::boost::type_erasure::detail::access::table(other)
+        ),
+        _boost_type_erasure_data(::boost::type_erasure::call(
+            ::boost::type_erasure::detail::make(
+                false? other._boost_type_erasure_deduce_constructor(
+                    static_cast<typename Base::_boost_type_erasure_derived_type &>(other)) : 0
+            ), other)
+        )
+    {}
+    any_constructor_impl(any_constructor_impl&& other)
+      : _boost_type_erasure_table(
+            ::boost::type_erasure::detail::access::table(other)
+        ),
+        _boost_type_erasure_data(::boost::type_erasure::call(
+            ::boost::type_erasure::detail::make(
+                false? other._boost_type_erasure_deduce_constructor(
+                    static_cast<typename Base::_boost_type_erasure_derived_type &&>(other)) : 0
+            ), std::move(other))
+        )
+    {}
+
+    template<class R, class... A, class... U>
+    const _boost_type_erasure_table_type& _boost_type_erasure_extract_table(
+        ::boost::type_erasure::constructible<R(A...)>*,
+        U&&... u)
+    {
+        return *::boost::type_erasure::detail::extract_table(static_cast<void(*)(A...)>(0), u...);
+    }
+    // forwarding constructor
+    template<class... U,
+        typename ::boost::enable_if_c<
+            ::boost::type_erasure::detail::has_constructor<any_constructor_impl, U...>::value
+        >::type* = nullptr
+    >
+    explicit any_constructor_impl(U&&... u)
+      : _boost_type_erasure_table(
+            _boost_type_erasure_extract_table(
+                false? this->_boost_type_erasure_deduce_constructor(std::forward<U>(u)...) : 0,
+                std::forward<U>(u)...
+            )
+        ),
+        _boost_type_erasure_data(
+            ::boost::type_erasure::call(
+                ::boost::type_erasure::detail::make(
+                    false? this->_boost_type_erasure_deduce_constructor(std::forward<U>(u)...) : 0
+                ),
+                std::forward<U>(u)...
+            )
+        )
+    {}
+    template<class... U,
+        typename ::boost::enable_if_c<
+            ::boost::type_erasure::detail::has_constructor<any_constructor_impl, U...>::value
+        >::type* = nullptr
+    >
+    explicit any_constructor_impl(const binding<Concept>& binding_arg, U&&... u)
+      : _boost_type_erasure_table(binding_arg),
+        _boost_type_erasure_data(
+            ::boost::type_erasure::call(
+                binding_arg,
+                ::boost::type_erasure::detail::make(
+                    false? this->_boost_type_erasure_deduce_constructor(std::forward<U>(u)...) : 0
+                ),
+                std::forward<U>(u)...
+            )
+        )
+    {}
+
+    // The assignment operator and destructor must be defined here rather
+    // than in any to avoid implicitly deleting the move constructor.
+
+    any_constructor_impl& operator=(const any_constructor_impl& other)
+    {
+        static_cast<typename Base::_boost_type_erasure_derived_type*>(this)->_boost_type_erasure_resolve_assign(
+            static_cast<const typename Base::_boost_type_erasure_derived_type&>(other));
+        return *this;
+    }
+
+    any_constructor_impl& operator=(any_constructor_impl& other)
+    {
+        static_cast<typename Base::_boost_type_erasure_derived_type*>(this)->_boost_type_erasure_resolve_assign(
+            static_cast<typename Base::_boost_type_erasure_derived_type&>(other));
+        return *this;
+    }
+
+    any_constructor_impl& operator=(any_constructor_impl&& other)
+    {
+        static_cast<typename Base::_boost_type_erasure_derived_type*>(this)->_boost_type_erasure_resolve_assign(
+            static_cast<typename Base::_boost_type_erasure_derived_type&&>(other));
+        return *this;
+    }
+
+    ~any_constructor_impl()
+    {
+        _boost_type_erasure_table.template find<
+            ::boost::type_erasure::destructible<T>
+        >()(_boost_type_erasure_data);
+    }
+
+protected:
+    friend struct ::boost::type_erasure::detail::access;
+
+    _boost_type_erasure_table_type _boost_type_erasure_table;
+    ::boost::type_erasure::detail::storage _boost_type_erasure_data;
+};
+
+namespace detail {
+
+#endif
+
 template<class T>
 struct is_rvalue_for_any : 
     ::boost::mpl::not_<
@@ -149,13 +583,6 @@ struct is_rvalue_for_any<any<C, P> > :
 
 }
 
-#ifdef BOOST_MSVC
-#pragma warning(push)
-#pragma warning(disable:4355)
-#pragma warning(disable:4521)
-#pragma warning(disable:4522) // multiple assignment operators specified
-#endif
-
 /**
  * The class template @ref any can store any object that
  * models a specific \Concept.  It dispatches all
@@ -169,16 +596,46 @@ struct is_rvalue_for_any<any<C, P> > :
  */
 template<class Concept, class T = _self>
 class any :
+#ifdef BOOST_TYPE_ERASURE_SFINAE_FRIENDLY_CONSTRUCTORS
+    public ::boost::type_erasure::any_constructor_control<
+        ::boost::type_erasure::any_constructor_impl<
+            typename ::boost::type_erasure::detail::compute_bases<
+                ::boost::type_erasure::any<Concept, T>,
+                Concept,
+                T
+            >::type,
+            Concept,
+            T
+        >
+    >
+#else
     public ::boost::type_erasure::detail::compute_bases<
         ::boost::type_erasure::any<Concept, T>,
         Concept,
         T
     >::type
+#endif
 {
     typedef ::boost::type_erasure::binding<Concept> table_type;
 public:
     /** INTERNAL ONLY */
     typedef Concept _boost_type_erasure_concept_type;
+
+#if defined(BOOST_TYPE_ERASURE_SFINAE_FRIENDLY_CONSTRUCTORS)
+    using _boost_type_erasure_base = ::boost::type_erasure::any_constructor_control<
+        ::boost::type_erasure::any_constructor_impl<
+            typename ::boost::type_erasure::detail::compute_bases<
+                ::boost::type_erasure::any<Concept, T>,
+                Concept,
+                T
+            >::type,
+            Concept,
+            T
+        >
+    >;
+    using _boost_type_erasure_base::_boost_type_erasure_base;
+#else
+
     /** INTERNAL ONLY */
     any(const ::boost::type_erasure::detail::storage& data_arg, const table_type& table_arg)
       : table(table_arg),
@@ -1014,6 +1471,9 @@ public:
         _boost_type_erasure_resolve_assign(other);
         return *this;
     }
+
+#endif // BOOST_TYPE_ERASURE_SFINAE_FRIENDLY_CONSTRUCTORS
+
 #ifdef BOOST_NO_CXX11_RVALUE_REFERENCES
     template<class U>
     any& operator=(U& other)
@@ -1028,12 +1488,14 @@ public:
         return *this;
     }
 #else
+#ifndef BOOST_TYPE_ERASURE_SFINAE_FRIENDLY_CONSTRUCTORS
     /** INTERNAL ONLY */
     any& operator=(any&& other)
     {
         _boost_type_erasure_resolve_assign(std::move(other));
         return *this;
     }
+#endif
     /**
      * Assigns to an @ref any.
      *
@@ -1060,27 +1522,49 @@ public:
         return *this;
     }
 #endif
+
+#ifndef BOOST_TYPE_ERASURE_SFINAE_FRIENDLY_CONSTRUCTORS
     /**
      * \pre @c Concept includes @ref destructible "destructible<T>".
      */
     ~any()
     {
-        table.template find<destructible<T> >()(data);
+        ::boost::type_erasure::detail::access::table(*this).template find<
+            ::boost::type_erasure::destructible<T>
+        >()(::boost::type_erasure::detail::access::data(*this));
     }
+#endif
 
 #ifndef BOOST_NO_CXX11_REF_QUALIFIERS
     /** INTERNAL ONLY */
-    operator param<Concept, T&>() & { return param<Concept, T&>(data, table); }
+    operator param<Concept, T&>() &
+    {
+        return param<Concept, T&>(
+            boost::type_erasure::detail::access::data(*this),
+            boost::type_erasure::detail::access::table(*this));
+    }
     /** INTERNAL ONLY */
-    operator param<Concept, T&&>() && { return param<Concept, T&&>(data, table); }
+    operator param<Concept, T&&>() && {
+        return param<Concept, T&&>(
+            boost::type_erasure::detail::access::data(*this),
+            boost::type_erasure::detail::access::table(*this));
+    }
 #endif
 private:
+#ifndef BOOST_TYPE_ERASURE_SFINAE_FRIENDLY_CONSTRUCTORS
     /** INTERNAL ONLY */
     void _boost_type_erasure_swap(any& other)
     {
         ::std::swap(data, other.data);
         ::std::swap(table, other.table);
     }
+#else
+    void _boost_type_erasure_swap(any& other)
+    {
+        ::std::swap(this->_boost_type_erasure_data, other._boost_type_erasure_data);
+        ::std::swap(this->_boost_type_erasure_table, other._boost_type_erasure_table);
+    }
+#endif
 #ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
     /** INTERNAL ONLY */
     template<class Other>
@@ -1374,10 +1858,15 @@ private:
     }
 #endif
     friend struct ::boost::type_erasure::detail::access;
+#ifndef BOOST_TYPE_ERASURE_SFINAE_FRIENDLY_CONSTRUCTORS
     // The table has to be initialized first for exception
     // safety in some constructors.
     table_type table;
     ::boost::type_erasure::detail::storage data;
+#else
+    template<class Base2, class Concept2, class T2>
+    friend struct ::boost::type_erasure::any_constructor_impl;
+#endif
 };
 
 template<class Concept, class T>

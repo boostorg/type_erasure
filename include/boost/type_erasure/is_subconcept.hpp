@@ -11,6 +11,7 @@
 #ifndef BOOST_TYPE_ERASURE_IS_SUBCONCEPT_HPP_INCLUDED
 #define BOOST_TYPE_ERASURE_IS_SUBCONCEPT_HPP_INCLUDED
 
+#include <boost/mpl/and.hpp>
 #include <boost/mpl/bool.hpp>
 #include <boost/mpl/not.hpp>
 #include <boost/mpl/if.hpp>
@@ -19,6 +20,7 @@
 #include <boost/mpl/has_key.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/type_erasure/detail/normalize.hpp>
+#include <boost/type_erasure/detail/check_map.hpp>
 #include <boost/type_erasure/detail/rebind_placeholders.hpp>
 #include <boost/type_erasure/static_binding.hpp>
 
@@ -92,13 +94,24 @@ struct is_subconcept_impl {
  *   are presumed to use the same set of placeholders.
  */
 template<class Sub, class Super, class PlaceholderMap = void>
-struct is_subconcept : ::boost::type_erasure::detail::is_subconcept_impl<Sub, Super, PlaceholderMap>::type {
-};
+struct is_subconcept :
+    ::boost::mpl::and_<
+        ::boost::type_erasure::detail::check_map<Sub, PlaceholderMap>,
+        ::boost::type_erasure::detail::is_subconcept_impl<Sub, Super, PlaceholderMap>
+    >::type
+{};
 
 #ifndef BOOST_TYPE_ERASURE_DOXYGEN
+template<class Sub, class Super>
+struct is_subconcept<Sub, Super, void> :
+    ::boost::type_erasure::detail::is_subconcept_impl<Sub, Super, void>::type
+{};
 template<class Sub, class Super, class PlaceholderMap>
 struct is_subconcept<Sub, Super, static_binding<PlaceholderMap> > :
-    ::boost::type_erasure::detail::is_subconcept_impl<Sub, Super, PlaceholderMap>::type
+    ::boost::mpl::and_<
+        ::boost::type_erasure::detail::check_map<Sub, PlaceholderMap>,
+        ::boost::type_erasure::detail::is_subconcept_impl<Sub, Super, PlaceholderMap>
+    >::type
 {};
 #endif
 

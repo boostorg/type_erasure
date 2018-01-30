@@ -185,16 +185,41 @@ struct make_arg_impl<binding<Concept> >
 };
 
 template<class Concept>
-struct make_arg_impl<any<Concept, _a> >
+struct make_arg_impl<any<Concept, _a>&>
 {
-    static any<Concept, _a> apply()
+    static any<Concept, _a>& apply()
     {
-        return any<Concept, _a>(
+        static any<Concept, _a> result(
             test_class(),
             make_binding< ::boost::mpl::map<
                 ::boost::mpl::pair<_a, test_class>,
                 ::boost::mpl::pair<_b, int>
         > >());
+        return result;
+    }
+};
+
+template<class Concept>
+struct make_arg_impl<any<Concept, _b>&>
+{
+    static any<Concept, _b>& apply()
+    {
+        static any<Concept, _b> result(
+            (int)id_int,
+            make_binding< ::boost::mpl::map<
+                ::boost::mpl::pair<_a, test_class>,
+                ::boost::mpl::pair<_b, int>
+        > >());
+        return result;
+    }
+};
+
+template<class Concept>
+struct make_arg_impl<any<Concept, _a> >
+{
+    static any<Concept, _a> apply()
+    {
+        return make_arg_impl<any<Concept, _a>&>::apply();
     }
 };
 
@@ -203,12 +228,7 @@ struct make_arg_impl<any<Concept, _b> >
 {
     static any<Concept, _b> apply()
     {
-        return any<Concept, _b>(
-            (int)id_int,
-            make_binding< ::boost::mpl::map<
-                ::boost::mpl::pair<_a, test_class>,
-                ::boost::mpl::pair<_b, int>
-        > >());
+        return make_arg_impl<any<Concept, _b>&>::apply();
     }
 };
 
@@ -255,6 +275,14 @@ struct make_arg_impl<T&>
         return result;
     }
 };
+template<class T>
+struct make_arg_impl<const T&>
+{
+    static T& apply()
+    {
+        return make_arg_impl<T&>::apply();
+    }
+};
 
 #ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
 
@@ -263,8 +291,7 @@ struct make_arg_impl<T&&>
 {
     static T&& apply()
     {
-        static T result = make_arg_impl<T>::apply();
-        return std::move(result);
+        return std::move(make_arg_impl<T&>::apply());
     }
 };
 
@@ -328,10 +355,19 @@ struct tester<Concept, void(T0, T1, T2)>
     }
 };
 
+#ifdef BOOST_NO_CXX11_RVALUE_REFERENCES
+// We need copy_constructible in order to get an rvalue.
+#define CONSTRUCT_COMMON(p) common<p>
+#else
+// Don't include the copy constructor if we don't
+// need it, as it can hide the non-const copy constructor.
+#define CONSTRUCT_COMMON(p) destructible<p>, typeid_<p>
+#endif
+
 #define TEST_CONSTRUCT(sig, args, expected_) \
 {\
     typedef ::boost::mpl::vector<\
-        common<_a>, \
+        CONSTRUCT_COMMON(_a), \
         common<_b>,\
         constructible<sig>,\
         extra\

@@ -33,11 +33,15 @@
 namespace boost {
 namespace type_erasure {
 
+#ifndef BOOST_TYPE_ERASURE_DOXYGEN
+
 template<class T>
 struct typeid_;
 
 template<class Concept>
 class binding;
+
+#endif
 
 namespace detail {
 

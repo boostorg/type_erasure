@@ -41,6 +41,7 @@ run test_dynamic_any_cast.cpp /boost//unit_test_framework /boost//type_erasure ;
 
 compile test_param.cpp ;
 compile test_is_subconcept.cpp ;
+compile test_sfinae.cpp ;
 
 compile-fail fail_default_construct.cpp ;
 compile-fail fail_construct_mismatch.cpp ;
