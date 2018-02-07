@@ -134,6 +134,26 @@ struct rebind_placeholders_in_argument<R(T...), Bindings>
     >::type type(typename rebind_placeholders_in_argument<T, Bindings>::type...);
 };
 
+template<class R, class C, class... T, class Bindings>
+struct rebind_placeholders_in_argument<R (C::*)(T...), Bindings>
+{
+    typedef typename ::boost::type_erasure::detail::rebind_placeholders_in_argument<
+        R,
+        Bindings
+    >::type (rebind_placeholders_in_argument<C, Bindings>::type::*type)
+        (typename rebind_placeholders_in_argument<T, Bindings>::type...);
+};
+
+template<class R, class C, class... T, class Bindings>
+struct rebind_placeholders_in_argument<R (C::*)(T...) const, Bindings>
+{
+    typedef typename ::boost::type_erasure::detail::rebind_placeholders_in_argument<
+        R,
+        Bindings
+    >::type (rebind_placeholders_in_argument<C, Bindings>::type::*type)
+        (typename rebind_placeholders_in_argument<T, Bindings>::type...) const;
+};
+
 #else
 
 #define BOOST_PP_FILENAME_1 <boost/type_erasure/detail/rebind_placeholders.hpp>

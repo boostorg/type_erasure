@@ -302,12 +302,14 @@ struct make_index_list<0> {
  * \code
  * BOOST_TYPE_ERASURE_FREE((boost)(has_to_string), to_string, 1)
  * \endcode
+ *
+ * \see \BOOST_TYPE_ERASURE_FUNCTION
  */
 #define BOOST_TYPE_ERASURE_FREE(qualified_name, function_name, N)                           \
     BOOST_TYPE_ERASURE_FREE_I(                                                              \
         qualified_name,                                                                     \
         BOOST_PP_SEQ_ELEM(BOOST_PP_DEC(BOOST_PP_SEQ_SIZE(qualified_name)), qualified_name), \
-        function_name,                                                                             \
+        function_name,                                                                      \
         N)
 
 #endif

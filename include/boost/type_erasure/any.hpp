@@ -73,6 +73,33 @@ struct assignable;
 
 namespace detail {
 
+#if defined(BOOST_NO_CXX11_DECLTYPE) || defined(BOOST_NO_CXX11_TEMPLATE_ALIASES)
+
+template<class Concept, class Base, class ID>
+struct choose_concept_interface
+{
+    typedef ::boost::type_erasure::concept_interface<Concept, Base, ID> type;
+};
+
+#else
+
+struct default_concept_interface
+{
+    template<class Concept, class Base, class ID>
+    using apply = ::boost::type_erasure::concept_interface<Concept, Base, ID>;
+};
+
+default_concept_interface boost_type_erasure_find_interface(...);
+
+template<class Concept, class Base, class ID>
+struct choose_concept_interface
+{
+    typedef decltype(boost_type_erasure_find_interface(::boost::declval<Concept>())) finder;
+    typedef typename finder::template apply<Concept, Base, ID> type;
+};
+
+#endif
+
 template<class Derived, class Concept, class T>
 struct compute_bases
 {
@@ -81,7 +108,7 @@ struct compute_bases
             Concept
         >::type,
         ::boost::type_erasure::any_base<Derived>,
-        ::boost::type_erasure::concept_interface<
+        ::boost::type_erasure::detail::choose_concept_interface<
             ::boost::mpl::_2,
             ::boost::mpl::_1,
             T
@@ -2945,6 +2972,17 @@ private:
     table_type table;
 };
 
+#endif
+
+#ifndef BOOST_NO_CXX11_TEMPLATE_ALIASES
+template<class Concept, class T>
+using any_ref = any<Concept, T&>;
+template<class Concept, class T>
+using any_cref = any<Concept, const T&>;
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+template<class Concept, class T>
+using any_rvref = any<Concept, T&&>;
+#endif
 #endif
 
 }

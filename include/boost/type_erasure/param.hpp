@@ -280,6 +280,13 @@ struct as_param {
 #endif
 };
 
+#ifndef BOOST_NO_CXX11_TEMPLATE_ALIASES
+
+template<class Any, class T>
+using as_param_t = typename ::boost::type_erasure::as_param<Any, T>::type;
+
+#endif
+
 }
 }
 

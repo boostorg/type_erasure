@@ -95,6 +95,34 @@ struct get_placeholders_in_argument<R(T...), Out>
     typedef typename get_placeholders_impl<type0, T...>::type type;
 };
 
+template<class R, class C, class... T, class Out>
+struct get_placeholders_in_argument<R (C::*)(T...), Out>
+{
+    typedef typename ::boost::type_erasure::detail::get_placeholders_in_argument<
+        R,
+        Out
+    >::type type0;
+    typedef typename ::boost::type_erasure::detail::get_placeholders_in_argument<
+        C,
+        type0
+    >::type type1;
+    typedef typename get_placeholders_impl<type1, T...>::type type;
+};
+
+template<class R, class C, class... T, class Out>
+struct get_placeholders_in_argument<R (C::*)(T...) const, Out>
+{
+    typedef typename ::boost::type_erasure::detail::get_placeholders_in_argument<
+        R,
+        Out
+    >::type type0;
+    typedef typename ::boost::type_erasure::detail::get_placeholders_in_argument<
+        C,
+        type0
+    >::type type1;
+    typedef typename get_placeholders_impl<type1, T...>::type type;
+};
+
 #else
 
 #define BOOST_PP_FILENAME_1 <boost/type_erasure/detail/get_placeholders.hpp>

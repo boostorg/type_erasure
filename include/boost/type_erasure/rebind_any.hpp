@@ -65,6 +65,13 @@ struct rebind_any
 #endif
 };
 
+#ifndef BOOST_NO_CXX11_TEMPLATE_ALIASES
+
+template<class Any, class T>
+using rebind_any_t = typename ::boost::type_erasure::rebind_any<Any, T>::type;
+
+#endif
+
 }
 }
 

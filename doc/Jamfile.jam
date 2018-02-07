@@ -32,6 +32,9 @@ doxygen reference
     <doxygen:param>"ALIASES= \\
         CopyConstructible=\"<a href=\\\"$(BOOST_ROOT)/doc/html/CopyConstructible.html\\\">CopyConstructible</a>\" \\
         Concept=\"@xmlonly<link linkend=\\\"boost_typeerasure.conceptdef\\\">Concept</link>@endxmlonly\" \\
+        BOOST_TYPE_ERASURE_MEMBER=\"@xmlonly<macroname alt=\\\"BOOST_TYPE_ERASURE_MEMBER\\\">BOOST_TYPE_ERASURE_MEMBER</macroname>@endxmlonly\" \\
+        BOOST_TYPE_ERASURE_FREE=\"@xmlonly<macroname alt=\\\"BOOST_TYPE_ERASURE_FREE\\\">BOOST_TYPE_ERASURE_FREE</macroname>@endxmlonly\" \\
+        BOOST_TYPE_ERASURE_FUNCTION=\"@xmlonly<macroname alt=\\\"BOOST_TYPE_ERASURE_FUNCTION\\\">BOOST_TYPE_ERASURE_FUNCTION</macroname>@endxmlonly\" \\
         call=\"@xmlonly<functionname alt=\\\"boost::type_erasure::call\\\">call</functionname>@endxmlonly\" \\
         any_cast=\"@xmlonly<functionname alt=\\\"boost::type_erasure::any_cast\\\">any_cast</functionname>@endxmlonly\" \\
         typeid_of=\"@xmlonly<functionname alt=\\\"boost::type_erasure::typeid_of\\\">typeid_of</functionname>@endxmlonly\" \\

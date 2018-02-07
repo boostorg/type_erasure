@@ -56,6 +56,13 @@ struct placeholder_of< ::boost::type_erasure::param<Concept, T> >
     typedef T type;
 };
 
+#ifndef BOOST_NO_CXX11_TEMPLATE_ALIASES
+
+template<class T>
+using placeholder_of_t = typename ::boost::type_erasure::placeholder_of<T>::type;
+
+#endif
+
 }
 }
 
