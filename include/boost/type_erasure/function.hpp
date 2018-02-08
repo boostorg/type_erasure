@@ -37,10 +37,33 @@ namespace detail {
 template<int N>
 using make_index_list_t = typename ::boost::type_erasure::detail::make_index_list<N>::type;
 
+#if BOOST_WORKAROUND(BOOST_MSVC, == 1900)
+
 template<class... T>
-using first_placeholder_t =
-    typename ::boost::type_erasure::detail::first_placeholder<
+struct first_placeholder_index_ :
+    ::boost::type_erasure::detail::first_placeholder_index<
         ::boost::remove_cv_t< ::boost::remove_reference_t<T> >...
+    >
+{};
+template<class... T>
+using first_placeholder_index_t =
+    typename ::boost::type_erasure::detail::first_placeholder_index_<T...>::type;
+
+#else
+
+template<class... T>
+using first_placeholder_index_t = 
+    typename ::boost::type_erasure::detail::first_placeholder_index<
+        ::boost::remove_cv_t< ::boost::remove_reference_t<T> >...
+    >::type;
+
+#endif
+
+template<class Base, class Tn, int I, class... T>
+using free_param_t =
+    typename ::boost::mpl::eval_if_c<(::boost::type_erasure::detail::first_placeholder_index_t<T...>::value == I),
+            ::boost::type_erasure::detail::maybe_const_this_param<Tn, Base>, \
+            ::boost::type_erasure::as_param<Base, Tn>
     >::type;
 
 template<class P, template<class ...> class interface, class Sig, class Concept, class Base, class ID>
@@ -73,6 +96,54 @@ struct memfun_to_func<R (C::*)(A...) const>
 template<class Sig>
 using memfun_to_func_t = typename ::boost::type_erasure::detail::memfun_to_func<Sig>::type;
 
+template<class Sig, template<class> class M, template<class> class F>
+using choose_function_impl = 
+    typename ::boost::mpl::if_c< ::boost::is_member_pointer<Sig>::value,
+        M< ::boost::type_erasure::detail::memfun_to_func_t<Sig> >,
+        F<Sig>
+    >::type;
+
+
+template<class Sig, class ID>
+struct interface_chooser {
+    template<class Base, template<class> class C, template<class...> class M, template<class...> class F>
+    using apply = Base;
+};
+
+template<class R, class T, class... A>
+struct interface_chooser<R (T::*)(A...), T>
+{
+    template<class Base, template<class> class C, template<class...> class M, template<class...> class F>
+    using apply = ::boost::type_erasure::detail::choose_member_interface<
+        ::boost::type_erasure::placeholder_of_t<Base>,
+        M,
+        R(A...), C<R (T::*)(A...)>, Base, T>;
+};
+
+template<class R, class T, class... A>
+struct interface_chooser<R (T::*)(A...) const, T>
+{
+    template<class Base, template<class> class C, template<class...> class M, template<class...> class F>
+    using apply = M<R(A...), C<R(T::*)(A...) const>, Base, const T>;
+};
+
+template<class R, class... A>
+struct interface_chooser<
+    R(A...),
+    typename ::boost::type_erasure::detail::first_placeholder<
+        ::boost::remove_cv_t< ::boost::remove_reference_t<A> >...>::type>
+{
+    template<class Base, template<class> class C, template<class...> class M, template<class...> class F>
+    using apply = F<R(A...), Base,
+        ::boost::type_erasure::detail::make_index_list_t<sizeof...(A)> >;
+};
+
+template<class Sig, template<class> class C, template<class...> class M, template<class...> class F>
+struct choose_interface {
+    template<class Concept, class Base, class ID>
+    using apply = typename interface_chooser<Sig, ID>::template apply<Base, C, M, F>;
+};
+
 }
 }
 }
@@ -99,7 +170,6 @@ template<class R, class... A, class Concept, class Base, class ID>          \
 struct concept_name ## _member_interface<R(A...), Concept, Base, ID,        \
     typename Base::_boost_type_erasure_has_member ## function_name> : Base  \
 {                                                                           \
-    typedef void _boost_type_erasure_has_member ## function_name;           \
     using Base::function_name;                                              \
     ::boost::type_erasure::rebind_any_t<Base, R> function_name(::boost::type_erasure::as_param_t<Base, A>... a)\
     { return ::boost::type_erasure::call(Concept(), *this, std::forward<A>(a)...); }\
@@ -117,7 +187,6 @@ template<class R, class... A, class Concept, class Base, class ID>          \
 struct concept_name ## _member_interface<R(A...), Concept, Base, const ID,  \
     typename Base::_boost_type_erasure_has_member ## function_name> : Base  \
 {                                                                           \
-    typedef void _boost_type_erasure_has_member ## function_name;           \
     using Base::function_name;                                              \
     ::boost::type_erasure::rebind_any_t<Base, R> function_name(::boost::type_erasure::as_param_t<Base, A>... a) const\
     { return ::boost::type_erasure::call(Concept(), *this, std::forward<A>(a)...); }\
@@ -127,22 +196,13 @@ template<class Sig, class Base, class Idx>                                  \
 struct concept_name ## _free_interface;                                     \
 template<class R, class... T, class Base, int... I>                         \
 struct concept_name ## _free_interface<R(T...), Base, ::boost::type_erasure::index_list<I...> > : Base {\
-    typedef typename ::boost::type_erasure::detail::first_placeholder_index<\
-        ::boost::remove_cv_t< ::boost::remove_reference_t<T> >...           \
-    >::type _boost_type_erasure_free_p_idx;                                 \
     friend ::boost::type_erasure::rebind_any_t<Base, R>                     \
     function_name(                                                          \
-        typename ::boost::mpl::eval_if_c<(_boost_type_erasure_free_p_idx::value == I),\
-            ::boost::type_erasure::detail::maybe_const_this_param<T, Base>, \
-            ::boost::type_erasure::as_param<Base, T>                        \
-        >::type... t)                                                       \
+        ::boost::type_erasure::detail::free_param_t<Base, T, I, T...>... t) \
     {                                                                       \
         return ::boost::type_erasure::call(                                 \
             concept_name<R(T...)>(),                                        \
-            std::forward<typename ::boost::mpl::eval_if_c<(_boost_type_erasure_free_p_idx::value == I),\
-                ::boost::type_erasure::detail::maybe_const_this_param<T, Base>, \
-                ::boost::type_erasure::as_param<Base, T>                    \
-            >::type>(t)...);                                                \
+            std::forward< ::boost::type_erasure::detail::free_param_t<Base, T, I, T...> >(t)...);\
     }                                                                       \
 };                                                                          \
                                                                             \
@@ -176,57 +236,20 @@ struct concept_name ## free<void(T...)> {                                   \
     { function_name(std::forward<T>(t)...); }                               \
 };                                                                          \
                                                                             \
-template<class Sig, class ID>                                               \
-struct concept_name ## interface_chooser {                                  \
-    template<class Base>                                                    \
-    using apply = Base;                                                     \
-};                                                                          \
-                                                                            \
-template<class R, class T, class... A>                                      \
-struct concept_name ## interface_chooser<concept_name<R (T::*)(A...)>, T>   \
-{                                                                           \
-    template<class Base>                                                    \
-    using apply = ::boost::type_erasure::detail::choose_member_interface<   \
-        ::boost::type_erasure::placeholder_of_t<Base>,                      \
-        concept_name ## _member_interface,                                  \
-        R(A...), concept_name<R (T::*)(A...)>, Base, T>;                    \
-};                                                                          \
-                                                                            \
-template<class R, class T, class... A>                                      \
-struct concept_name ## interface_chooser<concept_name<R (T::*)(A...) const>, T>\
-{                                                                           \
-    template<class Base>                                                    \
-    using apply = concept_name ## _member_interface<R(A...), concept_name<R(T::*)(A...) const>, Base, const T>;\
-};                                                                          \
-                                                                            \
-template<class R, class... A>                                               \
-struct concept_name ## interface_chooser<                                   \
-    concept_name<R(A...)>,                                                  \
-    typename ::boost::type_erasure::detail::first_placeholder<              \
-        ::boost::remove_cv_t< ::boost::remove_reference_t<A> >...>::type>   \
-{                                                                           \
-    template<class Base>                                                    \
-    using apply = concept_name ## _free_interface<R(A...), Base,            \
-        ::boost::type_erasure::detail::make_index_list_t<sizeof...(A)> >;   \
-};                                                                          \
-                                                                            \
-struct concept_name ## choose_interface {                                   \
-    template<class Concept, class Base, class ID>                           \
-    using apply = typename concept_name ## interface_chooser<Concept, ID>::template apply<Base>;\
-};                                                                          \
-                                                                            \
 }                                                                           \
                                                                             \
 template<class Sig>                                                         \
 struct concept_name :                                                       \
-    ::boost::mpl::if_c< ::boost::is_member_pointer<Sig>::value,             \
-        boost_type_erasure_impl::concept_name##member< ::boost::type_erasure::detail::memfun_to_func_t<Sig> >,\
-        boost_type_erasure_impl::concept_name##free<Sig>                    \
-    >::type                                                                 \
+    ::boost::type_erasure::detail::choose_function_impl<Sig,                \
+        boost_type_erasure_impl::concept_name##member,                      \
+        boost_type_erasure_impl::concept_name##free                         \
+    >                                                                       \
 {};                                                                         \
                                                                             \
 template<class Sig>                                                         \
-boost_type_erasure_impl::concept_name ## choose_interface                   \
+::boost::type_erasure::detail::choose_interface<Sig, concept_name,          \
+    boost_type_erasure_impl::concept_name ## _member_interface,             \
+    boost_type_erasure_impl::concept_name ## _free_interface>               \
 boost_type_erasure_find_interface(concept_name<Sig>);                       \
                                                                             \
 template<class Sig, class T = ::boost::type_erasure::_self>                 \
