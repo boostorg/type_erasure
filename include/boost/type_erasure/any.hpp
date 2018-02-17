@@ -23,7 +23,7 @@
 #include <boost/mpl/or.hpp>
 #include <boost/mpl/pair.hpp>
 #include <boost/mpl/map.hpp>
-#include <boost/mpl/fold.hpp>
+#include <boost/mpl/reverse_fold.hpp>
 #include <boost/type_traits/decay.hpp>
 #include <boost/type_traits/remove_reference.hpp>
 #include <boost/type_traits/remove_const.hpp>
@@ -100,10 +100,12 @@ struct choose_concept_interface
 
 #endif
 
+#ifndef BOOST_TYPE_ERASURE_USE_MP11
+
 template<class Derived, class Concept, class T>
 struct compute_bases
 {
-    typedef typename ::boost::mpl::fold<
+    typedef typename ::boost::mpl::reverse_fold<
         typename ::boost::type_erasure::detail::collect_concepts<
             Concept
         >::type,
@@ -115,6 +117,30 @@ struct compute_bases
         >
     >::type type;
 };
+
+#else
+
+template<class ID>
+struct compute_bases_f
+{
+    template<class Concept, class Base>
+    using apply = typename ::boost::type_erasure::detail::choose_concept_interface<Concept, Base, ID>::type;
+};
+
+template<class Derived, class Concept, class T>
+using compute_bases_t =
+    ::boost::mp11::mp_reverse_fold<
+        typename ::boost::type_erasure::detail::collect_concepts_t<
+            Concept
+        >,
+        ::boost::type_erasure::any_base<Derived>,
+        ::boost::type_erasure::detail::compute_bases_f<T>::template apply
+    >;
+
+template<class Derived, class Concept, class T>
+using compute_bases = ::boost::mpl::identity< ::boost::type_erasure::detail::compute_bases_t<Derived, Concept, T> >;
+
+#endif
 
 template<class T>
 T make(T*) { return T(); }
@@ -354,9 +380,19 @@ struct any_constructor_control<
     any_constructor_control& operator=(any_constructor_control &&) = default;
 };
 
-template<class Base, class Concept, class T>
-struct any_constructor_impl : Base
+template<class Concept, class T>
+struct any_constructor_impl :
+    ::boost::type_erasure::detail::compute_bases<
+        ::boost::type_erasure::any<Concept, T>,
+        Concept,
+        T
+    >::type
 {
+    typedef typename ::boost::type_erasure::detail::compute_bases<
+        ::boost::type_erasure::any<Concept, T>,
+        Concept,
+        T
+    >::type _boost_type_erasure_base;
     // Internal constructors
     typedef ::boost::type_erasure::binding<Concept> _boost_type_erasure_table_type;
     any_constructor_impl(const ::boost::type_erasure::detail::storage& data_arg, const _boost_type_erasure_table_type& table_arg)
@@ -385,7 +421,7 @@ struct any_constructor_impl : Base
       : _boost_type_erasure_table((
             BOOST_TYPE_ERASURE_INSTANTIATE1(Concept, T, ::boost::decay_t<U>),
             ::boost::type_erasure::make_binding<
-                ::boost::mpl::map< ::boost::mpl::pair<T, ::boost::decay_t<U> > >
+                ::boost::mpl::map1< ::boost::mpl::pair<T, ::boost::decay_t<U> > >
             >()
         )),
         _boost_type_erasure_data(std::forward<U>(data_arg))
@@ -414,7 +450,7 @@ struct any_constructor_impl : Base
                 Concept, typename ::boost::type_erasure::detail::safe_concept_of<U>::type,
                 typename ::boost::mpl::if_c< ::boost::is_same<T, ::boost::type_erasure::detail::safe_placeholder_t<U> >::value,
                     void,
-                    ::boost::mpl::map<
+                    ::boost::mpl::map1<
                         ::boost::mpl::pair<T, ::boost::type_erasure::detail::safe_placeholder_t<U> >
                     >
                 >::type
@@ -425,8 +461,12 @@ struct any_constructor_impl : Base
       : _boost_type_erasure_table(
             ::boost::type_erasure::detail::access::table(other),
             typename ::boost::mpl::if_c< ::boost::is_same<T, ::boost::type_erasure::detail::safe_placeholder_t<U> >::value,
+#ifndef BOOST_TYPE_ERASURE_USE_MP11
                 ::boost::type_erasure::detail::substitution_map< ::boost::mpl::map0<> >,
-                ::boost::mpl::map<
+#else
+                ::boost::type_erasure::detail::make_identity_placeholder_map<Concept>,
+#endif
+                ::boost::mpl::map1<
                     ::boost::mpl::pair<
                         T,
                         ::boost::type_erasure::detail::safe_placeholder_t<U>
@@ -478,7 +518,7 @@ struct any_constructor_impl : Base
         _boost_type_erasure_data(::boost::type_erasure::call(
             ::boost::type_erasure::detail::make(
                 false? other._boost_type_erasure_deduce_constructor(
-                    static_cast<typename Base::_boost_type_erasure_derived_type const&>(other)) : 0
+                    static_cast<typename _boost_type_erasure_base::_boost_type_erasure_derived_type const&>(other)) : 0
             ), other)
         )
     {}
@@ -489,7 +529,7 @@ struct any_constructor_impl : Base
         _boost_type_erasure_data(::boost::type_erasure::call(
             ::boost::type_erasure::detail::make(
                 false? other._boost_type_erasure_deduce_constructor(
-                    static_cast<typename Base::_boost_type_erasure_derived_type &>(other)) : 0
+                    static_cast<typename _boost_type_erasure_base::_boost_type_erasure_derived_type &>(other)) : 0
             ), other)
         )
     {}
@@ -500,7 +540,7 @@ struct any_constructor_impl : Base
         _boost_type_erasure_data(::boost::type_erasure::call(
             ::boost::type_erasure::detail::make(
                 false? other._boost_type_erasure_deduce_constructor(
-                    static_cast<typename Base::_boost_type_erasure_derived_type &&>(other)) : 0
+                    static_cast<typename _boost_type_erasure_base::_boost_type_erasure_derived_type &&>(other)) : 0
             ), std::move(other))
         )
     {}
@@ -557,22 +597,22 @@ struct any_constructor_impl : Base
 
     any_constructor_impl& operator=(const any_constructor_impl& other)
     {
-        static_cast<typename Base::_boost_type_erasure_derived_type*>(this)->_boost_type_erasure_resolve_assign(
-            static_cast<const typename Base::_boost_type_erasure_derived_type&>(other));
+        static_cast<typename _boost_type_erasure_base::_boost_type_erasure_derived_type*>(this)->_boost_type_erasure_resolve_assign(
+            static_cast<const typename _boost_type_erasure_base::_boost_type_erasure_derived_type&>(other));
         return *this;
     }
 
     any_constructor_impl& operator=(any_constructor_impl& other)
     {
-        static_cast<typename Base::_boost_type_erasure_derived_type*>(this)->_boost_type_erasure_resolve_assign(
-            static_cast<typename Base::_boost_type_erasure_derived_type&>(other));
+        static_cast<typename _boost_type_erasure_base::_boost_type_erasure_derived_type*>(this)->_boost_type_erasure_resolve_assign(
+            static_cast<typename _boost_type_erasure_base::_boost_type_erasure_derived_type&>(other));
         return *this;
     }
 
     any_constructor_impl& operator=(any_constructor_impl&& other)
     {
-        static_cast<typename Base::_boost_type_erasure_derived_type*>(this)->_boost_type_erasure_resolve_assign(
-            static_cast<typename Base::_boost_type_erasure_derived_type&&>(other));
+        static_cast<typename _boost_type_erasure_base::_boost_type_erasure_derived_type*>(this)->_boost_type_erasure_resolve_assign(
+            static_cast<typename _boost_type_erasure_base::_boost_type_erasure_derived_type&&>(other));
         return *this;
     }
 
@@ -626,11 +666,7 @@ class any :
 #ifdef BOOST_TYPE_ERASURE_SFINAE_FRIENDLY_CONSTRUCTORS
     public ::boost::type_erasure::any_constructor_control<
         ::boost::type_erasure::any_constructor_impl<
-            typename ::boost::type_erasure::detail::compute_bases<
-                ::boost::type_erasure::any<Concept, T>,
-                Concept,
-                T
-            >::type,
+
             Concept,
             T
         >
@@ -651,11 +687,6 @@ public:
 #if defined(BOOST_TYPE_ERASURE_SFINAE_FRIENDLY_CONSTRUCTORS)
     using _boost_type_erasure_base = ::boost::type_erasure::any_constructor_control<
         ::boost::type_erasure::any_constructor_impl<
-            typename ::boost::type_erasure::detail::compute_bases<
-                ::boost::type_erasure::any<Concept, T>,
-                Concept,
-                T
-            >::type,
             Concept,
             T
         >
@@ -707,7 +738,7 @@ public:
       : table((
             BOOST_TYPE_ERASURE_INSTANTIATE1(Concept, T, U),
             ::boost::type_erasure::make_binding<
-                ::boost::mpl::map< ::boost::mpl::pair<T, U> >
+                ::boost::mpl::map1< ::boost::mpl::pair<T, U> >
             >()
         )),
         data(data_arg)
@@ -748,7 +779,7 @@ public:
       : table((
             BOOST_TYPE_ERASURE_INSTANTIATE1(Concept, T, typename ::boost::remove_cv<typename ::boost::remove_reference<U>::type>::type),
             ::boost::type_erasure::make_binding<
-                ::boost::mpl::map< ::boost::mpl::pair<T, typename ::boost::remove_cv<typename ::boost::remove_reference<U>::type>::type> >
+                ::boost::mpl::map1< ::boost::mpl::pair<T, typename ::boost::remove_cv<typename ::boost::remove_reference<U>::type>::type> >
             >()
         )),
         data(std::forward<U>(data_arg))
@@ -793,7 +824,7 @@ public:
       : table((
             BOOST_TYPE_ERASURE_INSTANTIATE1(Concept, T, U*),
             ::boost::type_erasure::make_binding<
-                ::boost::mpl::map< ::boost::mpl::pair<T, U*> >
+                ::boost::mpl::map1< ::boost::mpl::pair<T, U*> >
             >()
         )),
         data(data_arg)
@@ -844,7 +875,7 @@ public:
     any(const any<Concept2, Tag2>& other)
       : table(
             ::boost::type_erasure::detail::access::table(other),
-            ::boost::mpl::map<
+            ::boost::mpl::map1<
                 ::boost::mpl::pair<
                     T,
                     typename ::boost::remove_const<
@@ -991,7 +1022,7 @@ public:
     any(any<Concept2, Tag2>& other)
       : table(
             ::boost::type_erasure::detail::access::table(other),
-            ::boost::mpl::map<
+            ::boost::mpl::map1<
                 ::boost::mpl::pair<
                     T,
                     typename ::boost::remove_const<
@@ -1010,7 +1041,7 @@ public:
     any(any<Concept2, Tag2>&& other)
       : table(
             ::boost::type_erasure::detail::access::table(other),
-            ::boost::mpl::map<
+            ::boost::mpl::map1<
                 ::boost::mpl::pair<
                     T,
                     typename ::boost::remove_const<
@@ -1891,7 +1922,7 @@ private:
     table_type table;
     ::boost::type_erasure::detail::storage data;
 #else
-    template<class Base2, class Concept2, class T2>
+    template<class Concept2, class T2>
     friend struct ::boost::type_erasure::any_constructor_impl;
 #endif
 };
@@ -1938,7 +1969,7 @@ public:
       : table((
             BOOST_TYPE_ERASURE_INSTANTIATE1(Concept, T, U),
             ::boost::type_erasure::make_binding<
-                ::boost::mpl::map< ::boost::mpl::pair<T, U> >
+                ::boost::mpl::map1< ::boost::mpl::pair<T, U> >
             >()
         ))
     {
@@ -2022,7 +2053,7 @@ public:
       : data(::boost::type_erasure::detail::access::data(other)),
         table(
             ::boost::type_erasure::detail::access::table(other),
-            ::boost::mpl::map<
+            ::boost::mpl::map1<
                 ::boost::mpl::pair<
                     T,
                     Tag2
@@ -2055,7 +2086,7 @@ public:
       : data(::boost::type_erasure::detail::access::data(other)),
         table(
             ::boost::type_erasure::detail::access::table(other),
-            ::boost::mpl::map<
+            ::boost::mpl::map1<
                 ::boost::mpl::pair<
                     T,
                     typename ::boost::remove_reference<Tag2>::type
@@ -2398,7 +2429,7 @@ public:
       : table((
             BOOST_TYPE_ERASURE_INSTANTIATE1(Concept, T, U),
             ::boost::type_erasure::make_binding<
-                ::boost::mpl::map< ::boost::mpl::pair<T, U> >
+                ::boost::mpl::map1< ::boost::mpl::pair<T, U> >
             >()
         ))
     {
@@ -2495,7 +2526,7 @@ public:
       : data(::boost::type_erasure::detail::access::data(other)),
         table(
             ::boost::type_erasure::detail::access::table(other),
-            ::boost::mpl::map<
+            ::boost::mpl::map1<
                 ::boost::mpl::pair<
                     T,
                     typename ::boost::remove_const<
@@ -2635,7 +2666,7 @@ public:
       : table((
             BOOST_TYPE_ERASURE_INSTANTIATE1(Concept, T, U),
             ::boost::type_erasure::make_binding<
-                ::boost::mpl::map< ::boost::mpl::pair<T, U> >
+                ::boost::mpl::map1< ::boost::mpl::pair<T, U> >
             >()
         ))
     {
@@ -2720,7 +2751,7 @@ public:
       : data(::boost::type_erasure::detail::access::data(other)),
         table(
             std::move(::boost::type_erasure::detail::access::table(other)),
-            ::boost::mpl::map<
+            ::boost::mpl::map1<
                 ::boost::mpl::pair<
                     T,
                     Tag2
@@ -2753,7 +2784,7 @@ public:
       : data(::boost::type_erasure::detail::access::data(other)),
         table(
             std::move(::boost::type_erasure::detail::access::table(other)),
-            ::boost::mpl::map<
+            ::boost::mpl::map1<
                 ::boost::mpl::pair<
                     T,
                     typename ::boost::remove_reference<Tag2>::type

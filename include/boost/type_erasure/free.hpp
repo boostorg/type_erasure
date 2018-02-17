@@ -148,6 +148,46 @@ struct first_placeholder_index :
     }                                                                   \
     }
 
+/** INTERNAL ONLY */
+#define BOOST_TYPE_ERASURE_FREE_I(namespace_name, concept_name, function_name, N)\
+    BOOST_TYPE_ERASURE_FREE_II(namespace_name, concept_name, function_name, N)
+
+/**
+ * \brief Defines a primitive concept for a free function.
+ *
+ * \param qualified_name should be a preprocessor sequence
+ * of the form (namespace1)(namespace2)...(concept_name).
+ * \param function_name is the name of the function.
+ * \param N is the number of arguments of the function.
+ *
+ * The declaration of the concept is
+ * \code
+ * template<class Sig>
+ * struct ::namespace1::namespace2::...::concept_name;
+ * \endcode
+ * where Sig is a function type giving the
+ * signature of the function.
+ *
+ * This macro can only be used in the global namespace.
+ *
+ * Example:
+ *
+ * \code
+ * BOOST_TYPE_ERASURE_FREE((boost)(has_to_string), to_string, 1)
+ * \endcode
+ *
+ * \note In C++11 the argument N is ignored and may be omitted.
+ * BOOST_TYPE_ERASURE_FREE will always define a variadic concept.
+ *
+ * \see \BOOST_TYPE_ERASURE_FUNCTION
+ */
+#define BOOST_TYPE_ERASURE_FREE(qualified_name, function_name, N)                           \
+    BOOST_TYPE_ERASURE_FREE_I(                                                              \
+        qualified_name,                                                                     \
+        BOOST_PP_SEQ_ELEM(BOOST_PP_DEC(BOOST_PP_SEQ_SIZE(qualified_name)), qualified_name), \
+        function_name,                                                                      \
+        N)
+
 #else
 
 namespace boost {
@@ -213,7 +253,7 @@ struct make_index_list<0> {
 }
 
 /** INTERNAL ONLY */
-#define BOOST_TYPE_ERASURE_FREE_II(qual_name, concept_name, function_name, N)  \
+#define BOOST_TYPE_ERASURE_FREE_II(qual_name, concept_name, function_name)  \
     BOOST_TYPE_ERASURE_OPEN_NAMESPACE(qual_name)                        \
                                                                         \
     template<class Sig>                                                 \
@@ -273,43 +313,17 @@ struct make_index_list<0> {
     }                                                                   \
     }
 
-#endif
     
 /** INTERNAL ONLY */
-#define BOOST_TYPE_ERASURE_FREE_I(namespace_name, concept_name, function_name, N)\
-    BOOST_TYPE_ERASURE_FREE_II(namespace_name, concept_name, function_name, N)
+#define BOOST_TYPE_ERASURE_FREE_I(namespace_name, concept_name, function_name)              \
+    BOOST_TYPE_ERASURE_FREE_II(namespace_name, concept_name, function_name)
 
-/**
- * \brief Defines a primitive concept for a free function.
- *
- * \param qualified_name should be a preprocessor sequence
- * of the form (namespace1)(namespace2)...(concept_name).
- * \param function_name is the name of the function.
- * \param N is the number of arguments of the function.
- *
- * The declaration of the concept is
- * \code
- * template<class Sig>
- * struct ::namespace1::namespace2::...::concept_name;
- * \endcode
- * where Sig is a function type giving the
- * signature of the function.
- *
- * This macro can only be used in the global namespace.
- *
- * Example:
- *
- * \code
- * BOOST_TYPE_ERASURE_FREE((boost)(has_to_string), to_string, 1)
- * \endcode
- *
- * \see \BOOST_TYPE_ERASURE_FUNCTION
- */
-#define BOOST_TYPE_ERASURE_FREE(qualified_name, function_name, N)                           \
+#define BOOST_TYPE_ERASURE_FREE(qualified_name, function_name, ...)                         \
     BOOST_TYPE_ERASURE_FREE_I(                                                              \
         qualified_name,                                                                     \
         BOOST_PP_SEQ_ELEM(BOOST_PP_DEC(BOOST_PP_SEQ_SIZE(qualified_name)), qualified_name), \
-        function_name,                                                                      \
-        N)
+        function_name)
+
+#endif
 
 #endif
