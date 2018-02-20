@@ -52,6 +52,7 @@ compile test_param.cpp ;
 compile test_is_subconcept.cpp ;
 compile test_sfinae.cpp ;
 compile test_interface_order.cpp ;
+compile test_is_placeholder.cpp ;
 
 compile-fail fail_default_construct.cpp ;
 compile-fail fail_construct_mismatch.cpp ;
