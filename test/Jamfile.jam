@@ -39,13 +39,6 @@ run test_null.cpp /boost//unit_test_framework ;
 run test_free.cpp /boost//unit_test_framework ;
 run test_is_empty.cpp /boost//unit_test_framework ;
 run test_dynamic_any_cast.cpp /boost//unit_test_framework /boost//type_erasure ;
-run test_function.cpp /boost//unit_test_framework
-  : requirements
-    [ config.requires cxx11_rvalue_references
-                      cxx11_template_aliases
-                      cxx11_variadic_templates ]
-    <toolset>msvc-12.0:<build>no
-  ;
 run test_limits.cpp /boost//unit_test_framework
   : requirements
     [ config.requires cxx11_rvalue_references
