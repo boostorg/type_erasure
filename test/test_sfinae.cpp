@@ -36,7 +36,9 @@ BOOST_MPL_ASSERT_NOT((is_copy_constructible<any<move_constructible> >));
 
 // only is_copy_constructible seems to work on msvc and
 // even that breaks when we add a non-const copy constructor.
-#if !BOOST_WORKAROUND(BOOST_MSVC, BOOST_TESTED_AT(1912))
+#if !BOOST_WORKAROUND(BOOST_MSVC, BOOST_TESTED_AT(1912)) && \
+    !BOOST_WORKAROUND(BOOST_GCC, < 70000) && \
+    !BOOST_WORKAROUND(__clang__major__, < 4)
 
 BOOST_MPL_ASSERT_NOT((is_mutable_constructible<any<destructible<> > >));
 BOOST_MPL_ASSERT_NOT((is_move_constructible<any<destructible<> > >));

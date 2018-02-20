@@ -18,7 +18,9 @@
     !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES) && \
     !defined(BOOST_NO_CXX11_FUNCTION_TEMPLATE_DEFAULT_ARGS) && \
     !defined(BOOST_NO_CXX11_TEMPLATE_ALIASES) && \
-    !BOOST_WORKAROUND(BOOST_MSVC, == 1800)
+    !BOOST_WORKAROUND(BOOST_MSVC, == 1800) && \
+    !BOOST_WORKAROUND(BOOST_GCC, < 40800) && /* Inherited constructors */ \
+    !(defined(__clang_major__) && __clang_major__ == 3 && __clang__minor__ <= 2) /* Inherited constructors */
 #define BOOST_TYPE_ERASURE_SFINAE_FRIENDLY_CONSTRUCTORS
 #include <boost/type_traits/is_reference.hpp>
 #include <boost/utility/enable_if.hpp>
@@ -72,7 +74,7 @@ struct access
     static ::boost::type_erasure::detail::storage&&
     data(::boost::type_erasure::any_base< ::boost::type_erasure::any<Concept, T> >&& arg)
     {
-        return static_cast< ::boost::type_erasure::any<Concept, T>&&>(arg)._boost_type_erasure_data;
+        return std::move(static_cast< ::boost::type_erasure::any<Concept, T>&&>(arg)._boost_type_erasure_data);
     }
 #endif
     template<class Derived>
