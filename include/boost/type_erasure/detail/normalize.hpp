@@ -549,7 +549,9 @@ using add_deductions_t =
     ::boost::mp11::mp_fold<
         M,
         ::boost::type_erasure::detail::make_mp_list<Bindings>,
-        ::boost::type_erasure::detail::add_deduced_f<Bindings>::template apply
+        ::boost::type_erasure::detail::add_deduced_f<
+            ::boost::type_erasure::detail::make_mp_list<Bindings>
+        >::template apply
     >;
 
 template<class Bindings, class M>
