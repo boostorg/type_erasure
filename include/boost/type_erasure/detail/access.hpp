@@ -35,6 +35,9 @@ class any;
 template<class Concept, class T>
 class param;
 
+template<class Concept>
+class binding;
+
 namespace detail {
 
 struct access
@@ -46,11 +49,25 @@ struct access
         return static_cast<const Derived&>(arg).table;
     }
     template<class Concept, class T>
-    static const typename any<Concept, T>::table_type&
+    static const ::boost::type_erasure::binding<Concept>&
     table(const ::boost::type_erasure::param<Concept, T>& arg)
     {
         return table(arg._impl);
     }
+    template<class Concept, class T>
+    static const ::boost::type_erasure::binding<Concept>&
+    table(const ::boost::type_erasure::param<Concept, T&>& arg)
+    {
+        return arg._impl.table;
+    }
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+    template<class Concept, class T>
+    static const ::boost::type_erasure::binding<Concept>&
+    table(const ::boost::type_erasure::param<Concept, T&&>& arg)
+    {
+        return arg._impl.table;
+    }
+#endif
 #ifdef BOOST_TYPE_ERASURE_SFINAE_FRIENDLY_CONSTRUCTORS
     template<class Concept, class T, class = typename ::boost::enable_if_c<!::boost::is_reference<T>::value>::type>
     static const typename any<Concept, T>::table_type&
@@ -136,6 +153,12 @@ struct access
     data(const ::boost::type_erasure::param<Concept, T>& arg)
     {
         return data(arg._impl);
+    }
+    template<class Concept, class T>
+    static const ::boost::type_erasure::detail::storage&
+    data(const ::boost::type_erasure::param<Concept, T&>& arg)
+    {
+        return arg._impl.data;
     }
 
 #ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
