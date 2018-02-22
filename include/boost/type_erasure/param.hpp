@@ -27,11 +27,15 @@
 namespace boost {
 namespace type_erasure {
     
+#ifndef BOOST_TYPE_ERASURE_DOXYGEN
+
 template<class Concept, class T>
 class any;
     
 template<class Concept>
 class binding;
+
+#endif
 
 namespace detail {
 
@@ -86,8 +90,8 @@ struct placeholder_conversion<T&&, T&&> : boost::mpl::true_ {};
  * with an @ref any that has the same @c Concept
  * and base placeholder when there exists a corresponding
  * standard conversion for the placeholder.
- * A conversion sequence from @ref any<C, P> to @ref param<C, P1> is
- * a better conversion sequence than @ref any<C, P> to @ref param<C, P2>
+ * A conversion sequence from @ref any "any<C, P>" to @ref param "param<C, P1>" is
+ * a better conversion sequence than @ref any "any<C, P>" to @ref param "param<C, P2>"
  * iff the corresponding placeholder standard conversion
  * sequence from P to P1 is a better conversion sequence than
  * P to P2.
@@ -195,7 +199,21 @@ public:
     param(U& u, typename boost::enable_if< ::boost::is_same<U, const any<Concept, T> > >::type* = 0) : _impl(u) {}
     any<Concept, const T&> get() const { return _impl; }
 protected:
-    any<Concept, const T&> _impl;
+    struct _impl_t {
+        _impl_t(const ::boost::type_erasure::detail::storage& data_,
+              const ::boost::type_erasure::binding<Concept>& table_)
+          : table(table_), data(data_)
+        {}
+        _impl_t(const any<Concept, T>& u)
+          : table(::boost::type_erasure::detail::access::table(u)),
+            data(::boost::type_erasure::detail::access::data(u))
+        {}
+        // It's safe to capture the table by reference, because
+        // the user's argument should out-live us.  storage is
+        // just a void*, so we don't need to add indirection.
+        const ::boost::type_erasure::binding<Concept>& table;
+        ::boost::type_erasure::detail::storage data;
+    } _impl;
 };
 
 template<class Concept, class T>
@@ -275,6 +293,13 @@ struct as_param {
     >::type type;
 #endif
 };
+
+#ifndef BOOST_NO_CXX11_TEMPLATE_ALIASES
+
+template<class Any, class T>
+using as_param_t = typename ::boost::type_erasure::as_param<Any, T>::type;
+
+#endif
 
 }
 }
