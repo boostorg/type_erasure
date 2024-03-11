@@ -21,4 +21,4 @@ compile associated.cpp ;
 
 run print_sequence.cpp ;
 run printf.cpp ;
-run multifunction.cpp ;
+run multifunction.cpp /boost/variant//boost_variant /boost/phoenix//boost_phoenix ;
