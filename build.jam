@@ -7,20 +7,20 @@ import project ;
 
 project /boost/type_erasure
     : common-requirements
-        <source>/boost/assert//boost_assert
-        <source>/boost/config//boost_config
-        <source>/boost/core//boost_core
-        <source>/boost/fusion//boost_fusion
-        <source>/boost/iterator//boost_iterator
-        <source>/boost/mp11//boost_mp11
-        <source>/boost/mpl//boost_mpl
-        <source>/boost/preprocessor//boost_preprocessor
-        <source>/boost/smart_ptr//boost_smart_ptr
-        <source>/boost/thread//boost_thread
-        <source>/boost/throw_exception//boost_throw_exception
-        <source>/boost/type_traits//boost_type_traits
-        <source>/boost/typeof//boost_typeof
-        <source>/boost/vmd//boost_vmd
+        <library>/boost/assert//boost_assert
+        <library>/boost/config//boost_config
+        <library>/boost/core//boost_core
+        <library>/boost/fusion//boost_fusion
+        <library>/boost/iterator//boost_iterator
+        <library>/boost/mp11//boost_mp11
+        <library>/boost/mpl//boost_mpl
+        <library>/boost/preprocessor//boost_preprocessor
+        <library>/boost/smart_ptr//boost_smart_ptr
+        <library>/boost/thread//boost_thread
+        <library>/boost/throw_exception//boost_throw_exception
+        <library>/boost/type_traits//boost_type_traits
+        <library>/boost/typeof//boost_typeof
+        <library>/boost/vmd//boost_vmd
         <include>include
     ;
 
