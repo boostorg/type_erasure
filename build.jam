@@ -5,22 +5,24 @@
 
 require-b2 5.2 ;
 
+constant boost_dependencies :
+    /boost/assert//boost_assert
+    /boost/config//boost_config
+    /boost/core//boost_core
+    /boost/fusion//boost_fusion
+    /boost/iterator//boost_iterator
+    /boost/mp11//boost_mp11
+    /boost/mpl//boost_mpl
+    /boost/preprocessor//boost_preprocessor
+    /boost/smart_ptr//boost_smart_ptr
+    /boost/thread//boost_thread
+    /boost/throw_exception//boost_throw_exception
+    /boost/type_traits//boost_type_traits
+    /boost/typeof//boost_typeof
+    /boost/vmd//boost_vmd ;
+
 project /boost/type_erasure
     : common-requirements
-        <library>/boost/assert//boost_assert
-        <library>/boost/config//boost_config
-        <library>/boost/core//boost_core
-        <library>/boost/fusion//boost_fusion
-        <library>/boost/iterator//boost_iterator
-        <library>/boost/mp11//boost_mp11
-        <library>/boost/mpl//boost_mpl
-        <library>/boost/preprocessor//boost_preprocessor
-        <library>/boost/smart_ptr//boost_smart_ptr
-        <library>/boost/thread//boost_thread
-        <library>/boost/throw_exception//boost_throw_exception
-        <library>/boost/type_traits//boost_type_traits
-        <library>/boost/typeof//boost_typeof
-        <library>/boost/vmd//boost_vmd
         <include>include
     ;
 
@@ -32,3 +34,4 @@ explicit
 call-if : boost-library type_erasure
     : install boost_type_erasure
     ;
+
