@@ -6,10 +6,15 @@
 # accompanying file LICENSE_1_0.txt or copy at
 # http://www.boost.org/LICENSE_1_0.txt)
 
+constant boost_dependencies_private :
+    /boost/thread//boost_thread
+    ;
+
 project
   : source-location ../src
   : common-requirements <library>$(boost_dependencies)
   : requirements <link>shared:<define>BOOST_TYPE_ERASURE_DYN_LINK
+    <library>$(boost_dependencies_private)
   : usage-requirements <link>shared:<define>BOOST_TYPE_ERASURE_DYN_LINK
     <define>BOOST_TYPE_ERASURE_NO_LIB=1
 ;
