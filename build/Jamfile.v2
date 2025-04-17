@@ -12,7 +12,7 @@ constant boost_dependencies_private :
 
 project
   : source-location ../src
-  : common-requirements <library>$(boost_dependencies)
+  : common-requirements <include>../include <library>$(boost_dependencies)
   : requirements <link>shared:<define>BOOST_TYPE_ERASURE_DYN_LINK
     <library>$(boost_dependencies_private)
   : usage-requirements <link>shared:<define>BOOST_TYPE_ERASURE_DYN_LINK

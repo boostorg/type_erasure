@@ -21,8 +21,6 @@ constant boost_dependencies :
     /boost/vmd//boost_vmd ;
 
 project /boost/type_erasure
-    : common-requirements
-        <include>include
     ;
 
 explicit
